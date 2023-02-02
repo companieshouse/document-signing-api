@@ -1,0 +1,5 @@
+app_name: document-signing-api
+group: api
+weight: 911
+routes:
+  1: ^/document-signing-api/healthcheck
