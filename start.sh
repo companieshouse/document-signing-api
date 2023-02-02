@@ -9,7 +9,7 @@ if [[ -z "${MESOS_SLAVE_PID}" ]]; then
     source ~/.chs_env/global_env
     source ~/.chs_env/document-signing-api/env
 
-    PORT="${SEARCH_API_PORT}"
+    PORT="${DOCUMENT_SIGNING_API_PORT}"
 else
     PORT="$1"
     CONFIG_URL="$2"
