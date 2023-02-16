@@ -5,8 +5,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.documentsigningapi.dto.SignPdfRequestDTO;
+import uk.gov.companieshouse.documentsigningapi.dto.SignPdfResponseDTO;
 
-import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.HttpStatus.CREATED;
 
 @RestController
 public class SignDocumentController {
@@ -17,10 +18,13 @@ public class SignDocumentController {
     @PostMapping(SIGN_PDF_URI)
     public ResponseEntity<Object> signPdf(final @RequestBody SignPdfRequestDTO signPdfRequestDTO) {
 
-        // TODO DCAC-76 Use structured logging
-        System.out.println("signPdf(" + signPdfRequestDTO + ")");
+        final SignPdfResponseDTO response = new SignPdfResponseDTO();
+        response.setSignedDocumentLocation("there");
 
-        return ResponseEntity.status(OK).build();
+        // TODO DCAC-76 Use structured logging
+        System.out.println("signPdf(" + signPdfRequestDTO + ") returning " + response + ")");
+
+        return ResponseEntity.status(CREATED).body(response);
     }
 
 }
