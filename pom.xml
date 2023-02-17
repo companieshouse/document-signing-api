@@ -29,6 +29,7 @@
         <spring-boot-maven-plugin.version>2.5.5</spring-boot-maven-plugin.version>
         <log4j.version>2.19.0</log4j.version>
         <structured-logging.version>1.9.15</structured-logging.version>
+        <aws-java-sdk-s3.version>1.12.407</aws-java-sdk-s3.version>
     </properties>
 
     <dependencyManagement>
@@ -66,7 +67,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -84,6 +84,11 @@
                     <artifactId>logback-classic</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-s3</artifactId>
+            <version>${aws-java-sdk-s3.version}</version>
         </dependency>
     </dependencies>
 
