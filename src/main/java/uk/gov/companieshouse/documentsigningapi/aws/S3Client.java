@@ -3,7 +3,6 @@ package uk.gov.companieshouse.documentsigningapi.aws;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicSessionCredentials;
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.S3Object;
@@ -19,8 +18,8 @@ public class S3Client {
         final String bucketName = getBucketName(documentLocation);
         final String fileName = getFileName(documentLocation);
 
-        /* TODO DCAC-76: Can we replace session credentials with configured non-expiring credentials?
-                Make region configurable too? */
+        // TODO DCAC-76: Can we replace session credentials with configured non-expiring credentials?
+        final String region = System.getenv("ENV_REGION_AWS");
         final String accessKeyId = System.getenv("AWS_ACCESS_KEY_ID");
         final String secretAccessKey = System.getenv("AWS_SECRET_ACCESS_KEY");
         final String sessionKey = System.getenv("AWS_SESSION_TOKEN");
@@ -29,7 +28,7 @@ public class S3Client {
                 secretAccessKey,
                 sessionKey);
         final AmazonS3 s3 = AmazonS3ClientBuilder.standard().
-                withRegion(Regions.EU_WEST_2).
+                withRegion(region).
                 withCredentials(new AWSStaticCredentialsProvider(credentials)).
                 build();
         final S3Object o = s3.getObject(bucketName, fileName);
@@ -40,7 +39,7 @@ public class S3Client {
         final String host = new URI(documentLocation).getHost();
         if (host == null) {
             throw new URISyntaxException(documentLocation,
-                                         "No bucket name could be extracted from the document location");
+                                         "No bucket name could be extracted from the document location.");
         }
         return host.substring(0, host.indexOf('.'));
     }
