@@ -23,6 +23,9 @@ package uk.gov.companieshouse.documentsigningapi.temp;
 //        package aws.example.s3;
 
 import com.amazonaws.AmazonServiceException;
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicSessionCredentials;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
@@ -57,7 +60,15 @@ public class GetObject {
         String key_name = args[1];
 
         System.out.format("Downloading %s from S3 bucket %s...\n", key_name, bucket_name);
-        final AmazonS3 s3 = AmazonS3ClientBuilder.standard().withRegion(Regions.EU_WEST_2).build();
+        // TODO DCAC-76: Can we replace session credentials with non-expiring credentials?
+        final AWSCredentials credentials = new BasicSessionCredentials(
+                System.getenv("AWS_ACCESS_KEY_ID"),
+                System.getenv("AWS_SECRET_ACCESS_KEY"),
+                System.getenv("AWS_SESSION_TOKEN"));
+          final AmazonS3 s3 = AmazonS3ClientBuilder.standard().
+                withRegion(Regions.EU_WEST_2).
+                withCredentials(new AWSStaticCredentialsProvider(credentials)).
+                build();
         try {
             S3Object o = s3.getObject(bucket_name, key_name);
             S3ObjectInputStream s3is = o.getObjectContent();
