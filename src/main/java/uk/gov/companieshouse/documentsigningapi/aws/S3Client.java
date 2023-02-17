@@ -38,6 +38,10 @@ public class S3Client {
 
     String getBucketName(final String documentLocation) throws URISyntaxException {
         final String host = new URI(documentLocation).getHost();
+        if (host == null) {
+            throw new URISyntaxException(documentLocation,
+                                         "No bucket name could be extracted from the document location");
+        }
         return host.substring(0, host.indexOf('.'));
     }
 
