@@ -29,6 +29,7 @@
         <spring-boot-maven-plugin.version>2.5.5</spring-boot-maven-plugin.version>
         <log4j.version>2.19.0</log4j.version>
         <structured-logging.version>1.9.15</structured-logging.version>
+        <environment-reader-library.version>1.3.8</environment-reader-library.version>
         <aws-java-sdk-s3.version>1.12.407</aws-java-sdk-s3.version>
     </properties>
 
@@ -84,6 +85,11 @@
                     <artifactId>logback-classic</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.companieshouse</groupId>
+            <artifactId>environment-reader-library</artifactId>
+            <version>${environment-reader-library.version}</version>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
