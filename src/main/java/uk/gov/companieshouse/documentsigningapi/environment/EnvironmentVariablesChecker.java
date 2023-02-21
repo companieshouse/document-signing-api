@@ -15,8 +15,9 @@ public class EnvironmentVariablesChecker {
     enum RequiredEnvironmentVariables {
         AWS_REGION("AWS_REGION"),
         AWS_ACCESS_KEY_ID("AWS_ACCESS_KEY_ID"),
-        AWS_SECRET_ACCESS_KEY("AWS_SECRET_ACCESS_KEY"),
-        AWS_SESSION_TOKEN("AWS_SESSION_TOKEN");
+        AWS_SECRET_ACCESS_KEY("AWS_SECRET_ACCESS_KEY");
+        // TODO DCAC-76: Comment in or remove this.
+//        AWS_SESSION_TOKEN("AWS_SESSION_TOKEN");
 
         private final String name;
 
