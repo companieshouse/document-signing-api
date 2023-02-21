@@ -19,7 +19,10 @@ public class S3Service {
         final String bucketName = getBucketName(documentLocation);
         final String fileName = getFileName(documentLocation);
 
-        // TODO DCAC-76: Can we replace session credentials with configured non-expiring credentials?
+        // TODO We will need to replace the approach used here with one based on something like the
+        // StsGetSessionTokenCredentialsProvider using only the access key and secret key of an IAM user
+        // or role. We cannot do that until we have used terraform in the Concourse pipeline to
+        // set up that user or role for development and higher environments.
         final String region = System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable());
         final S3Client client = S3Client.builder().
                 region(Region.of(region)).
