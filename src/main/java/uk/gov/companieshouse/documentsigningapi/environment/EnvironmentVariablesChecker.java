@@ -13,7 +13,7 @@ public class EnvironmentVariablesChecker {
     private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAMESPACE);
 
     enum RequiredEnvironmentVariables {
-        ENV_REGION_AWS("ENV_REGION_AWS"),
+        AWS_REGION("AWS_REGION"),
         AWS_ACCESS_KEY_ID("AWS_ACCESS_KEY_ID"),
         AWS_SECRET_ACCESS_KEY("AWS_SECRET_ACCESS_KEY"),
         AWS_SESSION_TOKEN("AWS_SESSION_TOKEN");
