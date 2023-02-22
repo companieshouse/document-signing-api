@@ -14,6 +14,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 import uk.gov.companieshouse.documentsigningapi.dto.SignPdfRequestDTO;
 
 import java.util.List;
@@ -28,7 +29,8 @@ class SignDocumentControllerIntegrationTest {
 
     @Container
     private static final LocalStackContainer localStackContainer =
-            new LocalStackContainer().withServices(LocalStackContainer.Service.S3);
+            new LocalStackContainer(DockerImageName.parse("localstack/localstack:1.4"))
+                    .withServices(LocalStackContainer.Service.S3);
 
     @Autowired
     private MockMvc mockMvc;
