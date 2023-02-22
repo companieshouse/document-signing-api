@@ -22,8 +22,11 @@ import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import uk.gov.companieshouse.documentsigningapi.dto.SignPdfRequestDTO;
 
+import java.nio.file.Path;
 import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -44,6 +47,9 @@ class SignDocumentControllerIntegrationTest {
 
     @Autowired
     private ObjectMapper mapper;
+
+    @Autowired
+    private S3Client s3Client;
 
     @Rule
     public EnvironmentVariables environmentVariables = new EnvironmentVariables();
@@ -74,13 +80,23 @@ class SignDocumentControllerIntegrationTest {
         environmentVariables.set("AWS_REGION", localStackContainer.getRegion());
         environmentVariables.set("AWS_ACCESS_KEY_ID", localStackContainer.getAccessKey());
         environmentVariables.set("AWS_SECRET_ACCESS_KEY", localStackContainer.getSecretKey());
+
+        final var request =
+                CreateBucketRequest.builder()
+                        .bucket("document-api-images-cidev")
+                        .build();
+        s3Client.createBucket(request);
+        final var request2 = PutObjectRequest.builder()
+                        .bucket("document-api-images-cidev")
+                        .key("9616659670.pdf")
+                                .contentType(MediaType.APPLICATION_PDF.toString())
+                                .build();
+        s3Client.putObject(request2, Path.of("9616659670.pdf"));
     }
 
     @Test
     @DisplayName("signPdf returns the signed property location")
     void signPdfReturnsSignedPropertyLocation() throws Exception {
-
-
 
         final SignPdfRequestDTO signPdfRequestDTO = new SignPdfRequestDTO();
         signPdfRequestDTO.setDocumentLocation("https://document-api-images-cidev.s3.eu-west-2.amazonaws.com/9616659670.pdf");
