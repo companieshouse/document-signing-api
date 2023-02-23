@@ -1,5 +1,10 @@
 package uk.gov.companieshouse.documentsigningapi.controller;
 
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils.SIGN_PDF_REQUEST;
+import static uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils.SIGN_PDF_RESPONSE;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -10,15 +15,9 @@ import uk.gov.companieshouse.documentsigningapi.aws.S3Service;
 import uk.gov.companieshouse.documentsigningapi.dto.SignPdfRequestDTO;
 import uk.gov.companieshouse.documentsigningapi.dto.SignPdfResponseDTO;
 import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
+import uk.gov.companieshouse.documentsigningapi.signing.SigningService;
 
-import java.net.URISyntaxException;
 import java.util.Map;
-
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
-import static uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils.SIGN_PDF_REQUEST;
-import static uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils.SIGN_PDF_RESPONSE;
 
 @RestController
 public class SignDocumentController {
@@ -30,10 +29,12 @@ public class SignDocumentController {
 
     private final LoggingUtils logger;
     private final S3Service s3Service;
+    private final SigningService signingService;
 
-    public SignDocumentController(LoggingUtils logger, S3Service s3Service) {
+    public SignDocumentController(LoggingUtils logger, S3Service s3Service, SigningService signingService) {
         this.logger = logger;
         this.s3Service = s3Service;
+        this.signingService = signingService;
     }
 
     @PostMapping(SIGN_PDF_URI)
@@ -44,7 +45,10 @@ public class SignDocumentController {
         map.put(SIGN_PDF_REQUEST, signPdfRequestDTO);
         try {
 
-            s3Service.retrieveUnsignedDocument(unsignedDocumentLocation);
+//            TODO S3 changes not required for the signing yet, removed for ease of testing
+//            s3Service.retrieveUnsignedDocument(unsignedDocumentLocation);
+
+            signingService.signPDF();
 
             // Note this is just returning the location of the unsigned document for now.
             final SignPdfResponseDTO signPdfResponseDTO = new SignPdfResponseDTO();
@@ -52,11 +56,12 @@ public class SignDocumentController {
             map.put(SIGN_PDF_RESPONSE, signPdfResponseDTO);
             logger.getLogger().info("signPdf(" + signPdfRequestDTO + ") returning " + signPdfResponseDTO + ")", map);
             return ResponseEntity.status(CREATED).body(signPdfResponseDTO);
-        } catch (URISyntaxException use) {
-            final ResponseEntity<Object> response = ResponseEntity.status(BAD_REQUEST).body(use.getMessage());
-            map.put(SIGN_PDF_RESPONSE, response);
-            logger.getLogger().error(SIGN_PDF_ERROR_PREFIX + use.getMessage(), map);
-            return response;
+//            TODO S3 changes not required for the signing yet, removed for ease of testing
+//        } catch (URISyntaxException use) {
+//            final ResponseEntity<Object> response = ResponseEntity.status(BAD_REQUEST).body(use.getMessage());
+//            map.put(SIGN_PDF_RESPONSE, response);
+//            logger.getLogger().error(SIGN_PDF_ERROR_PREFIX + use.getMessage(), map);
+//            return response;
         } catch (SdkServiceException sse) {
             final ResponseEntity<Object> response = ResponseEntity.status(sse.statusCode()).body(sse.getMessage());
             map.put(SIGN_PDF_RESPONSE, response);
