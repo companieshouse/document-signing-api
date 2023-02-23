@@ -16,11 +16,14 @@ public class DocumentSigningApiConfiguration {
         // StsGetSessionTokenCredentialsProvider using only the access key and secret key of an IAM user
         // or role. We cannot do that until we have used terraform in the Concourse pipeline to
         // set up that user or role for development and higher environments.
-        final String region = System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable());
         return S3Client.builder().
-                region(Region.of(region)).
+                region(Region.of(getRegion())).
                 credentialsProvider(EnvironmentVariableCredentialsProvider.create())
                 .build();
+    }
+
+    protected String getRegion() {
+        return System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable());
     }
 
 }
