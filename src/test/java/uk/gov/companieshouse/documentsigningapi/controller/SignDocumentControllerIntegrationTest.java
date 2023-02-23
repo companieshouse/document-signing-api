@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.documentsigningapi.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -10,7 +11,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -23,10 +26,14 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import uk.gov.companieshouse.documentsigningapi.dto.SignPdfRequestDTO;
+import uk.gov.companieshouse.documentsigningapi.dto.SignPdfResponseDTO;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.file.Path;
 import java.util.List;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -35,9 +42,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 class SignDocumentControllerIntegrationTest {
 
+    private static final String LOCALSTACK_IMAGE_NAME = "localstack/localstack:1.4";
+
+    private static final String BUCKET_NAME = "document-api-images-cidev";
+
+    private static final String UNSIGNED_DOCUMENT_NAME = "9616659670.pdf";
+
     @Container
     private static final LocalStackContainer localStackContainer =
-            new LocalStackContainer(DockerImageName.parse("localstack/localstack:1.4"))
+            new LocalStackContainer(DockerImageName.parse(LOCALSTACK_IMAGE_NAME))
                     .withServices(LocalStackContainer.Service.S3);
 
     @Autowired
@@ -72,17 +85,7 @@ class SignDocumentControllerIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        final var request =
-                CreateBucketRequest.builder()
-                        .bucket("document-api-images-cidev")
-                        .build();
-        s3Client.createBucket(request);
-        final var request2 = PutObjectRequest.builder()
-                        .bucket("document-api-images-cidev")
-                        .key("9616659670.pdf")
-                                .contentType(MediaType.APPLICATION_PDF.toString())
-                                .build();
-        s3Client.putObject(request2, Path.of("9616659670.pdf"));
+        setUpUnsignedDocumentInBucket();
     }
 
     @Test
@@ -90,7 +93,10 @@ class SignDocumentControllerIntegrationTest {
     void signPdfReturnsSignedPropertyLocation() throws Exception {
 
         final SignPdfRequestDTO signPdfRequestDTO = new SignPdfRequestDTO();
-        signPdfRequestDTO.setDocumentLocation("https://document-api-images-cidev.s3.eu-west-2.amazonaws.com/9616659670.pdf");
+        // It seems that LocalStack S3 is somewhat region-agnostic.
+        final String unsignedDocumentLocation =
+                "https://" + BUCKET_NAME + ".s3.eu-west-2.amazonaws.com/" + UNSIGNED_DOCUMENT_NAME;
+        signPdfRequestDTO.setDocumentLocation(unsignedDocumentLocation);
         signPdfRequestDTO.setDocumentType("certified-copy");
         signPdfRequestDTO.setSignatureOptions(List.of("cover-sheet"));
 
@@ -98,7 +104,31 @@ class SignDocumentControllerIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(signPdfRequestDTO)))
                 .andExpect(status().isCreated());
+        
+        final SignPdfResponseDTO signPdfResponseDTO = getResponseDTO(resultActions);
+        assertThat(signPdfResponseDTO.getSignedDocumentLocation(), is(unsignedDocumentLocation));
+    }
 
+    private void setUpUnsignedDocumentInBucket() {
+        final var request =
+                CreateBucketRequest.builder()
+                        .bucket(BUCKET_NAME)
+                        .build();
+        s3Client.createBucket(request);
+        final var request2 = PutObjectRequest.builder()
+                .bucket(BUCKET_NAME)
+                .key(UNSIGNED_DOCUMENT_NAME)
+                .contentType(MediaType.APPLICATION_PDF.toString())
+                .build();
+        s3Client.putObject(request2, Path.of(UNSIGNED_DOCUMENT_NAME));
+    }
+
+    private SignPdfResponseDTO getResponseDTO(final ResultActions resultActions)
+            throws JsonProcessingException, UnsupportedEncodingException {
+        final MvcResult result = resultActions.andReturn();
+        final MockHttpServletResponse response = result.getResponse();
+        final String contentAsString = response.getContentAsString();
+        return mapper.readValue(contentAsString, SignPdfResponseDTO.class);
     }
 
 }
