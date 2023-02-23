@@ -37,7 +37,7 @@
         <!-- system-rules: 1.17.2 is the latest version that works with JUnit 5.
             See https://github.com/stefanbirkner/system-rules/issues/70 -->
         <system-rules-version>1.17.2</system-rules-version>
-        <pdfbox.version>2.0.27</pdfbox.version>
+        <pdfbox.version>2.0.19</pdfbox.version>
         <bouncycastle.version>1.70</bouncycastle.version>
     </properties>
 
@@ -63,16 +63,6 @@
                 <version>2.19.14</version>
                 <type>pom</type>
                 <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.pdfbox</groupId>
-                <artifactId>pdfbox</artifactId>
-                <version>${pdfbox.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.bouncycastle</groupId>
-                <artifactId>bcpkix-jdk15on</artifactId>
-                <version>${bouncycastle.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -155,6 +145,16 @@
             <artifactId>system-rules</artifactId>
             <version>${system-rules-version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>${pdfbox.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpkix-jdk15on</artifactId>
+            <version>${bouncycastle.version}</version>
         </dependency>
     </dependencies>
 
