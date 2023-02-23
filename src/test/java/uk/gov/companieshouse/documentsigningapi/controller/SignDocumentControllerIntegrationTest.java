@@ -1,8 +1,6 @@
 package uk.gov.companieshouse.documentsigningapi.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Rule;
-import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -51,9 +49,6 @@ class SignDocumentControllerIntegrationTest {
     @Autowired
     private S3Client s3Client;
 
-    @Rule
-    public EnvironmentVariables environmentVariables = new EnvironmentVariables();
-
     @TestConfiguration
     public static class Config {
         @Bean
@@ -77,10 +72,6 @@ class SignDocumentControllerIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        environmentVariables.set("AWS_REGION", localStackContainer.getRegion());
-        environmentVariables.set("AWS_ACCESS_KEY_ID", localStackContainer.getAccessKey());
-        environmentVariables.set("AWS_SECRET_ACCESS_KEY", localStackContainer.getSecretKey());
-
         final var request =
                 CreateBucketRequest.builder()
                         .bucket("document-api-images-cidev")
