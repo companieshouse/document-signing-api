@@ -34,6 +34,7 @@ import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -47,6 +48,8 @@ class SignDocumentControllerIntegrationTest {
     private static final String BUCKET_NAME = "document-api-images-cidev";
 
     private static final String UNSIGNED_DOCUMENT_NAME = "9616659670.pdf";
+
+    private static final String UNKNOWN_UNSIGNED_DOCUMENT_NAME = "UNKNOWN.pdf";
 
     @Container
     private static final LocalStackContainer localStackContainer =
@@ -89,8 +92,8 @@ class SignDocumentControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("signPdf returns the signed property location")
-    void signPdfReturnsSignedPropertyLocation() throws Exception {
+    @DisplayName("signPdf returns the signed document location")
+    void signPdfReturnsSignedDocumentLocation() throws Exception {
 
         final SignPdfRequestDTO signPdfRequestDTO = new SignPdfRequestDTO();
         // It seems that LocalStack S3 is somewhat region-agnostic.
@@ -107,6 +110,51 @@ class SignDocumentControllerIntegrationTest {
         
         final SignPdfResponseDTO signPdfResponseDTO = getResponseDTO(resultActions);
         assertThat(signPdfResponseDTO.getSignedDocumentLocation(), is(unsignedDocumentLocation));
+    }
+
+    @Test
+    @DisplayName("signPdf with invalid unsigned document location responds with bad request")
+    void signPdfWithInvalidDocumentLocation() throws Exception {
+
+        final SignPdfRequestDTO signPdfRequestDTO = new SignPdfRequestDTO();
+        // It seems that LocalStack S3 is somewhat region-agnostic.
+        final String unsignedDocumentLocation =
+                "https:// " + BUCKET_NAME + ".s3.eu-west-2.amazonaws.com/" + UNSIGNED_DOCUMENT_NAME;
+        signPdfRequestDTO.setDocumentLocation(unsignedDocumentLocation);
+        signPdfRequestDTO.setDocumentType("certified-copy");
+        signPdfRequestDTO.setSignatureOptions(List.of("cover-sheet"));
+
+        final ResultActions resultActions = mockMvc.perform(post("/document-signing/sign-pdf")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(signPdfRequestDTO)))
+                .andExpect(status().isBadRequest());
+
+        final String body = resultActions.andReturn().getResponse().getContentAsString();
+        assertThat(body, is("Illegal character in authority at index 8: " +
+                "https:// document-api-images-cidev.s3.eu-west-2.amazonaws.com/9616659670.pdf"));
+    }
+
+    @Test
+    @DisplayName("signPdf with incorrect unsigned document location responds with not found")
+    void signPdfWithUnknownDocumentLocation() throws Exception {
+
+        final SignPdfRequestDTO signPdfRequestDTO = new SignPdfRequestDTO();
+        // It seems that LocalStack S3 is somewhat region-agnostic.
+        final String unsignedDocumentLocation =
+                "https://" + BUCKET_NAME + ".s3.eu-west-2.amazonaws.com/" + UNKNOWN_UNSIGNED_DOCUMENT_NAME;
+        signPdfRequestDTO.setDocumentLocation(unsignedDocumentLocation);
+        signPdfRequestDTO.setDocumentType("certified-copy");
+        signPdfRequestDTO.setSignatureOptions(List.of("cover-sheet"));
+
+        final ResultActions resultActions = mockMvc.perform(post("/document-signing/sign-pdf")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(signPdfRequestDTO)))
+                .andExpect(status().isNotFound());
+
+        final String body = resultActions.andReturn().getResponse().getContentAsString();
+        assertThat(body, startsWith("The specified key does not exist. " +
+                "(Service: S3, Status Code: 404, Request ID: 7a62c49f-347e-4fc4-9331-6e8eEXAMPLE, " +
+                "Extended Request ID: "));
     }
 
     private void setUpUnsignedDocumentInBucket() {
