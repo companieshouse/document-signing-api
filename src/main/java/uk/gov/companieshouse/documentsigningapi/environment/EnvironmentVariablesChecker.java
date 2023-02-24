@@ -12,7 +12,7 @@ public class EnvironmentVariablesChecker {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAMESPACE);
 
-    enum RequiredEnvironmentVariables {
+    public enum RequiredEnvironmentVariables {
         AWS_REGION("AWS_REGION"),
         AWS_ACCESS_KEY_ID("AWS_ACCESS_KEY_ID"),
         AWS_SECRET_ACCESS_KEY("AWS_SECRET_ACCESS_KEY"),
@@ -34,9 +34,9 @@ public class EnvironmentVariablesChecker {
      * defined in the RequiredEnvironmentVariables enum have been set to a value
      * @return <code>true</code> if all required environment variables have been set, <code>false</code> otherwise
      */
-    public static boolean allRequiredEnvironmentVariablesSet() {
+    public static boolean allRequiredEnvironmentVariablesPresent() {
         EnvironmentReader environmentReader = new EnvironmentReaderImpl();
-        boolean allVariablesPresent = true;
+        var allVariablesPresent = true;
         LOGGER.info("Checking all environment variables present");
         for(RequiredEnvironmentVariables param : RequiredEnvironmentVariables.values()) {
             try{
