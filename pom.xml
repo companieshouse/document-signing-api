@@ -39,6 +39,7 @@
         <system-rules-version>1.17.2</system-rules-version>
         <pdfbox.version>2.0.19</pdfbox.version>
         <bouncycastle.version>1.70</bouncycastle.version>
+        <commons-io.version>2.11.0</commons-io.version>
     </properties>
 
     <dependencyManagement>
@@ -155,6 +156,11 @@
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcpkix-jdk15on</artifactId>
             <version>${bouncycastle.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commons-io.version}</version>
         </dependency>
     </dependencies>
 

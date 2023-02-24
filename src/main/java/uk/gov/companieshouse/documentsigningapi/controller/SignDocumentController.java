@@ -48,7 +48,7 @@ public class SignDocumentController {
 //            TODO S3 changes not required for the signing yet, removed for ease of testing
 //            s3Service.retrieveUnsignedDocument(unsignedDocumentLocation);
 
-            signingService.signPDF();
+            signingService.signPDF(signPdfRequestDTO);
 
             // Note this is just returning the location of the unsigned document for now.
             final SignPdfResponseDTO signPdfResponseDTO = new SignPdfResponseDTO();
