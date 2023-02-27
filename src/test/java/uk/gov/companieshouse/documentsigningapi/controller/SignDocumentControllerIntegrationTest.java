@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
@@ -42,13 +43,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 class SignDocumentControllerIntegrationTest {
 
+    private static final String LOCALSTACK_IMAGE_NAME = "localstack/localstack:1.4";
     private static final String BUCKET_NAME = "document-api-images-cidev";
     private static final String UNSIGNED_DOCUMENT_NAME = "9616659670.pdf";
     private static final String UNKNOWN_UNSIGNED_DOCUMENT_NAME = "UNKNOWN.pdf";
 
     @Container
     private static final LocalStackContainer localStackContainer =
-            new LocalStackContainer().withServices(LocalStackContainer.Service.S3);
+            new LocalStackContainer(DockerImageName.parse(LOCALSTACK_IMAGE_NAME))
+                    .withServices(LocalStackContainer.Service.S3);
 
     @Autowired
     private MockMvc mockMvc;
@@ -147,7 +150,8 @@ class SignDocumentControllerIntegrationTest {
 
         final String body = resultActions.andReturn().getResponse().getContentAsString();
         assertThat(body, startsWith("The specified key does not exist. " +
-                "(Service: S3, Status Code: 404, Request ID: 7a62c49f-347e-4fc4-9331-6e8eEXAMPLE)"));
+                "(Service: S3, Status Code: 404, Request ID: 7a62c49f-347e-4fc4-9331-6e8eEXAMPLE, " +
+                "Extended Request ID: "));
     }
 
     private void setUpUnsignedDocumentInBucket() {
