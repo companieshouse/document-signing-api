@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
 import uk.gov.companieshouse.documentsigningapi.dto.SignPdfRequestDTO;
+import uk.gov.companieshouse.documentsigningapi.exception.DocumentSigningException;
+import uk.gov.companieshouse.documentsigningapi.exception.DocumentUnavailableException;
 import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
 
 import java.io.File;
@@ -50,7 +52,7 @@ public class SigningService {
         this.logger = logger;
     }
 
-    public byte[] signPDF(SignPdfRequestDTO signPdfRequestDTO) {
+    public byte[] signPDF(SignPdfRequestDTO signPdfRequestDTO) throws DocumentSigningException, DocumentUnavailableException {
         final Map<String, Object> map = logger.createLogMap();
         map.put(SIGN_PDF_REQUEST, signPdfRequestDTO);
 
@@ -58,7 +60,7 @@ public class SigningService {
             KeyStore keyStore = getKeyStore();
             Signature signature = new Signature(keyStore, this.keystorePassword.toCharArray(), certificateAlias);
 
-            // Get signature to be signed location
+            // Get pdf to be signed location
             Path pdfPath = Paths.get(signPdfRequestDTO.getDocumentLocation());
             // Turn pdf into byte array
             byte[] pdfToSign = Files.readAllBytes(pdfPath);
@@ -84,9 +86,9 @@ public class SigningService {
 
 
         } catch (NoSuchAlgorithmException | CertificateException | UnrecoverableKeyException | KeyStoreException e) {
-            System.out.println("Cannot obtain proper KeyStore or Certificate");
+            throw new DocumentSigningException("Failed to obtain proper KeyStore or Certificate", e);
         } catch (IOException e) {
-            System.out.println("Cannot obtain proper file");
+            throw new DocumentUnavailableException("Failed to obtain proper KeyStore or Certificate", e);
         }
     }
 

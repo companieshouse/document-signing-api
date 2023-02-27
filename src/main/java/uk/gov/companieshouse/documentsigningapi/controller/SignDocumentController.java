@@ -14,6 +14,8 @@ import software.amazon.awssdk.core.exception.SdkServiceException;
 import uk.gov.companieshouse.documentsigningapi.aws.S3Service;
 import uk.gov.companieshouse.documentsigningapi.dto.SignPdfRequestDTO;
 import uk.gov.companieshouse.documentsigningapi.dto.SignPdfResponseDTO;
+import uk.gov.companieshouse.documentsigningapi.exception.DocumentSigningException;
+import uk.gov.companieshouse.documentsigningapi.exception.DocumentUnavailableException;
 import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
 import uk.gov.companieshouse.documentsigningapi.signing.SigningService;
 
@@ -48,7 +50,7 @@ public class SignDocumentController {
 //            TODO S3 changes not required for the signing yet, removed for ease of testing
 //            s3Service.retrieveUnsignedDocument(unsignedDocumentLocation);
 
-            signingService.signPDF(signPdfRequestDTO);
+            final byte[] signedPDF = signingService.signPDF(signPdfRequestDTO);
 
             // Note this is just returning the location of the unsigned document for now.
             final SignPdfResponseDTO signPdfResponseDTO = new SignPdfResponseDTO();
@@ -67,10 +69,10 @@ public class SignDocumentController {
             map.put(SIGN_PDF_RESPONSE, response);
             logger.getLogger().error(SIGN_PDF_ERROR_PREFIX + sse.getMessage() , map);
             return response;
-        } catch (SdkException se) {
-            final ResponseEntity<Object> response = ResponseEntity.status(INTERNAL_SERVER_ERROR).body(se.getMessage());
+        } catch (SdkException | DocumentSigningException | DocumentUnavailableException e) {
+            final ResponseEntity<Object> response = ResponseEntity.status(INTERNAL_SERVER_ERROR).body(e.getMessage());
             map.put(SIGN_PDF_RESPONSE, response);
-            logger.getLogger().error(SIGN_PDF_ERROR_PREFIX + se.getMessage() , map);
+            logger.getLogger().error(SIGN_PDF_ERROR_PREFIX + e.getMessage() , map);
             return response;
         }
     }
