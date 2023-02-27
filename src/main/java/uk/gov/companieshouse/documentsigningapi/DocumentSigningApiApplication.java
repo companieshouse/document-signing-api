@@ -8,10 +8,10 @@ import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVa
 @SpringBootApplication
 public class DocumentSigningApiApplication {
 
-	public static void main(String[] args) {
-		if (allRequiredEnvironmentVariablesPresent()) {
-			SpringApplication.run(DocumentSigningApiApplication.class, args);
-		}
-	}
+    public static void main(String[] args) {
+        if (allRequiredEnvironmentVariablesPresent()) {
+            SpringApplication.run(DocumentSigningApiApplication.class, args);
+        }
+    }
 
 }
