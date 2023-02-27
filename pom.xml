@@ -33,7 +33,7 @@
         <structured-logging.version>1.9.15</structured-logging.version>
         <environment-reader-library.version>1.3.8</environment-reader-library.version>
         <aws-java-sdk-s3.version>1.12.407</aws-java-sdk-s3.version>
-        <testcontainers.version>1.14.3</testcontainers.version>
+        <testcontainers.version>1.17.6</testcontainers.version>
         <!-- system-rules: 1.17.2 is the latest version that works with JUnit 5.
             See https://github.com/stefanbirkner/system-rules/issues/70 -->
         <system-rules-version>1.17.2</system-rules-version>
