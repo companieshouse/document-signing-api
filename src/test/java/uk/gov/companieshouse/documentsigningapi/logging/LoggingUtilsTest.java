@@ -1,8 +1,8 @@
 package uk.gov.companieshouse.documentsigningapi.logging;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.logging.Logger;
@@ -17,15 +17,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @ExtendWith(MockitoExtension.class)
 class LoggingUtilsTest {
 
+    @InjectMocks
     private LoggingUtils loggingUtils;
 
     @Mock
     private Logger logger;
-
-    @BeforeEach
-    void setup() {
-        loggingUtils = new LoggingUtils(logger);
-    }
 
     @Test
     void testCreateLogMapReturnsMap() {
