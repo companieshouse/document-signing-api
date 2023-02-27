@@ -1,6 +1,35 @@
 # document-signing-api
 API to sign documents digitally.
 
+## MVP
+
+* The MVP version of this API will be limited to digitally signing certified copies.
+
+## Requirements
+In order to build document-generator locally you will need the following:
+- Java 11
+- Maven
+- Git
+
+## Environment Variables
+
+The supported environmental variables have been categorised by use case and are as follows.
+
+### Deployment Variables
+| Name                  | Description                        | Mandatory | Default | Example     |
+|-----------------------|------------------------------------|-----------|---------|-------------|
+| AWS_REGION            | AWS region                         | √         | N/A     | `eu-west-2` |
+| AWS_ACCESS_KEY_ID     | Part of temporary AWS credentials. | √         | N/A     | `ASIA...`   |
+| AWS_SECRET_ACCESS_KEY | Part of temporary AWS credentials. | √         | N/A     | `UgO8...`   |
+| AWS_SESSION_TOKEN     | Part of temporary AWS credentials. | √         | N/A     | `IQoJ...`   |
+
+## Endpoints
+| Path                           | Method | Description                                                         |
+|--------------------------------|--------|---------------------------------------------------------------------|
+| *`/document-signing/sign-pdf`* | POST   | Signs an existing PDF document.                                     |
+| *`/healthcheck`*               | GET    | Returns HTTP OK (`200`) to indicate a healthy application instance. |
+
+
 ## Integration tests warning
 
 * If you find any `testcontainers` based tests are hanging shortly after start up, this could be caused by start up 
