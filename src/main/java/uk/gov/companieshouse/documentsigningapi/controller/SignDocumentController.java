@@ -57,7 +57,9 @@ public class SignDocumentController {
             signPdfResponseDTO.setSignedDocumentLocation(unsignedDocumentLocation);
             map.put(SIGN_PDF_RESPONSE, signPdfResponseDTO);
             logger.getLogger().info("signPdf(" + signPdfRequestDTO + ") returning " + signPdfResponseDTO + ")", map);
-            return ResponseEntity.status(CREATED).body(signPdfResponseDTO);
+
+            // Return the bytes as a response to enable viewing on signed pdf
+            return ResponseEntity.status(CREATED).body(signedPDF);
 //            TODO S3 changes not required for the signing yet, removed for ease of testing
 //        } catch (URISyntaxException use) {
 //            final ResponseEntity<Object> response = ResponseEntity.status(BAD_REQUEST).body(use.getMessage());
