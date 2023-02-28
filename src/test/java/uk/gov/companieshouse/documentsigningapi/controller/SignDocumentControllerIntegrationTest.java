@@ -165,7 +165,7 @@ class SignDocumentControllerIntegrationTest {
                 .key(UNSIGNED_DOCUMENT_NAME)
                 .contentType(MediaType.APPLICATION_PDF.toString())
                 .build();
-        s3Client.putObject(request2, Path.of(UNSIGNED_DOCUMENT_NAME));
+        s3Client.putObject(request2, Path.of("src/test/resources/" + UNSIGNED_DOCUMENT_NAME));
     }
 
     private SignPdfResponseDTO getResponseDTO(final ResultActions resultActions)
