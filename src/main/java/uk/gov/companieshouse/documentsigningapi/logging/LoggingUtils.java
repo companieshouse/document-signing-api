@@ -8,7 +8,6 @@ import java.util.Map;
 public class LoggingUtils {
 
     public static final String SIGN_PDF_REQUEST = "sign_pdf_request";
-
     public static final String SIGN_PDF_RESPONSE = "sign_pdf_response";
 
     private final Logger logger;

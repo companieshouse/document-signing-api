@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class SignPdfResponseDTO {
 
-    @JsonProperty("signed_property_location")
+    @JsonProperty("signed_document_location")
     private String signedDocumentLocation;
 
     public String getSignedDocumentLocation() {

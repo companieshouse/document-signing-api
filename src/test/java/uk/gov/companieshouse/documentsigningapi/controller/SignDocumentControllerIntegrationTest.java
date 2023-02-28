@@ -44,11 +44,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class SignDocumentControllerIntegrationTest {
 
     private static final String LOCALSTACK_IMAGE_NAME = "localstack/localstack:1.4";
-
     private static final String BUCKET_NAME = "document-api-images-cidev";
-
     private static final String UNSIGNED_DOCUMENT_NAME = "9616659670.pdf";
-
     private static final String UNKNOWN_UNSIGNED_DOCUMENT_NAME = "UNKNOWN.pdf";
 
     @Container
@@ -168,7 +165,7 @@ class SignDocumentControllerIntegrationTest {
                 .key(UNSIGNED_DOCUMENT_NAME)
                 .contentType(MediaType.APPLICATION_PDF.toString())
                 .build();
-        s3Client.putObject(request2, Path.of(UNSIGNED_DOCUMENT_NAME));
+        s3Client.putObject(request2, Path.of("src/test/resources/" + UNSIGNED_DOCUMENT_NAME));
     }
 
     private SignPdfResponseDTO getResponseDTO(final ResultActions resultActions)
