@@ -1,7 +1,5 @@
 package uk.gov.companieshouse.documentsigningapi.signing;
 
-import static uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils.SIGN_PDF_REQUEST;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
@@ -9,7 +7,6 @@ import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureInterface
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
-import uk.gov.companieshouse.documentsigningapi.dto.SignPdfRequestDTO;
 import uk.gov.companieshouse.documentsigningapi.exception.DocumentSigningException;
 import uk.gov.companieshouse.documentsigningapi.exception.DocumentUnavailableException;
 import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
@@ -21,15 +18,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.Calendar;
-import java.util.Map;
 
 @Service
 public class SigningService {
@@ -52,18 +46,10 @@ public class SigningService {
         this.logger = logger;
     }
 
-    public byte[] signPDF(SignPdfRequestDTO signPdfRequestDTO) throws DocumentSigningException, DocumentUnavailableException {
-        final Map<String, Object> map = logger.createLogMap();
-        map.put(SIGN_PDF_REQUEST, signPdfRequestDTO);
-
+    public byte[] signPDF(byte[] pdfToSign) throws DocumentSigningException, DocumentUnavailableException {
         try {
             KeyStore keyStore = getKeyStore();
             Signature signature = new Signature(keyStore, this.keystorePassword.toCharArray(), certificateAlias);
-
-            // Get pdf to be signed location
-            Path pdfPath = Paths.get(signPdfRequestDTO.getDocumentLocation());
-            // Turn pdf into byte array
-            byte[] pdfToSign = Files.readAllBytes(pdfPath);
 
             // Create new PDF file
             File pdfFile = File.createTempFile("pdf", "");
