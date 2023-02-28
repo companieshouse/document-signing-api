@@ -10,16 +10,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.core.exception.SdkServiceException;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import uk.gov.companieshouse.documentsigningapi.aws.S3Service;
 import uk.gov.companieshouse.documentsigningapi.dto.SignPdfRequestDTO;
 import uk.gov.companieshouse.documentsigningapi.dto.SignPdfResponseDTO;
 import uk.gov.companieshouse.documentsigningapi.exception.DocumentSigningException;
+import uk.gov.companieshouse.documentsigningapi.exception.DocumentUnavailableException;
 import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
 import uk.gov.companieshouse.documentsigningapi.signing.SigningService;
 
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Map;
 
@@ -49,7 +51,8 @@ public class SignDocumentController {
         map.put(SIGN_PDF_REQUEST, signPdfRequestDTO);
         try {
 
-            byte[] unsignedDoc = s3Service.retrieveUnsignedDocument(unsignedDocumentLocation).readAllBytes();
+            final ResponseInputStream<GetObjectResponse> unsignedDoc =
+                s3Service.retrieveUnsignedDocument(unsignedDocumentLocation);
 
             final byte[] signedPDF = signingService.signPDF(unsignedDoc);
 
@@ -59,9 +62,8 @@ public class SignDocumentController {
             map.put(SIGN_PDF_RESPONSE, signPdfResponseDTO);
             logger.getLogger().info("signPdf(" + signPdfRequestDTO + ") returning " + signPdfResponseDTO + ")", map);
 
-            // Return the bytes as a response to enable viewing on signed pdf
+            // Note currently returning signedPDF bytes as response which can be saved as a PDF
             return ResponseEntity.status(CREATED).body(signedPDF);
-//            TODO S3 changes not required for the signing yet, removed for ease of testing
         } catch (URISyntaxException use) {
             final ResponseEntity<Object> response = ResponseEntity.status(BAD_REQUEST).body(use.getMessage());
             map.put(SIGN_PDF_RESPONSE, response);
@@ -72,7 +74,7 @@ public class SignDocumentController {
             map.put(SIGN_PDF_RESPONSE, response);
             logger.getLogger().error(SIGN_PDF_ERROR_PREFIX + sse.getMessage() , map);
             return response;
-        } catch (SdkException | DocumentSigningException | IOException e) {
+        } catch (SdkException | DocumentSigningException | DocumentUnavailableException e) {
             final ResponseEntity<Object> response = ResponseEntity.status(INTERNAL_SERVER_ERROR).body(e.getMessage());
             map.put(SIGN_PDF_RESPONSE, response);
             logger.getLogger().error(SIGN_PDF_ERROR_PREFIX + e.getMessage() , map);

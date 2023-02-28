@@ -7,6 +7,8 @@ import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureInterface
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
+import software.amazon.awssdk.core.ResponseInputStream;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import uk.gov.companieshouse.documentsigningapi.exception.DocumentSigningException;
 import uk.gov.companieshouse.documentsigningapi.exception.DocumentUnavailableException;
 import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
@@ -46,10 +48,12 @@ public class SigningService {
         this.logger = logger;
     }
 
-    public byte[] signPDF(byte[] pdfToSign) throws DocumentSigningException, DocumentUnavailableException {
+    public byte[] signPDF(ResponseInputStream<GetObjectResponse> unsignedDoc) throws DocumentSigningException, DocumentUnavailableException {
         try {
             KeyStore keyStore = getKeyStore();
             Signature signature = new Signature(keyStore, this.keystorePassword.toCharArray(), certificateAlias);
+
+            final byte[] pdfToSign = unsignedDoc.readAllBytes();
 
             // Create new PDF file
             File pdfFile = File.createTempFile("pdf", "");
@@ -100,8 +104,6 @@ public class SigningService {
         PDSignature pdSignature = new PDSignature();
         pdSignature.setFilter(PDSignature.FILTER_ADOBE_PPKLITE);
         pdSignature.setSubFilter(PDSignature.SUBFILTER_ADBE_PKCS7_DETACHED);
-        pdSignature.setName("Cai Smith");
-        pdSignature.setReason("Learning how to produce and sign PDF's");
 
         // the signing date, needed for valid signature
         pdSignature.setSignDate(Calendar.getInstance());
