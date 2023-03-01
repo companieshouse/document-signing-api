@@ -13,8 +13,6 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import static org.apache.commons.lang.StringUtils.isEmpty;
-
 @Component
 public class S3Service {
 
@@ -24,14 +22,11 @@ public class S3Service {
 
     private final String signedDocBucketName;
 
-    private final String signedDocStoragePrefix;
 
     public S3Service(S3Client s3Client,
-                     @Value("${environment.signed.doc.bucket.name}") String signedDocBucketName,
-                     @Value("${environment.signed.doc.storage.prefix}") String signedDocStoragePrefix) {
+                     @Value("${environment.signed.doc.bucket.name}") String signedDocBucketName) {
         this.s3Client = s3Client;
         this.signedDocBucketName = signedDocBucketName;
-        this.signedDocStoragePrefix = signedDocStoragePrefix;
     }
 
     /**
@@ -55,17 +50,15 @@ public class S3Service {
 
     /**
      * Writes the (signed) document content provided to a specific location in a specific S3 bucket.
-     * The bucket name is obtained from configuration. The location (S3 key) is derived from configuration, the folder
-     * name and the filename.
+     * The bucket name is obtained from configuration. The location (S3 key) is derived from the folder
+     * name (effectively a path) and the filename.
      * @param signedDocument byte array containing the signed document content
      * @param folderName the name of the folder within which the document will be stored in the S3 bucket
      * @param fileName the name given to the file stored in the S3 bucket
      * @return the location of signed document is stored in S3, as an object URL string
      */
     public String storeSignedDocument(final byte[] signedDocument, final String folderName, final String fileName) {
-        final var filePath = isEmpty(signedDocStoragePrefix) ?
-                folderName + DIRECTORY_SEPARATOR + fileName :
-                signedDocStoragePrefix + DIRECTORY_SEPARATOR + folderName + DIRECTORY_SEPARATOR +  fileName;
+        final var filePath = folderName + DIRECTORY_SEPARATOR + fileName;
         final var putObjectRequest = PutObjectRequest.builder()
                 .bucket(signedDocBucketName)
                 .key(filePath)
