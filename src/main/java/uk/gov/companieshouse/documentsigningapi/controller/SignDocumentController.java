@@ -54,16 +54,15 @@ public class SignDocumentController {
             final ResponseInputStream<GetObjectResponse> unsignedDoc =
                 s3Service.retrieveUnsignedDocument(unsignedDocumentLocation);
 
+            // TODO DCAC-94 Provide temporary means of viewing resulting PDF?
             final byte[] signedPDF = signingService.signPDF(unsignedDoc);
 
             // Note this is just returning the location of the unsigned document for now.
-            final SignPdfResponseDTO signPdfResponseDTO = new SignPdfResponseDTO();
+            final var signPdfResponseDTO = new SignPdfResponseDTO();
             signPdfResponseDTO.setSignedDocumentLocation(unsignedDocumentLocation);
             map.put(SIGN_PDF_RESPONSE, signPdfResponseDTO);
             logger.getLogger().info("signPdf(" + signPdfRequestDTO + ") returning " + signPdfResponseDTO + ")", map);
-
-            // Note currently returning signedPDF bytes as response which can be saved as a PDF
-            return ResponseEntity.status(CREATED).body(signedPDF);
+            return ResponseEntity.status(CREATED).body(signPdfResponseDTO);
         } catch (URISyntaxException use) {
             final ResponseEntity<Object> response = ResponseEntity.status(BAD_REQUEST).body(use.getMessage());
             map.put(SIGN_PDF_RESPONSE, response);

@@ -2,6 +2,9 @@ package uk.gov.companieshouse.documentsigningapi.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.Rule;
+import org.junit.contrib.java.lang.system.EnvironmentVariables;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -9,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -25,18 +29,26 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import uk.gov.companieshouse.documentsigningapi.aws.S3Service;
 import uk.gov.companieshouse.documentsigningapi.dto.SignPdfRequestDTO;
 import uk.gov.companieshouse.documentsigningapi.dto.SignPdfResponseDTO;
+import uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker;
+import uk.gov.companieshouse.documentsigningapi.signing.SigningService;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 
+import static java.util.Arrays.stream;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.AWS_REGION;
 
 @AutoConfigureMockMvc
 @Testcontainers
@@ -53,6 +65,23 @@ class SignDocumentControllerIntegrationTest {
             new LocalStackContainer(DockerImageName.parse(LOCALSTACK_IMAGE_NAME))
                     .withServices(LocalStackContainer.Service.S3);
 
+    private static final String TOKEN_VALUE = "token value";
+
+    @Rule
+    private static final EnvironmentVariables ENVIRONMENT_VARIABLES;
+
+    static {
+        ENVIRONMENT_VARIABLES = new EnvironmentVariables();
+        stream(EnvironmentVariablesChecker.RequiredEnvironmentVariables.values()).forEach(variable -> {
+            ENVIRONMENT_VARIABLES.set(variable.getName(), TOKEN_VALUE);
+            if (variable!= AWS_REGION) {
+                ENVIRONMENT_VARIABLES.set(variable.getName(), TOKEN_VALUE);
+            } else {
+                ENVIRONMENT_VARIABLES.set(AWS_REGION.getName(), "eu-west-2");
+            }
+        });
+    }
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -61,6 +90,12 @@ class SignDocumentControllerIntegrationTest {
 
     @Autowired
     private S3Client s3Client;
+
+    @Autowired
+    private S3Service s3Service;
+
+    @MockBean
+    private SigningService signingService;
 
     @TestConfiguration
     public static class Config {
@@ -88,6 +123,15 @@ class SignDocumentControllerIntegrationTest {
         setUpUnsignedDocumentInBucket();
     }
 
+    @AfterAll
+    static void tearDown() {
+        final String[] AllEnvironmentVariableNames =
+                Arrays.stream(EnvironmentVariablesChecker.RequiredEnvironmentVariables.class.getEnumConstants())
+                        .map(Enum::name)
+                        .toArray(String[]::new);
+        ENVIRONMENT_VARIABLES.clear(AllEnvironmentVariableNames);
+    }
+
     @Test
     @DisplayName("signPdf returns the signed document location")
     void signPdfReturnsSignedDocumentLocation() throws Exception {
@@ -96,6 +140,11 @@ class SignDocumentControllerIntegrationTest {
         // It seems that LocalStack S3 is somewhat region-agnostic.
         final String unsignedDocumentLocation =
                 "https://" + BUCKET_NAME + ".s3.eu-west-2.amazonaws.com/" + UNSIGNED_DOCUMENT_NAME;
+
+        final var pdf = s3Service.retrieveUnsignedDocument(unsignedDocumentLocation);
+
+        when(signingService.signPDF(any())).thenReturn(pdf.readAllBytes());
+
         signPdfRequestDTO.setDocumentLocation(unsignedDocumentLocation);
         signPdfRequestDTO.setDocumentType("certified-copy");
         signPdfRequestDTO.setSignatureOptions(List.of("cover-sheet"));
