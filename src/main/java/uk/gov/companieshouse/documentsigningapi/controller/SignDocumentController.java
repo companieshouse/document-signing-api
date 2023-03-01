@@ -22,6 +22,9 @@ import uk.gov.companieshouse.documentsigningapi.exception.DocumentUnavailableExc
 import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
 import uk.gov.companieshouse.documentsigningapi.signing.SigningService;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Map;
 
@@ -54,8 +57,10 @@ public class SignDocumentController {
             final ResponseInputStream<GetObjectResponse> unsignedDoc =
                 s3Service.retrieveUnsignedDocument(unsignedDocumentLocation);
 
-            // TODO DCAC-94 Provide temporary means of viewing resulting PDF?
             final byte[] signedPDF = signingService.signPDF(unsignedDoc);
+
+            // TODO DCAC-94 Remove this temporary means of viewing resulting PDF.
+            // savePdfForViewingLocally(signedPDF);
 
             // Note this is just returning the location of the unsigned document for now.
             final var signPdfResponseDTO = new SignPdfResponseDTO();
@@ -78,6 +83,17 @@ public class SignDocumentController {
             map.put(SIGN_PDF_RESPONSE, response);
             logger.getLogger().error(SIGN_PDF_ERROR_PREFIX + e.getMessage() , map);
             return response;
+        }
+    }
+
+    private void savePdfForViewingLocally(final byte[] pdf) {
+        try {
+            final var fos = new FileOutputStream(new File("/app/pdfs/pdf.pdf"));
+            fos.write(pdf);
+            fos.close();
+        } catch (IOException e) {
+            // temporary code
+            throw new RuntimeException(e);
         }
     }
 
