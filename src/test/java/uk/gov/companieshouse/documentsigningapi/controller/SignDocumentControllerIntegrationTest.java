@@ -42,6 +42,7 @@ import java.util.List;
 
 import static java.util.Arrays.stream;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
 import static org.mockito.ArgumentMatchers.any;
@@ -56,7 +57,8 @@ import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVa
 class SignDocumentControllerIntegrationTest {
 
     private static final String LOCALSTACK_IMAGE_NAME = "localstack/localstack:1.4";
-    private static final String BUCKET_NAME = "document-api-images-cidev";
+    private static final String UNSIGNED_BUCKET_NAME = "document-api-images-cidev";
+    private static final String SIGNED_BUCKET_NAME = "document-signing-api";
     private static final String UNSIGNED_DOCUMENT_NAME = "9616659670.pdf";
     private static final String UNKNOWN_UNSIGNED_DOCUMENT_NAME = "UNKNOWN.pdf";
 
@@ -121,6 +123,7 @@ class SignDocumentControllerIntegrationTest {
     @BeforeEach
     void setUp() {
         setUpUnsignedDocumentInBucket();
+        setUpSignedDocumentBucket();
     }
 
     @AfterAll
@@ -139,7 +142,7 @@ class SignDocumentControllerIntegrationTest {
         final SignPdfRequestDTO signPdfRequestDTO = new SignPdfRequestDTO();
         // It seems that LocalStack S3 is somewhat region-agnostic.
         final String unsignedDocumentLocation =
-                "https://" + BUCKET_NAME + ".s3.eu-west-2.amazonaws.com/" + UNSIGNED_DOCUMENT_NAME;
+                "https://" + UNSIGNED_BUCKET_NAME + ".s3.eu-west-2.amazonaws.com/" + UNSIGNED_DOCUMENT_NAME;
 
         final var pdf = s3Service.retrieveUnsignedDocument(unsignedDocumentLocation);
 
@@ -155,7 +158,8 @@ class SignDocumentControllerIntegrationTest {
                 .andExpect(status().isCreated());
         
         final SignPdfResponseDTO signPdfResponseDTO = getResponseDTO(resultActions);
-        assertThat(signPdfResponseDTO.getSignedDocumentLocation(), is(unsignedDocumentLocation));
+        assertThat(signPdfResponseDTO.getSignedDocumentLocation(),
+                containsString("/document-signing-api/signed-document.pdf"));
     }
 
     @Test
@@ -165,7 +169,7 @@ class SignDocumentControllerIntegrationTest {
         final SignPdfRequestDTO signPdfRequestDTO = new SignPdfRequestDTO();
         // It seems that LocalStack S3 is somewhat region-agnostic.
         final String unsignedDocumentLocation =
-                "https:// " + BUCKET_NAME + ".s3.eu-west-2.amazonaws.com/" + UNSIGNED_DOCUMENT_NAME;
+                "https:// " + UNSIGNED_BUCKET_NAME + ".s3.eu-west-2.amazonaws.com/" + UNSIGNED_DOCUMENT_NAME;
         signPdfRequestDTO.setDocumentLocation(unsignedDocumentLocation);
         signPdfRequestDTO.setDocumentType("certified-copy");
         signPdfRequestDTO.setSignatureOptions(List.of("cover-sheet"));
@@ -187,7 +191,7 @@ class SignDocumentControllerIntegrationTest {
         final SignPdfRequestDTO signPdfRequestDTO = new SignPdfRequestDTO();
         // It seems that LocalStack S3 is somewhat region-agnostic.
         final String unsignedDocumentLocation =
-                "https://" + BUCKET_NAME + ".s3.eu-west-2.amazonaws.com/" + UNKNOWN_UNSIGNED_DOCUMENT_NAME;
+                "https://" + UNSIGNED_BUCKET_NAME + ".s3.eu-west-2.amazonaws.com/" + UNKNOWN_UNSIGNED_DOCUMENT_NAME;
         signPdfRequestDTO.setDocumentLocation(unsignedDocumentLocation);
         signPdfRequestDTO.setDocumentType("certified-copy");
         signPdfRequestDTO.setSignatureOptions(List.of("cover-sheet"));
@@ -206,15 +210,23 @@ class SignDocumentControllerIntegrationTest {
     private void setUpUnsignedDocumentInBucket() {
         final var request =
                 CreateBucketRequest.builder()
-                        .bucket(BUCKET_NAME)
+                        .bucket(UNSIGNED_BUCKET_NAME)
                         .build();
         s3Client.createBucket(request);
         final var request2 = PutObjectRequest.builder()
-                .bucket(BUCKET_NAME)
+                .bucket(UNSIGNED_BUCKET_NAME)
                 .key(UNSIGNED_DOCUMENT_NAME)
                 .contentType(MediaType.APPLICATION_PDF.toString())
                 .build();
         s3Client.putObject(request2, Path.of("src/test/resources/" + UNSIGNED_DOCUMENT_NAME));
+    }
+
+    private void setUpSignedDocumentBucket() {
+        final var request =
+                CreateBucketRequest.builder()
+                        .bucket(SIGNED_BUCKET_NAME)
+                        .build();
+        s3Client.createBucket(request);
     }
 
     private SignPdfResponseDTO getResponseDTO(final ResultActions resultActions)

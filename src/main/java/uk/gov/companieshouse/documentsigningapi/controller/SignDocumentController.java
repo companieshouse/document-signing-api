@@ -1,11 +1,5 @@
 package uk.gov.companieshouse.documentsigningapi.controller;
 
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
-import static uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils.SIGN_PDF_REQUEST;
-import static uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils.SIGN_PDF_RESPONSE;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,11 +16,14 @@ import uk.gov.companieshouse.documentsigningapi.exception.DocumentUnavailableExc
 import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
 import uk.gov.companieshouse.documentsigningapi.signing.SigningService;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Map;
+
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils.SIGN_PDF_REQUEST;
+import static uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils.SIGN_PDF_RESPONSE;
 
 @RestController
 public class SignDocumentController {
@@ -53,18 +50,13 @@ public class SignDocumentController {
         final Map<String, Object> map = logger.createLogMap();
         map.put(SIGN_PDF_REQUEST, signPdfRequestDTO);
         try {
-
             final ResponseInputStream<GetObjectResponse> unsignedDoc =
                 s3Service.retrieveUnsignedDocument(unsignedDocumentLocation);
-
             final byte[] signedPDF = signingService.signPDF(unsignedDoc);
+            final String signedDocumentLocation = s3Service.storeSignedDocument(signedPDF);
 
-            // TODO DCAC-94 Remove this temporary means of viewing resulting PDF.
-            // savePdfForViewingLocally(signedPDF);
-
-            // Note this is just returning the location of the unsigned document for now.
             final var signPdfResponseDTO = new SignPdfResponseDTO();
-            signPdfResponseDTO.setSignedDocumentLocation(unsignedDocumentLocation);
+            signPdfResponseDTO.setSignedDocumentLocation(signedDocumentLocation);
             map.put(SIGN_PDF_RESPONSE, signPdfResponseDTO);
             logger.getLogger().info("signPdf(" + signPdfRequestDTO + ") returning " + signPdfResponseDTO + ")", map);
             return ResponseEntity.status(CREATED).body(signPdfResponseDTO);
@@ -83,17 +75,6 @@ public class SignDocumentController {
             map.put(SIGN_PDF_RESPONSE, response);
             logger.getLogger().error(SIGN_PDF_ERROR_PREFIX + e.getMessage() , map);
             return response;
-        }
-    }
-
-    private void savePdfForViewingLocally(final byte[] pdf) {
-        try {
-            final var fos = new FileOutputStream(new File("/app/pdfs/pdf.pdf"));
-            fos.write(pdf);
-            fos.close();
-        } catch (IOException e) {
-            // temporary code
-            throw new RuntimeException(e);
         }
     }
 
