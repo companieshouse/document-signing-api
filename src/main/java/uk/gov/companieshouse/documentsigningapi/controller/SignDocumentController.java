@@ -54,6 +54,7 @@ public class SignDocumentController {
             final ResponseInputStream<GetObjectResponse> unsignedDoc =
                 s3Service.retrieveUnsignedDocument(unsignedDocumentLocation);
 
+            // TODO this pdf will later be stored in s3
             final byte[] signedPDF = signingService.signPDF(unsignedDoc);
 
             // Note this is just returning the location of the unsigned document for now.
@@ -61,9 +62,7 @@ public class SignDocumentController {
             signPdfResponseDTO.setSignedDocumentLocation(unsignedDocumentLocation);
             map.put(SIGN_PDF_RESPONSE, signPdfResponseDTO);
             logger.getLogger().info("signPdf(" + signPdfRequestDTO + ") returning " + signPdfResponseDTO + ")", map);
-
-            // Note currently returning signedPDF bytes as response which can be saved as a PDF
-            return ResponseEntity.status(CREATED).body(signedPDF);
+            return ResponseEntity.status(CREATED).body(signPdfResponseDTO);
         } catch (URISyntaxException use) {
             final ResponseEntity<Object> response = ResponseEntity.status(BAD_REQUEST).body(use.getMessage());
             map.put(SIGN_PDF_RESPONSE, response);

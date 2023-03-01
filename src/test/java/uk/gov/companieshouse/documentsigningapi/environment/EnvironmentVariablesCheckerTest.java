@@ -1,5 +1,17 @@
 package uk.gov.companieshouse.documentsigningapi.environment;
 
+import static java.util.Arrays.stream;
+import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.AWS_ACCESS_KEY_ID;
+import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.AWS_REGION;
+import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.AWS_SECRET_ACCESS_KEY;
+import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.AWS_SESSION_TOKEN;
+import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.CERTIFICATE_ALIAS;
+import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.KEYSTORE_PASSWORD;
+import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.KEYSTORE_PATH;
+import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.KEYSTORE_TYPE;
+
 import org.junit.Rule;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.junit.jupiter.api.AfterEach;
@@ -10,14 +22,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import software.amazon.awssdk.services.s3.S3Client;
 
 import java.util.Arrays;
-
-import static java.util.Arrays.stream;
-import static org.junit.Assert.assertTrue;
-import static org.junit.jupiter.api.Assertions.*;
-import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.AWS_ACCESS_KEY_ID;
-import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.AWS_REGION;
-import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.AWS_SECRET_ACCESS_KEY;
-import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.AWS_SESSION_TOKEN;
 
 @SpringBootTest
 class EnvironmentVariablesCheckerTest {
@@ -71,6 +75,30 @@ class EnvironmentVariablesCheckerTest {
     @Test
     void checkEnvironmentVariablesAllPresentReturnsFalseIfSessionTokenMissing() {
         populateAllVariablesExceptOneAndAssertSomethingMissing(AWS_SESSION_TOKEN);
+    }
+
+    @DisplayName("returns false if KEYSTORE_TYPE is missing")
+    @Test
+    void checkEnvironmentVariablesAllPresentReturnsFalseIfKeystoreTypeMissing() {
+        populateAllVariablesExceptOneAndAssertSomethingMissing(KEYSTORE_TYPE);
+    }
+
+    @DisplayName("returns false if KEYSTORE_PATH is missing")
+    @Test
+    void checkEnvironmentVariablesAllPresentReturnsFalseIfKeystorePathMissing() {
+        populateAllVariablesExceptOneAndAssertSomethingMissing(KEYSTORE_PATH);
+    }
+
+    @DisplayName("returns false if KEYSTORE_PASSWORD is missing")
+    @Test
+    void checkEnvironmentVariablesAllPresentReturnsFalseIfKeystorePasswordMissing() {
+        populateAllVariablesExceptOneAndAssertSomethingMissing(KEYSTORE_PASSWORD);
+    }
+
+    @DisplayName("returns false if CERTIFICATE_ALIAS is missing")
+    @Test
+    void checkEnvironmentVariablesAllPresentReturnsFalseIfCertificateAliasMissing() {
+        populateAllVariablesExceptOneAndAssertSomethingMissing(CERTIFICATE_ALIAS);
     }
 
     private void populateAllVariablesExceptOneAndAssertSomethingMissing(
