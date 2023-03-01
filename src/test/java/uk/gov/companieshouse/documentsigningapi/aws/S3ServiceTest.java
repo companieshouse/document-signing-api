@@ -82,39 +82,15 @@ class S3ServiceTest {
     }
 
     @Test
-    @DisplayName("storeSignedDocument stores signed document without prefix")
-    void storesSignedDocumentWithoutPrefix() {
-        final S3Service serviceUnderTest = new S3Service(s3Client, "bucket", null);
-        when(s3Client.utilities()).thenReturn(s3Utilities);
-        when(s3Utilities.getUrl(any(GetUrlRequest.class))).thenReturn(signedDocumentLocationUrl);
-
-        serviceUnderTest.storeSignedDocument(new byte[]{}, "folder", "file");
-
-        verifySignedDocumentWrittenToBucketAndFilepath("bucket", "folder/file");
-    }
-
-    @Test
-    @DisplayName("storeSignedDocument stores signed document with prefix")
-    void storesSignedDocumentWithPrefix() {
-        final S3Service serviceUnderTest = new S3Service(s3Client, "bucket", "prefix");
-        when(s3Client.utilities()).thenReturn(s3Utilities);
-        when(s3Utilities.getUrl(any(GetUrlRequest.class))).thenReturn(signedDocumentLocationUrl);
-
-        serviceUnderTest.storeSignedDocument(new byte[]{}, "folder", "file");
-
-        verifySignedDocumentWrittenToBucketAndFilepath("bucket", "prefix/folder/file");
-    }
-
-    @Test
     @DisplayName("storeSignedDocument stores signed document in named bucket")
     void storesSignedDocumentInNamedBucket() {
-        final S3Service serviceUnderTest = new S3Service(s3Client, "another-bucket", "prefix");
+        final S3Service serviceUnderTest = new S3Service(s3Client, "bucket");
         when(s3Client.utilities()).thenReturn(s3Utilities);
         when(s3Utilities.getUrl(any(GetUrlRequest.class))).thenReturn(signedDocumentLocationUrl);
 
-        serviceUnderTest.storeSignedDocument(new byte[]{}, "folder", "file");
+        serviceUnderTest.storeSignedDocument(new byte[]{}, "prefix/folder", "file");
 
-        verifySignedDocumentWrittenToBucketAndFilepath("another-bucket", "prefix/folder/file");
+        verifySignedDocumentWrittenToBucketAndFilepath("bucket", "prefix/folder/file");
     }
 
     private void verifySignedDocumentWrittenToBucketAndFilepath(final String expectedBucketName, final String expectedFilePath) {

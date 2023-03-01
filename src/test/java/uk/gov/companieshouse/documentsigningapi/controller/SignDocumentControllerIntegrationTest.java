@@ -85,7 +85,6 @@ class SignDocumentControllerIntegrationTest {
                     break;
             }
         });
-        ENVIRONMENT_VARIABLES.set("SIGNED_DOC_STORAGE_PREFIX", SIGNED_DOC_STORAGE_PREFIX);
     }
 
     @Autowired
@@ -252,7 +251,7 @@ class SignDocumentControllerIntegrationTest {
         signPdfRequestDTO.setDocumentLocation(unsignedDocumentLocation);
         signPdfRequestDTO.setDocumentType(CERTIFIED_COPY_DOCUMENT_TYPE);
         signPdfRequestDTO.setSignatureOptions(SIGNATURE_OPTIONS);
-        signPdfRequestDTO.setFolderName(FOLDER_NAME);
+        signPdfRequestDTO.setFolderName(SIGNED_DOC_STORAGE_PREFIX + "/" + FOLDER_NAME);
         signPdfRequestDTO.setFilename(SIGNED_DOCUMENT_FILENAME);
         return signPdfRequestDTO;
     }

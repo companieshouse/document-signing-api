@@ -23,7 +23,6 @@ The supported environmental variables have been categorised by use case and are 
 | AWS_SECRET_ACCESS_KEY     | Part of temporary AWS credentials.                           | √         | N/A     | `UgO8...`              |
 | AWS_SESSION_TOKEN         | Part of temporary AWS credentials.                           | √         | N/A     | `IQoJ...`              |
 | SIGNED_DOC_BUCKET_NAME    | The name of the S3 bucket used for storing signed documents. | √         | N/A     | `document-signing-api` | 
-| SIGNED_DOC_STORAGE_PREFIX | The prefix used for storing signed documents in S3.          | X         | N/A     | `cidev`                |
 
 ## Endpoints
 | Path                           | Method | Description                                                         |
