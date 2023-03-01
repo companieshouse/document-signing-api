@@ -16,12 +16,13 @@ In order to build document-generator locally you will need the following:
 The supported environmental variables have been categorised by use case and are as follows.
 
 ### Deployment Variables
-| Name                  | Description                        | Mandatory | Default | Example     |
-|-----------------------|------------------------------------|-----------|---------|-------------|
-| AWS_REGION            | AWS region                         | √         | N/A     | `eu-west-2` |
-| AWS_ACCESS_KEY_ID     | Part of temporary AWS credentials. | √         | N/A     | `ASIA...`   |
-| AWS_SECRET_ACCESS_KEY | Part of temporary AWS credentials. | √         | N/A     | `UgO8...`   |
-| AWS_SESSION_TOKEN     | Part of temporary AWS credentials. | √         | N/A     | `IQoJ...`   |
+| Name                      | Description                                          | Mandatory | Default | Example     |
+|---------------------------|------------------------------------------------------|-----------|---------|-------------|
+| AWS_REGION                | AWS region                                           | √         | N/A     | `eu-west-2` |
+| AWS_ACCESS_KEY_ID         | Part of temporary AWS credentials.                   | √         | N/A     | `ASIA...`   |
+| AWS_SECRET_ACCESS_KEY     | Part of temporary AWS credentials.                   | √         | N/A     | `UgO8...`   |
+| AWS_SESSION_TOKEN         | Part of temporary AWS credentials.                   | √         | N/A     | `IQoJ...`   |
+| SIGNED_DOC_STORAGE_PREFIX | The prefix used for storing signed documents in S3.  | X         | N/A     | `cidev`     |
 
 ## Endpoints
 | Path                           | Method | Description                                                         |
