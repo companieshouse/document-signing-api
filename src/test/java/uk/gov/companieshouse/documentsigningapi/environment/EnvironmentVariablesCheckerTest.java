@@ -71,6 +71,12 @@ class EnvironmentVariablesCheckerTest {
         populateAllVariablesExceptOneAndAssertSomethingMissing(AWS_SECRET_ACCESS_KEY);
     }
 
+    @DisplayName("returns false if AWS_SESSION_TOKEN is missing")
+    @Test
+    void checkEnvironmentVariablesAllPresentReturnsFalseIfSessionTokenMissing() {
+        populateAllVariablesExceptOneAndAssertSomethingMissing(AWS_SESSION_TOKEN);
+    }
+
     @DisplayName("returns false if KEYSTORE_TYPE is missing")
     @Test
     void checkEnvironmentVariablesAllPresentReturnsFalseIfKeystoreTypeMissing() {
@@ -99,12 +105,6 @@ class EnvironmentVariablesCheckerTest {
     @Test
     void checkEnvironmentVariablesAllPresentReturnsFalseIfSignedDocBucketNameMissing() {
         populateAllVariablesExceptOneAndAssertSomethingMissing(SIGNED_DOC_BUCKET_NAME);
-    }
-
-    @DisplayName("returns false if AWS_SESSION_TOKEN is missing")
-    @Test
-    void checkEnvironmentVariablesAllPresentReturnsFalseIfSessionTokenMissing() {
-        populateAllVariablesExceptOneAndAssertSomethingMissing(AWS_SESSION_TOKEN);
     }
 
     private void populateAllVariablesExceptOneAndAssertSomethingMissing(
