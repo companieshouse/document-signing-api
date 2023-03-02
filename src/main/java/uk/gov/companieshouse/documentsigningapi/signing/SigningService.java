@@ -78,7 +78,7 @@ public class SigningService {
         } catch (NoSuchAlgorithmException | CertificateException | UnrecoverableKeyException | KeyStoreException e) {
             throw new DocumentSigningException("Failed to obtain proper KeyStore or Certificate", e);
         } catch (IOException e) {
-            throw new DocumentUnavailableException("Failed to obtain proper KeyStore or Certificate", e);
+            throw new DocumentUnavailableException("Unable to load Keystore or Certificate", e);
         }
     }
 
