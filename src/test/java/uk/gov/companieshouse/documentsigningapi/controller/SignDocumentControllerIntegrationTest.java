@@ -27,6 +27,7 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import uk.gov.companieshouse.documentsigningapi.dto.SignPdfRequestDTO;
 import uk.gov.companieshouse.documentsigningapi.dto.SignPdfResponseDTO;
@@ -55,6 +56,10 @@ class SignDocumentControllerIntegrationTest {
     private static final String SIGNED_BUCKET_NAME = "document-signing-api";
     private static final String UNSIGNED_DOCUMENT_NAME = "9616659670.pdf";
     private static final String UNKNOWN_UNSIGNED_DOCUMENT_NAME = "UNKNOWN.pdf";
+    private static final String CERTIFIED_COPY_DOCUMENT_TYPE = "certified-copy";
+    private static final List<String> SIGNATURE_OPTIONS = List.of("cover-sheet");
+    public static final String FOLDER_NAME = "certified-copy-folder";
+    public static final String SIGNED_DOCUMENT_FILENAME = "CCD-123456-123456.pdf";
 
     @Container
     private static final LocalStackContainer localStackContainer =
@@ -138,10 +143,10 @@ class SignDocumentControllerIntegrationTest {
                 "https://" + UNSIGNED_BUCKET_NAME + ".s3.eu-west-2.amazonaws.com/" + UNSIGNED_DOCUMENT_NAME;
 
         signPdfRequestDTO.setDocumentLocation(unsignedDocumentLocation);
-        signPdfRequestDTO.setDocumentType("certified-copy");
-        signPdfRequestDTO.setSignatureOptions(List.of("cover-sheet"));
-        signPdfRequestDTO.setFolderName("certified-copy");
-        signPdfRequestDTO.setFilename("CCD-123456-123456.pdf");
+        signPdfRequestDTO.setDocumentType(CERTIFIED_COPY_DOCUMENT_TYPE);
+        signPdfRequestDTO.setSignatureOptions(SIGNATURE_OPTIONS);
+        signPdfRequestDTO.setFolderName(FOLDER_NAME);
+        signPdfRequestDTO.setFilename(SIGNED_DOCUMENT_FILENAME);
 
         final ResultActions resultActions = mockMvc.perform(post("/document-signing/sign-pdf")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -150,7 +155,9 @@ class SignDocumentControllerIntegrationTest {
         
         final SignPdfResponseDTO signPdfResponseDTO = getResponseDTO(resultActions);
         assertThat(signPdfResponseDTO.getSignedDocumentLocation(),
-                containsString("/document-signing-api/certified-copy/CCD-123456-123456.pdf"));
+                containsString("/" + SIGNED_BUCKET_NAME + "/" + FOLDER_NAME + "/" + SIGNED_DOCUMENT_FILENAME));
+
+        verifySignedDocStoredInExpectedLocation(SIGNED_BUCKET_NAME, FOLDER_NAME, SIGNED_DOCUMENT_FILENAME);
     }
 
     @Test
@@ -162,10 +169,10 @@ class SignDocumentControllerIntegrationTest {
         final String unsignedDocumentLocation =
                 "https:// " + UNSIGNED_BUCKET_NAME + ".s3.eu-west-2.amazonaws.com/" + UNSIGNED_DOCUMENT_NAME;
         signPdfRequestDTO.setDocumentLocation(unsignedDocumentLocation);
-        signPdfRequestDTO.setDocumentType("certified-copy");
-        signPdfRequestDTO.setSignatureOptions(List.of("cover-sheet"));
-        signPdfRequestDTO.setFolderName("certified-copy");
-        signPdfRequestDTO.setFilename("CCD-123456-123456.pdf");
+        signPdfRequestDTO.setDocumentType(CERTIFIED_COPY_DOCUMENT_TYPE);
+        signPdfRequestDTO.setSignatureOptions(SIGNATURE_OPTIONS);
+        signPdfRequestDTO.setFolderName(FOLDER_NAME);
+        signPdfRequestDTO.setFilename(SIGNED_DOCUMENT_FILENAME);
 
         final ResultActions resultActions = mockMvc.perform(post("/document-signing/sign-pdf")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -186,10 +193,10 @@ class SignDocumentControllerIntegrationTest {
         final String unsignedDocumentLocation =
                 "https://" + UNSIGNED_BUCKET_NAME + ".s3.eu-west-2.amazonaws.com/" + UNKNOWN_UNSIGNED_DOCUMENT_NAME;
         signPdfRequestDTO.setDocumentLocation(unsignedDocumentLocation);
-        signPdfRequestDTO.setDocumentType("certified-copy");
-        signPdfRequestDTO.setSignatureOptions(List.of("cover-sheet"));
-        signPdfRequestDTO.setFolderName("certified-copy");
-        signPdfRequestDTO.setFilename("CCD-123456-123456.pdf");
+        signPdfRequestDTO.setDocumentType(CERTIFIED_COPY_DOCUMENT_TYPE);
+        signPdfRequestDTO.setSignatureOptions(SIGNATURE_OPTIONS);
+        signPdfRequestDTO.setFolderName(FOLDER_NAME);
+        signPdfRequestDTO.setFilename(SIGNED_DOCUMENT_FILENAME);
 
         final ResultActions resultActions = mockMvc.perform(post("/document-signing/sign-pdf")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -230,6 +237,18 @@ class SignDocumentControllerIntegrationTest {
         final MockHttpServletResponse response = result.getResponse();
         final String contentAsString = response.getContentAsString();
         return mapper.readValue(contentAsString, SignPdfResponseDTO.class);
+    }
+
+    private void verifySignedDocStoredInExpectedLocation(final String bucketName,
+                                                        final String folderName,
+                                                        final String filename) {
+        final GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                .bucket(bucketName)
+                .key(folderName + "/" + filename)
+                .build();
+        var s3Response = s3Client.getObject(getObjectRequest);
+        var isOk = s3Response.response().sdkHttpResponse().isSuccessful();
+        assertThat(isOk, is(true));
     }
 
 }
