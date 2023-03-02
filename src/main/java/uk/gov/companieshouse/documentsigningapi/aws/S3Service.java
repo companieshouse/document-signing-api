@@ -41,11 +41,11 @@ public class S3Service {
         return s3Client.getObject(getObjectRequest);
     }
 
-    public String storeSignedDocument(final byte[] signedDocument) {
+    public String storeSignedDocument(final byte[] signedDocument, final String folderName, final String fileName) {
         final var bucketName = "document-signing-api";
-        final var fileName = "signed-document.pdf";
         final var filePath = isEmpty(signedDocStoragePrefix) ?
-                fileName : signedDocStoragePrefix + DIRECTORY_SEPARATOR + fileName;
+                folderName + DIRECTORY_SEPARATOR + fileName :
+                signedDocStoragePrefix + DIRECTORY_SEPARATOR + folderName + DIRECTORY_SEPARATOR +  fileName;
         final var putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucketName)
                 .key(filePath)
