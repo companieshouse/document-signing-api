@@ -14,9 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -58,6 +56,7 @@ class SignDocumentControllerIntegrationTest {
     private static final String UNKNOWN_UNSIGNED_DOCUMENT_NAME = "UNKNOWN.pdf";
     private static final String CERTIFIED_COPY_DOCUMENT_TYPE = "certified-copy";
     private static final List<String> SIGNATURE_OPTIONS = List.of("cover-sheet");
+    public static final String SIGNED_DOC_STORAGE_PREFIX = "cidev";
     public static final String FOLDER_NAME = "certified-copy-folder";
     public static final String SIGNED_DOCUMENT_FILENAME = "CCD-123456-123456.pdf";
 
@@ -86,6 +85,7 @@ class SignDocumentControllerIntegrationTest {
                     break;
             }
         });
+        ENVIRONMENT_VARIABLES.set("SIGNED_DOC_STORAGE_PREFIX", SIGNED_DOC_STORAGE_PREFIX);
     }
 
     @Autowired
@@ -134,52 +134,47 @@ class SignDocumentControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("signPdf returns the signed document location")
+    @DisplayName("signPdf returns the signed document location and stores signed document there")
     void signPdfReturnsSignedDocumentLocation() throws Exception {
 
-        final SignPdfRequestDTO signPdfRequestDTO = new SignPdfRequestDTO();
         // It seems that LocalStack S3 is somewhat region-agnostic.
-        final String unsignedDocumentLocation =
+        final var unsignedDocumentLocation =
                 "https://" + UNSIGNED_BUCKET_NAME + ".s3.eu-west-2.amazonaws.com/" + UNSIGNED_DOCUMENT_NAME;
+        final var signPdfRequestDTO = createSignPdfRequest(unsignedDocumentLocation);
 
-        signPdfRequestDTO.setDocumentLocation(unsignedDocumentLocation);
-        signPdfRequestDTO.setDocumentType(CERTIFIED_COPY_DOCUMENT_TYPE);
-        signPdfRequestDTO.setSignatureOptions(SIGNATURE_OPTIONS);
-        signPdfRequestDTO.setFolderName(FOLDER_NAME);
-        signPdfRequestDTO.setFilename(SIGNED_DOCUMENT_FILENAME);
-
-        final ResultActions resultActions = mockMvc.perform(post("/document-signing/sign-pdf")
+        final var resultActions = mockMvc.perform(post("/document-signing/sign-pdf")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(signPdfRequestDTO)))
                 .andExpect(status().isCreated());
         
-        final SignPdfResponseDTO signPdfResponseDTO = getResponseDTO(resultActions);
+        final var signPdfResponseDTO = getResponseDTO(resultActions);
         assertThat(signPdfResponseDTO.getSignedDocumentLocation(),
-                containsString("/" + SIGNED_BUCKET_NAME + "/" + FOLDER_NAME + "/" + SIGNED_DOCUMENT_FILENAME));
+                containsString("/" + SIGNED_BUCKET_NAME +
+                                        "/" + SIGNED_DOC_STORAGE_PREFIX +
+                                        "/" + FOLDER_NAME +
+                                        "/" + SIGNED_DOCUMENT_FILENAME));
 
-        verifySignedDocStoredInExpectedLocation(SIGNED_BUCKET_NAME, FOLDER_NAME, SIGNED_DOCUMENT_FILENAME);
+        verifySignedDocStoredInExpectedLocation(SIGNED_BUCKET_NAME,
+                                                SIGNED_DOC_STORAGE_PREFIX,
+                                                FOLDER_NAME,
+                                                SIGNED_DOCUMENT_FILENAME);
     }
 
     @Test
     @DisplayName("signPdf with invalid unsigned document location responds with bad request")
     void signPdfWithInvalidDocumentLocation() throws Exception {
 
-        final SignPdfRequestDTO signPdfRequestDTO = new SignPdfRequestDTO();
         // It seems that LocalStack S3 is somewhat region-agnostic.
-        final String unsignedDocumentLocation =
+        final var unsignedDocumentLocation =
                 "https:// " + UNSIGNED_BUCKET_NAME + ".s3.eu-west-2.amazonaws.com/" + UNSIGNED_DOCUMENT_NAME;
-        signPdfRequestDTO.setDocumentLocation(unsignedDocumentLocation);
-        signPdfRequestDTO.setDocumentType(CERTIFIED_COPY_DOCUMENT_TYPE);
-        signPdfRequestDTO.setSignatureOptions(SIGNATURE_OPTIONS);
-        signPdfRequestDTO.setFolderName(FOLDER_NAME);
-        signPdfRequestDTO.setFilename(SIGNED_DOCUMENT_FILENAME);
+        final var signPdfRequestDTO = createSignPdfRequest(unsignedDocumentLocation);
 
-        final ResultActions resultActions = mockMvc.perform(post("/document-signing/sign-pdf")
+        final var resultActions = mockMvc.perform(post("/document-signing/sign-pdf")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(signPdfRequestDTO)))
                 .andExpect(status().isBadRequest());
 
-        final String body = resultActions.andReturn().getResponse().getContentAsString();
+        final var body = resultActions.andReturn().getResponse().getContentAsString();
         assertThat(body, is("Illegal character in authority at index 8: " +
                 "https:// document-api-images-cidev.s3.eu-west-2.amazonaws.com/9616659670.pdf"));
     }
@@ -188,22 +183,17 @@ class SignDocumentControllerIntegrationTest {
     @DisplayName("signPdf with incorrect unsigned document location responds with not found")
     void signPdfWithUnknownDocumentLocation() throws Exception {
 
-        final SignPdfRequestDTO signPdfRequestDTO = new SignPdfRequestDTO();
         // It seems that LocalStack S3 is somewhat region-agnostic.
-        final String unsignedDocumentLocation =
+        final var unsignedDocumentLocation =
                 "https://" + UNSIGNED_BUCKET_NAME + ".s3.eu-west-2.amazonaws.com/" + UNKNOWN_UNSIGNED_DOCUMENT_NAME;
-        signPdfRequestDTO.setDocumentLocation(unsignedDocumentLocation);
-        signPdfRequestDTO.setDocumentType(CERTIFIED_COPY_DOCUMENT_TYPE);
-        signPdfRequestDTO.setSignatureOptions(SIGNATURE_OPTIONS);
-        signPdfRequestDTO.setFolderName(FOLDER_NAME);
-        signPdfRequestDTO.setFilename(SIGNED_DOCUMENT_FILENAME);
+        final var signPdfRequestDTO = createSignPdfRequest(unsignedDocumentLocation);
 
-        final ResultActions resultActions = mockMvc.perform(post("/document-signing/sign-pdf")
+        final var resultActions = mockMvc.perform(post("/document-signing/sign-pdf")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(signPdfRequestDTO)))
                 .andExpect(status().isNotFound());
 
-        final String body = resultActions.andReturn().getResponse().getContentAsString();
+        final var body = resultActions.andReturn().getResponse().getContentAsString();
         assertThat(body, startsWith("The specified key does not exist. " +
                 "(Service: S3, Status Code: 404, Request ID: 7a62c49f-347e-4fc4-9331-6e8eEXAMPLE, " +
                 "Extended Request ID: "));
@@ -233,22 +223,33 @@ class SignDocumentControllerIntegrationTest {
 
     private SignPdfResponseDTO getResponseDTO(final ResultActions resultActions)
             throws JsonProcessingException, UnsupportedEncodingException {
-        final MvcResult result = resultActions.andReturn();
-        final MockHttpServletResponse response = result.getResponse();
-        final String contentAsString = response.getContentAsString();
+        final var result = resultActions.andReturn();
+        final var response = result.getResponse();
+        final var contentAsString = response.getContentAsString();
         return mapper.readValue(contentAsString, SignPdfResponseDTO.class);
     }
 
     private void verifySignedDocStoredInExpectedLocation(final String bucketName,
-                                                        final String folderName,
-                                                        final String filename) {
-        final GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                                                         final String signedDocStoragePrefix,
+                                                         final String folderName,
+                                                         final String filename) {
+        final var getObjectRequest = GetObjectRequest.builder()
                 .bucket(bucketName)
-                .key(folderName + "/" + filename)
+                .key(signedDocStoragePrefix + "/" + folderName + "/" + filename)
                 .build();
-        var s3Response = s3Client.getObject(getObjectRequest);
-        var isOk = s3Response.response().sdkHttpResponse().isSuccessful();
+        final var s3Response = s3Client.getObject(getObjectRequest);
+        final var isOk = s3Response.response().sdkHttpResponse().isSuccessful();
         assertThat(isOk, is(true));
+    }
+
+    private SignPdfRequestDTO createSignPdfRequest(final String unsignedDocumentLocation) {
+        final var signPdfRequestDTO = new SignPdfRequestDTO();
+        signPdfRequestDTO.setDocumentLocation(unsignedDocumentLocation);
+        signPdfRequestDTO.setDocumentType(CERTIFIED_COPY_DOCUMENT_TYPE);
+        signPdfRequestDTO.setSignatureOptions(SIGNATURE_OPTIONS);
+        signPdfRequestDTO.setFolderName(FOLDER_NAME);
+        signPdfRequestDTO.setFilename(SIGNED_DOCUMENT_FILENAME);
+        return signPdfRequestDTO;
     }
 
 }
