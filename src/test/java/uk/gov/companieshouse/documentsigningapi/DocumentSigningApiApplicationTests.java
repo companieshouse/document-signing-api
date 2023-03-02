@@ -3,7 +3,6 @@ package uk.gov.companieshouse.documentsigningapi;
 import org.junit.Rule;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringApplication;
@@ -25,23 +24,23 @@ class DocumentSigningApiApplicationTests {
 
     private static final String TOKEN_VALUE = "token value";
 
-    @MockBean
-    private S3Client s3Client;
-
     @Rule
-    public EnvironmentVariables environmentVariables = new EnvironmentVariables();
+    private static final EnvironmentVariables ENVIRONMENT_VARIABLES;
 
-    @BeforeEach
-    void setUp() {
+    static {
+        ENVIRONMENT_VARIABLES = new EnvironmentVariables();
         stream(EnvironmentVariablesChecker.RequiredEnvironmentVariables.values()).forEach(variable -> {
-            environmentVariables.set(variable.getName(), TOKEN_VALUE);
+            ENVIRONMENT_VARIABLES.set(variable.getName(), TOKEN_VALUE);
             if (variable!= AWS_REGION) {
-                environmentVariables.set(variable.getName(), TOKEN_VALUE);
+                ENVIRONMENT_VARIABLES.set(variable.getName(), TOKEN_VALUE);
             } else {
-                environmentVariables.set(AWS_REGION.getName(), "eu-west-2");
+                ENVIRONMENT_VARIABLES.set(AWS_REGION.getName(), "eu-west-2");
             }
         });
     }
+
+    @MockBean
+    private S3Client s3Client;
 
     @AfterEach
     void tearDown() {
@@ -49,7 +48,7 @@ class DocumentSigningApiApplicationTests {
                 Arrays.stream(EnvironmentVariablesChecker.RequiredEnvironmentVariables.class.getEnumConstants())
                         .map(Enum::name)
                         .toArray(String[]::new);
-        environmentVariables.clear(AllEnvironmentVariableNames);
+        ENVIRONMENT_VARIABLES.clear(AllEnvironmentVariableNames);
     }
 
     @SuppressWarnings("squid:S2699") // at least one assertion
@@ -76,7 +75,7 @@ class DocumentSigningApiApplicationTests {
     @Test
     void doesNotRunAppWhenRequiredEnvironmentVariableMissing() {
 
-        environmentVariables.clear(AWS_ACCESS_KEY_ID.getName());
+        ENVIRONMENT_VARIABLES.clear(AWS_ACCESS_KEY_ID.getName());
 
         try (final var app = mockStatic(SpringApplication.class)) {
 

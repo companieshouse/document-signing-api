@@ -44,7 +44,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.AWS_REGION;
 
 @AutoConfigureMockMvc
 @Testcontainers
@@ -70,11 +69,16 @@ class SignDocumentControllerIntegrationTest {
     static {
         ENVIRONMENT_VARIABLES = new EnvironmentVariables();
         stream(EnvironmentVariablesChecker.RequiredEnvironmentVariables.values()).forEach(variable -> {
-            ENVIRONMENT_VARIABLES.set(variable.getName(), TOKEN_VALUE);
-            if (variable!= AWS_REGION) {
-                ENVIRONMENT_VARIABLES.set(variable.getName(), TOKEN_VALUE);
-            } else {
-                ENVIRONMENT_VARIABLES.set(AWS_REGION.getName(), "eu-west-2");
+            switch (variable) {
+                case AWS_REGION:
+                    ENVIRONMENT_VARIABLES.set(variable.getName(), "eu-west-2");
+                    break;
+                case SIGNED_DOC_BUCKET_NAME:
+                    ENVIRONMENT_VARIABLES.set(variable.getName(), SIGNED_BUCKET_NAME);
+                    break;
+                default:
+                    ENVIRONMENT_VARIABLES.set(variable.getName(), TOKEN_VALUE);
+                    break;
             }
         });
     }
@@ -136,6 +140,8 @@ class SignDocumentControllerIntegrationTest {
         signPdfRequestDTO.setDocumentLocation(unsignedDocumentLocation);
         signPdfRequestDTO.setDocumentType("certified-copy");
         signPdfRequestDTO.setSignatureOptions(List.of("cover-sheet"));
+        signPdfRequestDTO.setFolderName("certified-copy");
+        signPdfRequestDTO.setFilename("CCD-123456-123456.pdf");
 
         final ResultActions resultActions = mockMvc.perform(post("/document-signing/sign-pdf")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -144,7 +150,7 @@ class SignDocumentControllerIntegrationTest {
         
         final SignPdfResponseDTO signPdfResponseDTO = getResponseDTO(resultActions);
         assertThat(signPdfResponseDTO.getSignedDocumentLocation(),
-                containsString("/document-signing-api/signed-document.pdf"));
+                containsString("/document-signing-api/certified-copy/CCD-123456-123456.pdf"));
     }
 
     @Test
@@ -158,6 +164,8 @@ class SignDocumentControllerIntegrationTest {
         signPdfRequestDTO.setDocumentLocation(unsignedDocumentLocation);
         signPdfRequestDTO.setDocumentType("certified-copy");
         signPdfRequestDTO.setSignatureOptions(List.of("cover-sheet"));
+        signPdfRequestDTO.setFolderName("certified-copy");
+        signPdfRequestDTO.setFilename("CCD-123456-123456.pdf");
 
         final ResultActions resultActions = mockMvc.perform(post("/document-signing/sign-pdf")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -180,6 +188,8 @@ class SignDocumentControllerIntegrationTest {
         signPdfRequestDTO.setDocumentLocation(unsignedDocumentLocation);
         signPdfRequestDTO.setDocumentType("certified-copy");
         signPdfRequestDTO.setSignatureOptions(List.of("cover-sheet"));
+        signPdfRequestDTO.setFolderName("certified-copy");
+        signPdfRequestDTO.setFilename("CCD-123456-123456.pdf");
 
         final ResultActions resultActions = mockMvc.perform(post("/document-signing/sign-pdf")
                         .contentType(MediaType.APPLICATION_JSON)
