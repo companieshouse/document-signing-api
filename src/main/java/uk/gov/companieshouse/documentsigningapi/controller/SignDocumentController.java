@@ -36,6 +36,15 @@ public class SignDocumentController {
         this.s3Service = s3Service;
     }
 
+    /**
+     * Retrieves an unsigned PDF document from the S3 bucket location specified, signs it and stores it.
+     * Stores the signed copy of the PDF document in the configured signed document S3 bucket, under a key (file path)
+     * derived both from configuration and from information in the request body.
+     * @param signPdfRequestDTO {@link SignPdfRequestDTO} specifying the document to be signed and information
+     *                          used to derive the storage location of the signed document
+     * @return {@link ResponseEntity} of {@link Object} containing a status code and the location of the signed PDF
+     * document when successful
+     */
     @PostMapping(SIGN_PDF_URI)
     public ResponseEntity<Object> signPdf(final @RequestBody SignPdfRequestDTO signPdfRequestDTO) {
 
