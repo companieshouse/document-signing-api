@@ -4,10 +4,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.core.exception.SdkServiceException;
-import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import uk.gov.companieshouse.documentsigningapi.aws.S3Service;
 import uk.gov.companieshouse.documentsigningapi.dto.SignPdfRequestDTO;
 import uk.gov.companieshouse.documentsigningapi.dto.SignPdfResponseDTO;
@@ -15,7 +13,6 @@ import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Map;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -42,13 +39,14 @@ public class SignDocumentController {
     @PostMapping(SIGN_PDF_URI)
     public ResponseEntity<Object> signPdf(final @RequestBody SignPdfRequestDTO signPdfRequestDTO) {
 
-        final String unsignedDocumentLocation = signPdfRequestDTO.getDocumentLocation();
-        final Map<String, Object> map = logger.createLogMap();
+        final var unsignedDocumentLocation = signPdfRequestDTO.getDocumentLocation();
+        final var folderName = signPdfRequestDTO.getFolderName();
+        final var filename = signPdfRequestDTO.getFilename();
+        final var map = logger.createLogMap();
         map.put(SIGN_PDF_REQUEST, signPdfRequestDTO);
         try {
-            final ResponseInputStream<GetObjectResponse> unsignedDoc =
-                s3Service.retrieveUnsignedDocument(unsignedDocumentLocation);
-            final String signedDocumentLocation = s3Service.storeSignedDocument(unsignedDoc.readAllBytes());
+            final var unsignedDoc = s3Service.retrieveUnsignedDocument(unsignedDocumentLocation);
+            final var signedDocumentLocation = s3Service.storeSignedDocument(unsignedDoc.readAllBytes(), folderName, filename);
 
             final var signPdfResponseDTO = new SignPdfResponseDTO();
             signPdfResponseDTO.setSignedDocumentLocation(signedDocumentLocation);

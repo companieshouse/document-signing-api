@@ -1,6 +1,6 @@
 {
   "info": {
-    "_postman_id": "d922a2a7-a2e0-497a-a702-9f8cdd6c5b50",
+    "_postman_id": "24acc253-88bc-4836-bf4e-26cfbfa659b2",
     "name": "Document Signing API",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "7646296"
@@ -16,7 +16,63 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"document_location\": \"https://document-api-images-cidev.s3.eu-west-2.amazonaws.com/9616659670.pdf\",\n    \"document_type\": \"certified-copy\",\n    \"signature_options\": [\n        \"cover-sheet\"\n    ]\n}",
+              "raw": "{\n    \"document_location\": \"https://document-api-images-cidev.s3.eu-west-2.amazonaws.com/9616659670.pdf\",\n    \"document_type\": \"certified-copy\",\n    \"signature_options\": [\n        \"cover-sheet\"\n    ],\n    \"folder_name\": \"certified-copy\",\n    \"filename\": \"CCD-123456-123456.pdf\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/document-signing-api/document-signing/sign-pdf",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "document-signing-api",
+                "document-signing",
+                "sign-pdf"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "sign PDF missing folder name",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"document_location\": \"https://document-api-images-cidev.s3.eu-west-2.amazonaws.com/9616659670.pdf\",\n    \"document_type\": \"certified-copy\",\n    \"signature_options\": [\n        \"cover-sheet\"\n    ],\n    \"filename\": \"CCD-123456-123456.pdf\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/document-signing-api/document-signing/sign-pdf",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "document-signing-api",
+                "document-signing",
+                "sign-pdf"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "sign PDF missing filename",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"document_location\": \"https://document-api-images-cidev.s3.eu-west-2.amazonaws.com/9616659670.pdf\",\n    \"document_type\": \"certified-copy\",\n    \"signature_options\": [\n        \"cover-sheet\"\n    ],\n    \"folder_name\": \"certified-copy\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -44,7 +100,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"document_location\": \"https://document-api-images-cidev.s3.eu-west-2.amazonaws.com/9616659670.pdf\",\n    \"signature_options\": [\n        \"cover-sheet\"\n    ]\n}",
+              "raw": "{\n    \"document_location\": \"https://document-api-images-cidev.s3.eu-west-2.amazonaws.com/9616659670.pdf\",\n    \"signature_options\": [\n        \"cover-sheet\"\n    ],\n    \"folder-name\": \"certified-copy\",\n    \"filename\": \"CCD-123456-123456.pdf\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -72,7 +128,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"document_location\": \"https ://document-api-images-cidev.s3.eu-west-2.amazonaws.com/9616659670.pdf\",\n    \"document_type\": \"certified-copy\",\n    \"signature_options\": [\n        \"cover-sheet\"\n    ]\n}",
+              "raw": "{\n    \"document_location\": \"https ://document-api-images-cidev.s3.eu-west-2.amazonaws.com/9616659670.pdf\",\n    \"document_type\": \"certified-copy\",\n    \"signature_options\": [\n        \"cover-sheet\"\n    ],\n    \"folder_name\": \"certified-copy\",\n    \"filename\": \"CCD-123456-123456.pdf\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -100,7 +156,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"document_location\": \"https://document-api-images-cidev.s3.eu-west-2.amazonaws.com/NOT_FOUND.pdf\",\n    \"document_type\": \"certified-copy\",\n    \"signature_options\": [\n        \"cover-sheet\"\n    ]\n}",
+              "raw": "{\n    \"document_location\": \"https://document-api-images-cidev.s3.eu-west-2.amazonaws.com/NOT_FOUND.pdf\",\n    \"document_type\": \"certified-copy\",\n    \"signature_options\": [\n        \"cover-sheet\"\n    ],\n    \"folder_name\": \"certified-copy\",\n    \"filename\": \"CCD-123456-123456.pdf\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -128,7 +184,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"document_location\": \"https://document-api-images-cidev.s3.eu-west-2.amazonaws.com/9616659670.pdf\",\n    \"document_type\": \"unknown\",\n    \"signature_options\": [\n        \"cover-sheet\"\n    ]\n}",
+              "raw": "{\n    \"document_location\": \"https://document-api-images-cidev.s3.eu-west-2.amazonaws.com/9616659670.pdf\",\n    \"document_type\": \"unknown\",\n    \"signature_options\": [\n        \"cover-sheet\"\n    ],\n    \"folder_name\": \"certified-copy\",\n    \"filename\": \"CCD-123456-123456.pdf\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -156,7 +212,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"document_location\": \"https://document-api-images-cidev.s3.eu-west-2.amazonaws.com/9616659670.pdf\",\n    \"document_type\": \"certificate\",\n    \"signature_options\": [\n        \"cover-sheet\"\n    ]\n}",
+              "raw": "{\n    \"document_location\": \"https://document-api-images-cidev.s3.eu-west-2.amazonaws.com/9616659670.pdf\",\n    \"document_type\": \"certificate\",\n    \"signature_options\": [\n        \"cover-sheet\"\n    ],\n    \"folder_name\": \"certified-copy\",\n    \"filename\": \"CCD-123456-123456.pdf\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
