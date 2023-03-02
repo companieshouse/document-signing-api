@@ -22,11 +22,15 @@ public class S3Service {
 
     private final S3Client s3Client;
 
+    private final String signedDocBucketName;
+
     private final String signedDocStoragePrefix;
 
     public S3Service(S3Client s3Client,
+                     @Value("${environment.signed.doc.bucket.name}") String signedDocBucketName,
                      @Value("${environment.signed.doc.storage.prefix}") String signedDocStoragePrefix) {
         this.s3Client = s3Client;
+        this.signedDocBucketName = signedDocBucketName;
         this.signedDocStoragePrefix = signedDocStoragePrefix;
     }
 
@@ -42,18 +46,17 @@ public class S3Service {
     }
 
     public String storeSignedDocument(final byte[] signedDocument, final String folderName, final String fileName) {
-        final var bucketName = "document-signing-api";
         final var filePath = isEmpty(signedDocStoragePrefix) ?
                 folderName + DIRECTORY_SEPARATOR + fileName :
                 signedDocStoragePrefix + DIRECTORY_SEPARATOR + folderName + DIRECTORY_SEPARATOR +  fileName;
         final var putObjectRequest = PutObjectRequest.builder()
-                .bucket(bucketName)
+                .bucket(signedDocBucketName)
                 .key(filePath)
                 .build();
         s3Client.putObject(putObjectRequest, RequestBody.fromBytes(signedDocument));
         final var s3Utilities = s3Client.utilities();
         final var getUrlRequest = GetUrlRequest.builder()
-                .bucket(bucketName)
+                .bucket(signedDocBucketName)
                 .key(filePath)
                 .build();
         return s3Utilities.getUrl(getUrlRequest).toString();
