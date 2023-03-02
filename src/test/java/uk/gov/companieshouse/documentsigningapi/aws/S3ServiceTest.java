@@ -90,12 +90,7 @@ class S3ServiceTest {
 
         serviceUnderTest.storeSignedDocument(new byte[]{}, "folder", "file");
 
-        final PutObjectRequest expectedPutObjectRequest =
-                PutObjectRequest.builder()
-                        .bucket("bucket")
-                        .key("folder/file")
-                        .build();
-        verify(s3Client).putObject(eq(expectedPutObjectRequest), any(RequestBody.class));
+        verifySignedDocumentWrittenToBucketAndFilepath("bucket", "folder/file");
     }
 
     @Test
@@ -107,10 +102,26 @@ class S3ServiceTest {
 
         serviceUnderTest.storeSignedDocument(new byte[]{}, "folder", "file");
 
+        verifySignedDocumentWrittenToBucketAndFilepath("bucket", "prefix/folder/file");
+    }
+
+    @Test
+    @DisplayName("storeSignedDocument stores signed document in named bucket")
+    void storesSignedDocumentInNamedBucket() {
+        final S3Service serviceUnderTest = new S3Service(s3Client, "another-bucket", "prefix");
+        when(s3Client.utilities()).thenReturn(s3Utilities);
+        when(s3Utilities.getUrl(any(GetUrlRequest.class))).thenReturn(signedDocumentLocationUrl);
+
+        serviceUnderTest.storeSignedDocument(new byte[]{}, "folder", "file");
+
+        verifySignedDocumentWrittenToBucketAndFilepath("another-bucket", "prefix/folder/file");
+    }
+
+    private void verifySignedDocumentWrittenToBucketAndFilepath(final String expectedBucketName, final String expectedFilePath) {
         final PutObjectRequest expectedPutObjectRequest =
                 PutObjectRequest.builder()
-                        .bucket("bucket")
-                        .key("prefix/folder/file")
+                        .bucket(expectedBucketName)
+                        .key(expectedFilePath)
                         .build();
         verify(s3Client).putObject(eq(expectedPutObjectRequest), any(RequestBody.class));
     }
