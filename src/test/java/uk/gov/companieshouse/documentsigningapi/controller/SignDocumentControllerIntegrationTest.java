@@ -162,6 +162,11 @@ class SignDocumentControllerIntegrationTest {
                 .andExpect(status().isCreated());
         
         final var signPdfResponseDTO = getResponseDTO(resultActions);
+
+        // Note the following is an assertion about the resultant location when using LocalStack S3.
+        // This location differs from that with the real S3 service. For example:
+        // 1. LocalStack: http://127.0.0.1:55720/document-signing-api/cidev/certified-copy-folder/CCD-123456-123456.pdf
+        // 2. S3: https://document-signing-api.s3.eu-west-2.amazonaws.com/docker/certified-copy/CCD-123456-123456.pdf
         assertThat(signPdfResponseDTO.getSignedDocumentLocation(),
                 containsString("/" + SIGNED_BUCKET_NAME +
                                         "/" + SIGNED_DOC_STORAGE_PREFIX +
