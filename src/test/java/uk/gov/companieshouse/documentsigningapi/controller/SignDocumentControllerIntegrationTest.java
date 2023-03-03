@@ -99,7 +99,7 @@ class SignDocumentControllerIntegrationTest {
         if(f.exists() && !f.isDirectory()) {
             System.out.println("*** EXISTS ***");
             System.out.println("Working Directory = " + System.getProperty("user.dir"));
-            Path p = Paths.get("src/test/resources/keystore.jks")
+            Path p = Paths.get("src/test/resources/keystore.jks");
             if (Files.isReadable(p)) {
                 System.out.println("is readable");
             } else {
