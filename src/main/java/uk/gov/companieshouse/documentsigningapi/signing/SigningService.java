@@ -78,11 +78,13 @@ public class SigningService {
         } catch (NoSuchAlgorithmException | CertificateException | UnrecoverableKeyException | KeyStoreException e) {
             throw new DocumentSigningException("Failed to obtain proper KeyStore or Certificate", e);
         } catch (IOException e) {
+            System.out.println("THE CAUSE" + e);
             throw new DocumentUnavailableException("Unable to load Keystore or Certificate", e);
         }
     }
 
     private KeyStore getKeyStore() throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
+        System.out.println("KEYSTORE PATH:" + this.keystorePath);
         KeyStore keyStore = KeyStore.getInstance(keystoreType);
         File key = ResourceUtils.getFile(keystorePath);
         keyStore.load(new FileInputStream(key), keystorePassword.toCharArray());
