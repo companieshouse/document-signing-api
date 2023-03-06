@@ -7,8 +7,10 @@ import org.springframework.web.bind.annotation.RestController;
 import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.core.exception.SdkServiceException;
 import uk.gov.companieshouse.documentsigningapi.aws.S3Service;
+import uk.gov.companieshouse.documentsigningapi.coversheet.CoverSheetService;
 import uk.gov.companieshouse.documentsigningapi.dto.SignPdfRequestDTO;
 import uk.gov.companieshouse.documentsigningapi.dto.SignPdfResponseDTO;
+import uk.gov.companieshouse.documentsigningapi.exception.CoverSheetException;
 import uk.gov.companieshouse.documentsigningapi.exception.DocumentSigningException;
 import uk.gov.companieshouse.documentsigningapi.exception.DocumentUnavailableException;
 import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
@@ -34,10 +36,16 @@ public class SignDocumentController {
     private final S3Service s3Service;
     private final SigningService signingService;
 
-    public SignDocumentController(LoggingUtils logger, S3Service s3Service, SigningService signingService) {
+    private final CoverSheetService coverSheetService;
+
+    public SignDocumentController(LoggingUtils logger,
+                                  S3Service s3Service,
+                                  SigningService signingService,
+                                  CoverSheetService coverSheetService) {
         this.logger = logger;
         this.s3Service = s3Service;
         this.signingService = signingService;
+        this.coverSheetService = coverSheetService;
     }
 
     /**
@@ -60,7 +68,10 @@ public class SignDocumentController {
         try {
             final var unsignedDoc = s3Service.retrieveUnsignedDocument(unsignedDocumentLocation);
             final var signedPDF = signingService.signPDF(unsignedDoc);
-            final var signedDocumentLocation = s3Service.storeSignedDocument(signedPDF, folderName, filename);
+            // TODO DCAC-92 Make cover sheet optional.
+            final var signedPdfWithCoverSheet = coverSheetService.addCoverSheet(signedPDF);
+            final var signedDocumentLocation =
+                    s3Service.storeSignedDocument(signedPdfWithCoverSheet, folderName, filename);
 
             final var signPdfResponseDTO = new SignPdfResponseDTO();
             signPdfResponseDTO.setSignedDocumentLocation(signedDocumentLocation);
@@ -77,7 +88,7 @@ public class SignDocumentController {
             map.put(SIGN_PDF_RESPONSE, response);
             logger.getLogger().error(SIGN_PDF_ERROR_PREFIX + sse.getMessage() , map);
             return response;
-        } catch (SdkException | DocumentSigningException | DocumentUnavailableException e) {
+        } catch (SdkException | DocumentSigningException | DocumentUnavailableException | CoverSheetException e) {
             final ResponseEntity<Object> response = ResponseEntity.status(INTERNAL_SERVER_ERROR).body(e.getMessage());
             map.put(SIGN_PDF_RESPONSE, response);
             logger.getLogger().error(SIGN_PDF_ERROR_PREFIX + e.getMessage() , map);
