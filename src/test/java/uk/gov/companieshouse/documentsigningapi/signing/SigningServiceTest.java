@@ -28,19 +28,6 @@ public class SigningServiceTest {
     @InjectMocks
     private SigningService signingService = new SigningService("jks", "src/test/resources/keystore.jks", "testkey", "alias", logger);
 
-//    @Test
-//    @DisplayName("Test signPDF returns a signed pdf")
-//    void successfulSigningOfPDF() throws Exception {
-//
-//        KeyStoreSpi keyStoreSpiMock = mock(KeyStoreSpi.class);
-//        KeyStore keyStoreMock = new KeyStore(keyStoreSpiMock, null, "jks"){ };
-//        keyStoreMock.load(any());
-//
-//
-//
-//        byte[] signedPDF = signingService.signPDF(response);
-//    }
-
     @Test
     @DisplayName("Throws DocumentUnavailableException when unable to load keystore")
     void throwsDocumentUnavailableExceptionExceptionWhereHostIsNull() {

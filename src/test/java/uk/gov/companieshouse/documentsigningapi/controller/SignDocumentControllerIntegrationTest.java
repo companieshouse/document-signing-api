@@ -34,11 +34,8 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import uk.gov.companieshouse.documentsigningapi.dto.SignPdfRequestDTO;
 import uk.gov.companieshouse.documentsigningapi.dto.SignPdfResponseDTO;
 
-import java.io.File;
 import java.io.UnsupportedEncodingException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 @AutoConfigureMockMvc
@@ -94,22 +91,6 @@ class SignDocumentControllerIntegrationTest {
     @Test
     @DisplayName("signPdf returns the signed document location")
     void signPdfReturnsSignedDocumentLocation() throws Exception {
-
-        File f = new File("src/test/resources/keystore.jks");
-        if(f.exists() && !f.isDirectory()) {
-            System.out.println("*** EXISTS ***");
-            System.out.println("Working Directory = " + System.getProperty("user.dir"));
-            Path p = Paths.get("src/test/resources/keystore.jks");
-            if (Files.isReadable(p)) {
-                System.out.println("is readable");
-            } else {
-                System.out.println("is not readable");
-            }
-        } else {
-            System.out.println("*** DOES NOT EXIST ***");
-            System.out.println("Working Directory = " + System.getProperty("user.dir"));
-        }
-
         final SignPdfRequestDTO signPdfRequestDTO = new SignPdfRequestDTO();
         // It seems that LocalStack S3 is somewhat region-agnostic.
         final String unsignedDocumentLocation =
