@@ -1,5 +1,11 @@
 package uk.gov.companieshouse.documentsigningapi.controller;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.startsWith;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,12 +37,6 @@ import uk.gov.companieshouse.documentsigningapi.dto.SignPdfResponseDTO;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Path;
 import java.util.List;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.startsWith;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
 @Testcontainers
@@ -91,7 +91,6 @@ class SignDocumentControllerIntegrationTest {
     @Test
     @DisplayName("signPdf returns the signed document location")
     void signPdfReturnsSignedDocumentLocation() throws Exception {
-
         final SignPdfRequestDTO signPdfRequestDTO = new SignPdfRequestDTO();
         // It seems that LocalStack S3 is somewhat region-agnostic.
         final String unsignedDocumentLocation =

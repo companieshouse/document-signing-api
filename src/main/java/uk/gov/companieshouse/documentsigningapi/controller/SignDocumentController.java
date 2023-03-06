@@ -1,24 +1,29 @@
 package uk.gov.companieshouse.documentsigningapi.controller;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
-import software.amazon.awssdk.core.exception.SdkException;
-import software.amazon.awssdk.core.exception.SdkServiceException;
-import uk.gov.companieshouse.documentsigningapi.aws.S3Service;
-import uk.gov.companieshouse.documentsigningapi.dto.SignPdfRequestDTO;
-import uk.gov.companieshouse.documentsigningapi.dto.SignPdfResponseDTO;
-import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
-
-import java.net.URISyntaxException;
-import java.util.Map;
-
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils.SIGN_PDF_REQUEST;
 import static uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils.SIGN_PDF_RESPONSE;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+import software.amazon.awssdk.core.ResponseInputStream;
+import software.amazon.awssdk.core.exception.SdkException;
+import software.amazon.awssdk.core.exception.SdkServiceException;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import uk.gov.companieshouse.documentsigningapi.aws.S3Service;
+import uk.gov.companieshouse.documentsigningapi.dto.SignPdfRequestDTO;
+import uk.gov.companieshouse.documentsigningapi.dto.SignPdfResponseDTO;
+import uk.gov.companieshouse.documentsigningapi.exception.DocumentSigningException;
+import uk.gov.companieshouse.documentsigningapi.exception.DocumentUnavailableException;
+import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
+import uk.gov.companieshouse.documentsigningapi.signing.SigningService;
+
+import java.net.URISyntaxException;
+import java.util.Map;
 
 @RestController
 public class SignDocumentController {
@@ -30,10 +35,12 @@ public class SignDocumentController {
 
     private final LoggingUtils logger;
     private final S3Service s3Service;
+    private final SigningService signingService;
 
-    public SignDocumentController(LoggingUtils logger, S3Service s3Service) {
+    public SignDocumentController(LoggingUtils logger, S3Service s3Service, SigningService signingService) {
         this.logger = logger;
         this.s3Service = s3Service;
+        this.signingService = signingService;
     }
 
     @PostMapping(SIGN_PDF_URI)
@@ -44,7 +51,11 @@ public class SignDocumentController {
         map.put(SIGN_PDF_REQUEST, signPdfRequestDTO);
         try {
 
-            s3Service.retrieveUnsignedDocument(unsignedDocumentLocation);
+            final ResponseInputStream<GetObjectResponse> unsignedDoc =
+                s3Service.retrieveUnsignedDocument(unsignedDocumentLocation);
+
+            // TODO this pdf will later be stored in s3
+            final byte[] signedPDF = signingService.signPDF(unsignedDoc);
 
             // Note this is just returning the location of the unsigned document for now.
             final SignPdfResponseDTO signPdfResponseDTO = new SignPdfResponseDTO();
@@ -62,10 +73,10 @@ public class SignDocumentController {
             map.put(SIGN_PDF_RESPONSE, response);
             logger.getLogger().error(SIGN_PDF_ERROR_PREFIX + sse.getMessage() , map);
             return response;
-        } catch (SdkException se) {
-            final ResponseEntity<Object> response = ResponseEntity.status(INTERNAL_SERVER_ERROR).body(se.getMessage());
+        } catch (SdkException | DocumentSigningException | DocumentUnavailableException e) {
+            final ResponseEntity<Object> response = ResponseEntity.status(INTERNAL_SERVER_ERROR).body(e.getMessage());
             map.put(SIGN_PDF_RESPONSE, response);
-            logger.getLogger().error(SIGN_PDF_ERROR_PREFIX + se.getMessage() , map);
+            logger.getLogger().error(SIGN_PDF_ERROR_PREFIX + e.getMessage() , map);
             return response;
         }
     }

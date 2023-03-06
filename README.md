@@ -56,4 +56,21 @@ See the following for more information:
 * [LocalStack fails to start container with docker v20](https://github.com/localstack/localstack/issues/3446)
 * [Checks not disabled by .testcontainers.properties?](https://github.com/testcontainers/testcontainers-java/issues/2312)
 
+## Docker
+To create a certificate to sign the document the following can be done on the docker image:
+```
+1. $ docker exec -it document-signing-api bash
+2. $ cd app/
+3. $ keytool -genkey -alias <CERTIFICATE_ALIAS> -keyalg RSA -sigalg SHA256withRSA -keysize 2048 -validity 3650 -keystore keystore.jk
+```
+
+Once that has been done, update the docker compose file to contain the correct values for the following:
+```
+      - KEYSTORE_PATH=/app/keystore.jks
+      - KEYSTORE_PASSWORD=<PASSWORD>
+      - CERTIFICATE_ALIAS=<CERTIFICATE_ALIAS>
+```
+
+The application should now be able to sign documents.
+
 
