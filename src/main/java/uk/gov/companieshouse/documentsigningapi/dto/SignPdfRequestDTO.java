@@ -15,6 +15,12 @@ public class SignPdfRequestDTO {
     @JsonProperty("signature_options")
     private List<String> signatureOptions;
 
+    @JsonProperty("folder_name")
+    private String folderName;
+
+    @JsonProperty("filename")
+    private String filename;
+
     public String getDocumentLocation() {
         return documentLocation;
     }
@@ -39,12 +45,30 @@ public class SignPdfRequestDTO {
         this.signatureOptions = signatureOptions;
     }
 
+    public String getFolderName() {
+        return folderName;
+    }
+
+    public void setFolderName(String folderName) {
+        this.folderName = folderName;
+    }
+
+    public String getFilename() {
+        return filename;
+    }
+
+    public void setFilename(String filename) {
+        this.filename = filename;
+    }
+
     @Override
     public String toString() {
         return "SignPdfRequestDTO{" +
                 "documentLocation='" + documentLocation + '\'' +
                 ", documentType='" + documentType + '\'' +
                 ", signatureOptions=" + signatureOptions +
+                ", folderName='" + folderName + '\'' +
+                ", filename='" + filename + '\'' +
                 '}';
     }
 }

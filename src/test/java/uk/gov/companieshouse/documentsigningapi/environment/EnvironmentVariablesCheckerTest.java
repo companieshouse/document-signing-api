@@ -1,17 +1,5 @@
 package uk.gov.companieshouse.documentsigningapi.environment;
 
-import static java.util.Arrays.stream;
-import static org.junit.Assert.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.AWS_ACCESS_KEY_ID;
-import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.AWS_REGION;
-import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.AWS_SECRET_ACCESS_KEY;
-import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.AWS_SESSION_TOKEN;
-import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.CERTIFICATE_ALIAS;
-import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.KEYSTORE_PASSWORD;
-import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.KEYSTORE_PATH;
-import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.KEYSTORE_TYPE;
-
 import org.junit.Rule;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.junit.jupiter.api.AfterEach;
@@ -22,6 +10,20 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import software.amazon.awssdk.services.s3.S3Client;
 
 import java.util.Arrays;
+
+import static java.util.Arrays.stream;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.*;
+import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.AWS_ACCESS_KEY_ID;
+import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.AWS_REGION;
+import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.AWS_SECRET_ACCESS_KEY;
+import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.AWS_SESSION_TOKEN;
+import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.CERTIFICATE_ALIAS;
+import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.KEYSTORE_PASSWORD;
+import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.KEYSTORE_PATH;
+import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.KEYSTORE_TYPE;
+import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.SIGNED_DOC_BUCKET_NAME;
 
 @SpringBootTest
 class EnvironmentVariablesCheckerTest {
@@ -46,11 +48,9 @@ class EnvironmentVariablesCheckerTest {
     @DisplayName("returns true if all required environment variables are present")
     @Test
     void checkEnvironmentVariablesAllPresentReturnsTrue() {
-        stream(EnvironmentVariablesChecker.RequiredEnvironmentVariables.values()).forEach(variable -> {
-            environmentVariables.set(variable.getName(), TOKEN_VALUE);
-        });
+        stream(EnvironmentVariablesChecker.RequiredEnvironmentVariables.values()).forEach(this::accept);
         boolean allPresent = EnvironmentVariablesChecker.allRequiredEnvironmentVariablesPresent();
-        assertTrue(allPresent);
+        assertThat(allPresent, is(true));
     }
 
     @DisplayName("returns false if AWS_REGION is missing")
@@ -101,10 +101,16 @@ class EnvironmentVariablesCheckerTest {
         populateAllVariablesExceptOneAndAssertSomethingMissing(CERTIFICATE_ALIAS);
     }
 
+    @DisplayName("returns false if SIGNED_DOC_BUCKET_NAME is missing")
+    @Test
+    void checkEnvironmentVariablesAllPresentReturnsFalseIfSignedDocBucketNameMissing() {
+        populateAllVariablesExceptOneAndAssertSomethingMissing(SIGNED_DOC_BUCKET_NAME);
+    }
+
     private void populateAllVariablesExceptOneAndAssertSomethingMissing(
             final EnvironmentVariablesChecker.RequiredEnvironmentVariables excludedVariable) {
         stream(EnvironmentVariablesChecker.RequiredEnvironmentVariables.values()).forEach(variable -> {
-            if (variable!= excludedVariable) {
+            if (variable != excludedVariable) {
                 environmentVariables.set(variable.getName(), TOKEN_VALUE);
             }
         });
@@ -112,4 +118,7 @@ class EnvironmentVariablesCheckerTest {
         assertFalse(allPresent);
     }
 
+    private void accept(EnvironmentVariablesChecker.RequiredEnvironmentVariables variable) {
+        environmentVariables.set(variable.getName(), TOKEN_VALUE);
+    }
 }

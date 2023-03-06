@@ -20,7 +20,8 @@ public class EnvironmentVariablesChecker {
         KEYSTORE_TYPE("KEYSTORE_TYPE"),
         KEYSTORE_PATH("KEYSTORE_PATH"),
         KEYSTORE_PASSWORD("KEYSTORE_PASSWORD"),
-        CERTIFICATE_ALIAS("CERTIFICATE_ALIAS");
+        CERTIFICATE_ALIAS("CERTIFICATE_ALIAS"),
+        SIGNED_DOC_BUCKET_NAME("SIGNED_DOC_BUCKET_NAME");
 
         private final String name;
 
