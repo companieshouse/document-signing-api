@@ -38,7 +38,7 @@
         <!-- system-rules: 1.17.2 is the latest version that works with JUnit 5.
             See https://github.com/stefanbirkner/system-rules/issues/70 -->
         <system-rules-version>1.17.2</system-rules-version>
-        <pdfbox.version>2.0.19</pdfbox.version>
+        <pdfbox.version>2.0.24</pdfbox.version>
         <bouncycastle.version>1.70</bouncycastle.version>
         <commons-io.version>2.11.0</commons-io.version>
         <mockito-inline.version>5.1.1</mockito-inline.version>
