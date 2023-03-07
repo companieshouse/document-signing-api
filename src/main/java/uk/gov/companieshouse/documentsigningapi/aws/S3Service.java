@@ -78,7 +78,9 @@ public class S3Service {
             throw new URISyntaxException(documentLocation,
                                          "No bucket name could be extracted from the document location");
         }
-        return host.substring(0, host.indexOf('.'));
+        // IFF there is no '.' in the host name, then we assume it's an S3 URI bucket name, otherwise an object URL
+        // host name starting with '<bucket name>.s3.eu-west-2.amazonaws.com' for example.
+        return host.indexOf('.') == -1 ? host : host.substring(0, host.indexOf('.'));
     }
 
     String getFileName(final String documentLocation) throws URISyntaxException {
