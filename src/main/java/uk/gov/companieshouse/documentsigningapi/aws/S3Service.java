@@ -31,7 +31,7 @@ public class S3Service {
     /**
      * Retrieves the document from the location specified in S3.
      * @param documentLocation the document location, assumed to be the location of an (unsigned) document stored in S3,
-     *                         specified as an object URL string, or as an S3 URI string
+     *                         specified as an S3 URI string
      * @return {@link ResponseInputStream} of {@link GetObjectResponse} containing a reference to the document
      * @throws URISyntaxException should there be an issue parsing the S3 bucket name or S3 key name (a.k.a file path)
      * from the document location provided
@@ -68,14 +68,11 @@ public class S3Service {
     }
 
     String getBucketName(final String documentLocation) throws URISyntaxException {
-        final String host = new URI(documentLocation).getHost();
-        if (host == null) {
-            throw new URISyntaxException(documentLocation,
-                                         "No bucket name could be extracted from the document location");
+        final var uri = new URI(documentLocation);
+        if (uri.getScheme() == null || !uri.getScheme().equals("s3")) {
+            throw new URISyntaxException(documentLocation, "The document location provided is not a valid S3 URI");
         }
-        // IFF there is no '.' in the host name, then we assume it's an S3 URI bucket name, otherwise an object URL
-        // host name starting with '<bucket name>.s3.eu-west-2.amazonaws.com' for example.
-        return host.indexOf('.') == -1 ? host : host.substring(0, host.indexOf('.'));
+        return uri.getHost();
     }
 
     String getFileName(final String documentLocation) throws URISyntaxException {
