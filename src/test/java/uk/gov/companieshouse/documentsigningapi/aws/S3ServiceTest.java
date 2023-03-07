@@ -9,14 +9,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.S3Utilities;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
-import software.amazon.awssdk.services.s3.model.GetUrlRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.net.URISyntaxException;
-import java.net.URL;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -44,12 +41,6 @@ class S3ServiceTest {
 
     @Mock
     private ResponseInputStream<GetObjectResponse> response;
-
-    @Mock
-    private S3Utilities s3Utilities;
-
-    @Mock
-    private URL signedDocumentLocationUrl;
 
     @Test
     @DisplayName("retrieveUnsignedDocument delegates retrieval to GetObject")
@@ -85,8 +76,6 @@ class S3ServiceTest {
     @DisplayName("storeSignedDocument stores signed document in named bucket")
     void storesSignedDocumentInNamedBucket() {
         final S3Service serviceUnderTest = new S3Service(s3Client, "bucket");
-        when(s3Client.utilities()).thenReturn(s3Utilities);
-        when(s3Utilities.getUrl(any(GetUrlRequest.class))).thenReturn(signedDocumentLocationUrl);
 
         serviceUnderTest.storeSignedDocument(new byte[]{}, "prefix/folder", "file");
 
