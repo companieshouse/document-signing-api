@@ -1,6 +1,6 @@
 {
   "info": {
-    "_postman_id": "d24f923a-3b88-4f22-a406-ad3f04faa8c2",
+    "_postman_id": "261ddeb5-dea7-4015-b1f0-31fb8163e13b",
     "name": "Document Signing API",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "7646296"
@@ -10,7 +10,35 @@
       "name": "sign PDF",
       "item": [
         {
-          "name": "sign PDF fairweather object URL",
+          "name": "sign PDF fairweather",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"document_location\": \"s3://document-api-images-cidev/9616659670.pdf\",\n    \"document_type\": \"certified-copy\",\n    \"signature_options\": [\n        \"cover-sheet\"\n    ],\n    \"folder_name\": \"cidev/certified-copy\",\n    \"filename\": \"CCD-123456-123456.pdf\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/document-signing-api/document-signing/sign-pdf",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "document-signing-api",
+                "document-signing",
+                "sign-pdf"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "sign PDF object URL",
           "request": {
             "method": "POST",
             "header": [],
@@ -38,13 +66,13 @@
           "response": []
         },
         {
-          "name": "sign PDF fairweather S3 URI",
+          "name": "sign PDF no signature options",
           "request": {
             "method": "POST",
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"document_location\": \"s3://document-api-images-cidev/9616659670.pdf\",\n    \"document_type\": \"certified-copy\",\n    \"signature_options\": [\n        \"cover-sheet\"\n    ],\n    \"folder_name\": \"cidev/certified-copy\",\n    \"filename\": \"CCD-123456-123456.pdf\"\n}",
+              "raw": "{\n    \"document_location\": \"s3://document-api-images-cidev/9616659670.pdf\",\n    \"document_type\": \"certified-copy\",\n    \"folder_name\": \"cidev/certified-copy\",\n    \"filename\": \"CCD-123456-123456.pdf\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
