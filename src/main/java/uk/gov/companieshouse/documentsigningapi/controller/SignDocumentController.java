@@ -29,6 +29,8 @@ public class SignDocumentController {
 
     private static final String SIGN_PDF_ERROR_PREFIX = "signPdf: ";
 
+    private static final String COVER_SHEET_SIGNATURE_OPTION = "cover-sheet";
+
     public static final String SIGN_PDF_URI =
             "${uk.gov.companieshouse.documentsigningapi.signpdf}";
 
@@ -50,8 +52,9 @@ public class SignDocumentController {
 
     /**
      * Retrieves an unsigned PDF document from the S3 bucket location specified, signs it and stores it.
+     * Adds a cover sheet to the signed PDF document if required.
      * Stores the signed copy of the PDF document in the configured signed document S3 bucket, under a key (file path)
-     * derived both from configuration and from information in the request body.
+     * derived from information in the request body.
      * @param signPdfRequestDTO {@link SignPdfRequestDTO} specifying the document to be signed and information
      *                          used to derive the storage location of the signed document
      * @return {@link ResponseEntity} of {@link Object} containing a status code and the location of the signed PDF
@@ -67,11 +70,10 @@ public class SignDocumentController {
         map.put(SIGN_PDF_REQUEST, signPdfRequestDTO);
         try {
             final var unsignedDoc = s3Service.retrieveUnsignedDocument(unsignedDocumentLocation);
-            final var signedPDF = signingService.signPDF(unsignedDoc);
-            // TODO DCAC-92 Make cover sheet optional.
-            final var signedPdfWithCoverSheet = coverSheetService.addCoverSheet(signedPDF);
+            var signedPDF = signingService.signPDF(unsignedDoc);
+            signedPDF = addCoverSheetIfRequired(signedPDF, signPdfRequestDTO);
             final var signedDocumentLocation =
-                    s3Service.storeSignedDocument(signedPdfWithCoverSheet, folderName, filename);
+                    s3Service.storeSignedDocument(signedPDF, folderName, filename);
 
             final var signPdfResponseDTO = new SignPdfResponseDTO();
             signPdfResponseDTO.setSignedDocumentLocation(signedDocumentLocation);
@@ -94,6 +96,13 @@ public class SignDocumentController {
             logger.getLogger().error(SIGN_PDF_ERROR_PREFIX + e.getMessage() , map);
             return response;
         }
+    }
+
+    private byte[] addCoverSheetIfRequired(final byte[] document,
+                                           final SignPdfRequestDTO request) {
+        return request.getSignatureOptions() != null &&
+                request.getSignatureOptions().contains(COVER_SHEET_SIGNATURE_OPTION) ?
+                coverSheetService.addCoverSheet(document) : document;
     }
 
 }
