@@ -21,7 +21,6 @@ public class CoverSheetService {
     }
 
     public byte[] addCoverSheet(final byte[] document) {
-        // NOTE For now this will just create a blank page cover sheet, but actual sheet may be loaded as a template?
         try {
             final var pdfDocument = PDDocument.load(document);
             insertBlankCoverSheet(pdfDocument);
