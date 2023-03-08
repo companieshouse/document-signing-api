@@ -12,10 +12,10 @@ import uk.gov.companieshouse.documentsigningapi.dto.SignPdfRequestDTO;
 import uk.gov.companieshouse.documentsigningapi.dto.SignPdfResponseDTO;
 import uk.gov.companieshouse.documentsigningapi.exception.CoverSheetException;
 import uk.gov.companieshouse.documentsigningapi.exception.DocumentSigningException;
-import uk.gov.companieshouse.documentsigningapi.exception.DocumentUnavailableException;
 import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
 import uk.gov.companieshouse.documentsigningapi.signing.SigningService;
 
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Map;
 
@@ -71,8 +71,8 @@ public class SignDocumentController {
         map.put(SIGN_PDF_REQUEST, signPdfRequestDTO);
         try {
             final var unsignedDoc = s3Service.retrieveUnsignedDocument(unsignedDocumentLocation);
-            var signedPDF = signingService.signPDF(unsignedDoc);
-            signedPDF = addCoverSheetIfRequired(signedPDF, signPdfRequestDTO);
+            final var coveredDoc = addCoverSheetIfRequired(unsignedDoc.readAllBytes(), signPdfRequestDTO);
+            final var signedPDF = signingService.signPDF(coveredDoc);
             final var signedDocumentLocation =
                     s3Service.storeSignedDocument(signedPDF, folderName, filename);
             return buildResponse(signedDocumentLocation, signPdfRequestDTO, map);
@@ -80,7 +80,7 @@ public class SignDocumentController {
             return buildErrorResponse(BAD_REQUEST.value(), use, map);
         } catch (SdkServiceException sse) {
             return buildErrorResponse(sse.statusCode(), sse, map);
-        } catch (SdkException | DocumentSigningException | DocumentUnavailableException | CoverSheetException e) {
+        } catch (SdkException | DocumentSigningException | IOException | CoverSheetException e) {
             return buildErrorResponse(INTERNAL_SERVER_ERROR.value(), e, map);
         }
     }
