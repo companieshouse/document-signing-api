@@ -121,8 +121,10 @@ class SignDocumentControllerTest {
     @DisplayName("signPdf adds cover sheet if required")
     void addsCoverSheetIfRequired() throws Exception {
         when(s3Service.retrieveUnsignedDocument(anyString())).thenReturn(unsignedDocument);
+        when(coverSheetService.addCoverSheet(any(byte[].class))).thenReturn(new byte[]{});
+        when(unsignedDocument.readAllBytes()).thenReturn(new byte[]{});
         when(loggingUtils.getLogger()).thenReturn(logger);
-        when(signingService.signPDF(unsignedDocument)).thenReturn(new byte[]{});
+
 
         final SignPdfRequestDTO signPdfRequestDTO = new SignPdfRequestDTO();
         signPdfRequestDTO.setDocumentLocation(TOKEN_UNSIGNED_DOCUMENT_LOCATION);
@@ -140,7 +142,6 @@ class SignDocumentControllerTest {
     void doesNotAddCoverSheetIfNotRequired() throws Exception {
         when(s3Service.retrieveUnsignedDocument(anyString())).thenReturn(unsignedDocument);
         when(loggingUtils.getLogger()).thenReturn(logger);
-        when(signingService.signPDF(unsignedDocument)).thenReturn(new byte[]{});
 
         final SignPdfRequestDTO signPdfRequestDTO = new SignPdfRequestDTO();
         signPdfRequestDTO.setDocumentLocation(TOKEN_UNSIGNED_DOCUMENT_LOCATION);
