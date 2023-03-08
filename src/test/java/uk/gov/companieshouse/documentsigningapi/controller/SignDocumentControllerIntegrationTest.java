@@ -149,7 +149,7 @@ class SignDocumentControllerIntegrationTest {
 
         // It seems that LocalStack S3 is somewhat region-agnostic.
         final var unsignedDocumentLocation =
-                "https://" + UNSIGNED_BUCKET_NAME + ".s3.eu-west-2.amazonaws.com/" + UNSIGNED_DOCUMENT_NAME;
+                "s3://" + UNSIGNED_BUCKET_NAME + "/" + UNSIGNED_DOCUMENT_NAME;
         final var signPdfRequestDTO = createSignPdfRequest(unsignedDocumentLocation);
 
         final var pdf = s3Service.retrieveUnsignedDocument(unsignedDocumentLocation);
@@ -184,7 +184,7 @@ class SignDocumentControllerIntegrationTest {
 
         // It seems that LocalStack S3 is somewhat region-agnostic.
         final var unsignedDocumentLocation =
-                "https:// " + UNSIGNED_BUCKET_NAME + ".s3.eu-west-2.amazonaws.com/" + UNSIGNED_DOCUMENT_NAME;
+                "s3:// " + UNSIGNED_BUCKET_NAME + "/" + UNSIGNED_DOCUMENT_NAME;
         final var signPdfRequestDTO = createSignPdfRequest(unsignedDocumentLocation);
 
         final var resultActions = mockMvc.perform(post("/document-signing/sign-pdf")
@@ -193,8 +193,8 @@ class SignDocumentControllerIntegrationTest {
                 .andExpect(status().isBadRequest());
 
         final var body = resultActions.andReturn().getResponse().getContentAsString();
-        assertThat(body, is("Illegal character in authority at index 8: " +
-                "https:// document-api-images-cidev.s3.eu-west-2.amazonaws.com/9616659670.pdf"));
+        assertThat(body, is("Illegal character in authority at index 5: " +
+                "s3:// document-api-images-cidev/9616659670.pdf"));
     }
 
     @Test
@@ -203,7 +203,7 @@ class SignDocumentControllerIntegrationTest {
 
         // It seems that LocalStack S3 is somewhat region-agnostic.
         final var unsignedDocumentLocation =
-                "https://" + UNSIGNED_BUCKET_NAME + ".s3.eu-west-2.amazonaws.com/" + UNKNOWN_UNSIGNED_DOCUMENT_NAME;
+                "s3://" + UNSIGNED_BUCKET_NAME + "/" + UNKNOWN_UNSIGNED_DOCUMENT_NAME;
         final var signPdfRequestDTO = createSignPdfRequest(unsignedDocumentLocation);
 
         final var resultActions = mockMvc.perform(post("/document-signing/sign-pdf")
