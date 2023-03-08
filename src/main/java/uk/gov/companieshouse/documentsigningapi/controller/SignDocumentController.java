@@ -17,6 +17,7 @@ import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
 import uk.gov.companieshouse.documentsigningapi.signing.SigningService;
 
 import java.net.URISyntaxException;
+import java.util.Map;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -74,27 +75,13 @@ public class SignDocumentController {
             signedPDF = addCoverSheetIfRequired(signedPDF, signPdfRequestDTO);
             final var signedDocumentLocation =
                     s3Service.storeSignedDocument(signedPDF, folderName, filename);
-
-            final var signPdfResponseDTO = new SignPdfResponseDTO();
-            signPdfResponseDTO.setSignedDocumentLocation(signedDocumentLocation);
-            map.put(SIGN_PDF_RESPONSE, signPdfResponseDTO);
-            logger.getLogger().info("signPdf(" + signPdfRequestDTO + ") returning " + signPdfResponseDTO + ")", map);
-            return ResponseEntity.status(CREATED).body(signPdfResponseDTO);
+            return buildResponse(signedDocumentLocation, signPdfRequestDTO, map);
         } catch (URISyntaxException use) {
-            final ResponseEntity<Object> response = ResponseEntity.status(BAD_REQUEST).body(use.getMessage());
-            map.put(SIGN_PDF_RESPONSE, response);
-            logger.getLogger().error(SIGN_PDF_ERROR_PREFIX + use.getMessage(), map);
-            return response;
+            return buildErrorResponse(BAD_REQUEST.value(), use, map);
         } catch (SdkServiceException sse) {
-            final ResponseEntity<Object> response = ResponseEntity.status(sse.statusCode()).body(sse.getMessage());
-            map.put(SIGN_PDF_RESPONSE, response);
-            logger.getLogger().error(SIGN_PDF_ERROR_PREFIX + sse.getMessage() , map);
-            return response;
+            return buildErrorResponse(sse.statusCode(), sse, map);
         } catch (SdkException | DocumentSigningException | DocumentUnavailableException | CoverSheetException e) {
-            final ResponseEntity<Object> response = ResponseEntity.status(INTERNAL_SERVER_ERROR).body(e.getMessage());
-            map.put(SIGN_PDF_RESPONSE, response);
-            logger.getLogger().error(SIGN_PDF_ERROR_PREFIX + e.getMessage() , map);
-            return response;
+            return buildErrorResponse(INTERNAL_SERVER_ERROR.value(), e, map);
         }
     }
 
@@ -105,4 +92,22 @@ public class SignDocumentController {
                 coverSheetService.addCoverSheet(document) : document;
     }
 
+    private ResponseEntity<Object> buildResponse(final String signedDocumentLocation,
+                                                 final SignPdfRequestDTO request,
+                                                 final Map<String, Object> map) {
+        final var signPdfResponseDTO = new SignPdfResponseDTO();
+        signPdfResponseDTO.setSignedDocumentLocation(signedDocumentLocation);
+        map.put(SIGN_PDF_RESPONSE, signPdfResponseDTO);
+        logger.getLogger().info("signPdf(" + request + ") returning " + signPdfResponseDTO + ")", map);
+        return ResponseEntity.status(CREATED).body(signPdfResponseDTO);
+    }
+
+    private ResponseEntity<Object> buildErrorResponse(final int statusCode,
+                                                      final Exception ex,
+                                                      final Map<String, Object> map){
+        final ResponseEntity<Object> response = ResponseEntity.status(statusCode).body(ex.getMessage());
+        map.put(SIGN_PDF_RESPONSE, response);
+        logger.getLogger().error(SIGN_PDF_ERROR_PREFIX + ex.getMessage(), map);
+        return response;
+    }
 }
