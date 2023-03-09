@@ -28,6 +28,8 @@ import java.util.Calendar;
 @Service
 public class SigningService {
 
+    private static final String SIGNING_AUTHORITY_NAME = "Registrar of Companies";
+
     private final String keystoreType;
     private final String keystorePath;
     private final String keystorePassword;
@@ -98,6 +100,7 @@ public class SigningService {
 
     private void signDetached(SignatureInterface signature, PDDocument document, OutputStream output) throws IOException {
         PDSignature pdSignature = new PDSignature();
+        pdSignature.setName(SIGNING_AUTHORITY_NAME);
         pdSignature.setFilter(PDSignature.FILTER_ADOBE_PPKLITE);
         pdSignature.setSubFilter(PDSignature.SUBFILTER_ADBE_PKCS7_DETACHED);
 
