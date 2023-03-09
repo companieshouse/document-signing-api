@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
 import uk.gov.companieshouse.documentsigningapi.exception.DocumentSigningException;
 import uk.gov.companieshouse.documentsigningapi.exception.DocumentUnavailableException;
+import uk.gov.companieshouse.documentsigningapi.exception.SignatureImageUnavailableException;
 import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
 
 import java.awt.*;
@@ -284,9 +285,14 @@ public class SigningService {
             // save and restore graphics if the image is too large and needs to be scaled
             cs.saveGraphicsState();
             cs.transform(Matrix.getScaleInstance(0.25f, 0.25f));
-            PDImageXObject img = PDImageXObject.createFromFileByExtension(imageFile, doc);
-            cs.drawImage(img, 0, 0);
-            cs.restoreGraphicsState();
+            try {
+                PDImageXObject img = PDImageXObject.createFromFileByExtension(imageFile, doc);
+                cs.drawImage(img, 0, 0);
+                cs.restoreGraphicsState();
+            } catch (IOException ioe) {
+                logger.getLogger().error(ioe.getMessage(), ioe);
+                throw new SignatureImageUnavailableException("Could not load signature image", ioe);
+            }
         }
 
         // show text
