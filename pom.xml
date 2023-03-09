@@ -213,6 +213,16 @@
                 <groupId>com.google.cloud.tools</groupId>
                 <artifactId>jib-maven-plugin</artifactId>
                 <version>${jib-maven-plugin.version}</version>
+                <configuration>
+                    <extraDirectories>
+                        <paths>
+                            <path>src/test/resources
+                                <from>src/test/resources</from>
+                                <into>/test-resources</into>
+                            </path>
+                        </paths>
+                    </extraDirectories>
+                </configuration>
             </plugin>
         </plugins>
     </build>
