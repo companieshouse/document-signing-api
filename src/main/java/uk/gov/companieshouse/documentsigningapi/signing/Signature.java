@@ -67,4 +67,8 @@ public class Signature implements SignatureInterface {
             throw new RuntimeException(e);
         }
     }
+
+    public Certificate[] getCertificateChain() {
+        return certificateChain;
+    }
 }
