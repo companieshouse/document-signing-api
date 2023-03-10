@@ -12,6 +12,11 @@ clean:
 	rm -rf ./build-*
 	rm -f ./build.log
 
+.PHONY: security-check
+security-check:
+    mvn org.owasp:dependency-check-maven:purge
+    mvn org.owasp:dependency-check-maven:check
+
 .PHONY: build
 build:
 	mvn versions:set -DnewVersion=$(version) -DgenerateBackupPoms=false
