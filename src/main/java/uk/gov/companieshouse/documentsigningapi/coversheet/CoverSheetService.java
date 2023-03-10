@@ -2,10 +2,12 @@ package uk.gov.companieshouse.documentsigningapi.coversheet;
 
 import static org.apache.pdfbox.pdmodel.common.PDRectangle.A4;
 
+import org.apache.commons.lang.WordUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.documentsigningapi.exception.CoverSheetException;
 import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
@@ -36,7 +38,9 @@ public class CoverSheetService {
     private void insertBlankCoverSheet(final PDDocument pdfDocument) throws IOException {
         final var blankPage = new PDPage(A4);
 
-//        PDImageXObject signatureImage = PDImageXObject.createFromFile("./app/resources/coversheet/signature.jpeg", pdfDocument);
+        PDImageXObject signatureImage = PDImageXObject.createFromFile("./app/resources/coversheet/signature.jpeg", pdfDocument);
+        PDImageXObject emailImage = PDImageXObject.createFromFile("./app/resources/coversheet/email.jpeg", pdfDocument);
+        PDImageXObject printerImage = PDImageXObject.createFromFile("./app/resources/coversheet/printer.jpeg", pdfDocument);
 
         // Build the coversheet
         PDPageContentStream contentStream = new PDPageContentStream(pdfDocument, blankPage);
@@ -79,7 +83,7 @@ public class CoverSheetService {
         contentStream.beginText();
         contentStream.setFont(PDType1Font.HELVETICA, 18);
         contentStream.newLineAtOffset(25, 530);
-        contentStream.showText("---------------------------------------------------------------------------------");
+        contentStream.showText("____________________________________________________________________");
         contentStream.endText();
 
         contentStream.beginText();
@@ -88,10 +92,48 @@ public class CoverSheetService {
         contentStream.showText("View this file and signature in Adobe Reader");
         contentStream.endText();
 
+        contentStream.drawImage(signatureImage, 25, 420, 35, 35);
+        String signatureHelpText = "This file has an embedded electronic signature that is only accessible in Adobe Reader. You can download Adobe Reader for free";
+        String[] signatureHelpTextLines = WordUtils.wrap(signatureHelpText, 80).split("\\r?\\n");
+        System.out.println("lines is of size : " + signatureHelpTextLines.length);
 
-//        contentStream.drawImage(signatureImage, 25, 450);
+        for(int i = 0; i < signatureHelpTextLines.length; i++){
+            contentStream.beginText();
+            contentStream.setFont(PDType1Font.HELVETICA, 12);
+            contentStream.newLineAtOffset(70,440-i*15);
+            contentStream.showText(signatureHelpTextLines[i]);
+            contentStream.newLine();
+            contentStream.endText();
+        }
 
 
+        contentStream.drawImage(emailImage, 25, 350, 35, 35);
+        String emailHelpText = "This file can be emailed. You cannot make changes to this file.";
+        String[] emailHelpTextLines = WordUtils.wrap(emailHelpText, 80).split("\\r?\\n");
+        System.out.println("lines is of size : " + emailHelpTextLines.length);
+
+        for(int i = 0; i < emailHelpTextLines.length; i++){
+            contentStream.beginText();
+            contentStream.setFont(PDType1Font.HELVETICA, 12);
+            contentStream.newLineAtOffset(70,370-i*15);
+            contentStream.showText(emailHelpTextLines[i]);
+            contentStream.newLine();
+            contentStream.endText();
+        }
+
+        contentStream.drawImage(printerImage, 25, 280, 35, 35);
+        String printerHelpText = "This file is only valid in digital form as it contains a unique electronic signature. Printed copies of this file will not be accepted.";
+        String[] printerHelpTextLines = WordUtils.wrap(signatureHelpText, 80).split("\\r?\\n");
+        System.out.println("lines is of size : " + printerHelpTextLines.length);
+
+        for(int i = 0; i < printerHelpTextLines.length; i++){
+            contentStream.beginText();
+            contentStream.setFont(PDType1Font.HELVETICA, 12);
+            contentStream.newLineAtOffset(70,300-i*15);
+            contentStream.showText(printerHelpTextLines[i]);
+            contentStream.newLine();
+            contentStream.endText();
+        }
 
         contentStream.close();
 
