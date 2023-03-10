@@ -14,8 +14,8 @@ clean:
 
 .PHONY: security-check
 security-check:
-    mvn org.owasp://dependency-check-maven:purge
-    mvn org.owasp://dependency-check-maven:check
+	mvn org.owasp:dependency-check-maven:purge
+	mvn org.owasp:dependency-check-maven:check
 
 .PHONY: build
 build:
