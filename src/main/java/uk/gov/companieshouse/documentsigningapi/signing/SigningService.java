@@ -21,10 +21,6 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
 import org.apache.pdfbox.util.Matrix;
-import org.bouncycastle.asn1.x500.RDN;
-import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.asn1.x500.style.BCStyle;
-import org.bouncycastle.asn1.x500.style.IETFUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
@@ -51,16 +47,14 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.Calendar;
 import java.util.List;
 
 @Service
 public class SigningService {
 
-    private static final String SIGNING_AUTHORITY_NAME = "Registrar of Companies";
+    private static final String SIGNING_AUTHORITY_NAME = "Companies House";
 
-    // TODO DCAC-108 This should be configurable.
     private static final String DIGITAL_SEARCH_COPY_STAMP_PATH = "app/digital-search-copy-stamp.png";
 
     private final String keystoreType;
@@ -255,7 +249,7 @@ public class SigningService {
                 break;
         }
         form.setBBox(bbox);
-        PDFont font = PDType1Font.HELVETICA_BOLD;
+        PDFont font = PDType1Font.HELVETICA;
 
         // from PDVisualSigBuilder.createAppearanceDictionary()
         PDAppearanceDictionary appearance = new PDAppearanceDictionary();
@@ -296,32 +290,21 @@ public class SigningService {
         }
 
         // show text
+        setTitle(cs, height,"Signature");
         float fontSize = 10;
         float leading = fontSize * 1.5f;
-        cs.beginText();
-        cs.setFont(font, fontSize);
-        cs.setNonStrokingColor(Color.black);
-        cs.newLineAtOffset(fontSize, height - leading);
+        cs.setFont(PDType1Font.HELVETICA, fontSize);
         cs.setLeading(leading);
 
-        // TODO DCAC-108 Rationalise this
-        X509Certificate cert = (X509Certificate) /*getCertificateChain()*/signature.getCertificateChain()[0];
+        addLine(cs, "This document has been digitally signed.");
+        addLine(cs, "By: " + SIGNING_AUTHORITY_NAME);
 
-        // https://stackoverflow.com/questions/2914521/
-        X500Name x500Name = new X500Name(cert.getSubjectX500Principal().getName());
-        RDN cn = x500Name.getRDNs(BCStyle.CN)[0];
-        String name = IETFUtils.valueToString(cn.getFirst().getValue());
-
+        // TODO DCAC-108 Is date format in line with prototype? Also, needs to include timezone, unlike prototype.
         // See https://stackoverflow.com/questions/12575990
-        // for better date formatting
-        String date = pdSignature.getSignDate().getTime().toString();
-        String reason = pdSignature.getReason();
-
-        cs.showText("Signer: " + name);
-        cs.newLine();
-        cs.showText(date);
-        cs.newLine();
-        cs.showText("Reason: " + reason);
+        // for better date formatting]
+        addLine(cs, "On: " + pdSignature.getSignDate().getTime());
+        addLine(cs, "");
+        cs.showText ("Check signature validation status");
 
         cs.endText();
 
@@ -332,6 +315,28 @@ public class SigningService {
         doc.save(baos);
         doc.close();
         return new ByteArrayInputStream(baos.toByteArray());
+    }
+
+    private void setTitle(final PDPageContentStream cs,
+                          final float boxHeight,
+                          final String title)
+            throws IOException {
+        final float fontSize = 14;
+        final float leading = fontSize * 1.5f;
+        cs.beginText();
+        cs.setFont(PDType1Font.HELVETICA_BOLD, fontSize);
+        cs.setNonStrokingColor(Color.black);
+        cs.newLineAtOffset(fontSize, boxHeight - leading);
+        cs.setLeading(leading);
+        cs.showText(title);
+        cs.newLine();
+        cs.newLineAtOffset(fontSize * 3, 0);
+    }
+
+    private void addLine(final PDPageContentStream cs,
+                         final String text) throws IOException {
+        cs.showText(text);
+        cs.newLine();
     }
 
 
