@@ -11,6 +11,7 @@ import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationTextMarkup;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceDictionary;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceStream;
@@ -304,9 +305,13 @@ public class SigningService {
         // for better date formatting]
         addLine(cs, "On: " + pdSignature.getSignDate().getTime());
         addLine(cs, "");
+
+        cs.setNonStrokingColor(Color.BLUE);
         cs.showText ("Check signature validation status");
 
         cs.endText();
+        cs.addRect(56,46, 4 * 33 + 14, 1);
+        cs.fill();
 
         cs.close();
 
