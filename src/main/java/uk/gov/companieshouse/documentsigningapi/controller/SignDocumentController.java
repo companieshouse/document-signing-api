@@ -12,7 +12,7 @@ import uk.gov.companieshouse.documentsigningapi.dto.SignPdfRequestDTO;
 import uk.gov.companieshouse.documentsigningapi.dto.SignPdfResponseDTO;
 import uk.gov.companieshouse.documentsigningapi.exception.CoverSheetException;
 import uk.gov.companieshouse.documentsigningapi.exception.DocumentSigningException;
-import uk.gov.companieshouse.documentsigningapi.exception.SignatureImageUnavailableException;
+import uk.gov.companieshouse.documentsigningapi.exception.ImageUnavailableException;
 import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
 import uk.gov.companieshouse.documentsigningapi.signing.SigningService;
 
@@ -82,7 +82,7 @@ public class SignDocumentController {
         } catch (SdkServiceException sse) {
             return buildErrorResponse(sse.statusCode(), sse, map);
         } catch (SdkException | DocumentSigningException | IOException | CoverSheetException |
-                 SignatureImageUnavailableException e) {
+                 ImageUnavailableException e) {
             return buildErrorResponse(INTERNAL_SERVER_ERROR.value(), e, map);
         }
     }

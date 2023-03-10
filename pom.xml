@@ -223,7 +223,7 @@
                             <path>src/main/resources
                                 <from>src/main/resources</from>
                                 <into>/app</into>
-                                <includes>signature.png</includes>
+                                <includes>*.png</includes>
                             </path>
                         </paths>
                     </extraDirectories>

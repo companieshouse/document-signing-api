@@ -30,7 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
 import uk.gov.companieshouse.documentsigningapi.exception.DocumentSigningException;
 import uk.gov.companieshouse.documentsigningapi.exception.DocumentUnavailableException;
-import uk.gov.companieshouse.documentsigningapi.exception.SignatureImageUnavailableException;
+import uk.gov.companieshouse.documentsigningapi.exception.ImageUnavailableException;
 import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
 
 import java.awt.*;
@@ -61,7 +61,7 @@ public class SigningService {
     private static final String SIGNING_AUTHORITY_NAME = "Registrar of Companies";
 
     // TODO DCAC-108 This should be configurable.
-    private static final String SIGNING_IMAGE_PATH = "app/signature.png";
+    private static final String DIGITAL_SEARCH_COPY_STAMP_PATH = "app/digital-search-copy-stamp.png";
 
     private final String keystoreType;
     private final String keystorePath;
@@ -145,10 +145,10 @@ public class SigningService {
         // So a human would want to position a signature (x,y) units from the
         // top left of the displayed page, and the field has a horizontal width and a vertical height
         // regardless of page rotation.
-        final Rectangle2D humanRect = new Rectangle2D.Float(100, 200, 150, 50);
+        final Rectangle2D humanRect = new Rectangle2D.Float(50, 600, 500, 150);
         final PDRectangle rect = createSignatureRectangle(document, humanRect);
         final SignatureOptions signatureOptions = new SignatureOptions();
-        final File imageFile = ResourceUtils.getFile(SIGNING_IMAGE_PATH);
+        final File imageFile = ResourceUtils.getFile(DIGITAL_SEARCH_COPY_STAMP_PATH);
         signatureOptions.setVisualSignature(
                 createVisualSignatureTemplate(document, 0, rect, pdSignature, (Signature) signature, imageFile));
         signatureOptions.setPage(0);
@@ -275,7 +275,7 @@ public class SigningService {
         }
 
         // show background (just for debugging, to see the rect size + position)
-        cs.setNonStrokingColor(Color.yellow);
+        cs.setNonStrokingColor(Color.lightGray);
         cs.addRect(-5000, -5000, 10000, 10000);
         cs.fill();
 
@@ -287,11 +287,11 @@ public class SigningService {
             cs.transform(Matrix.getScaleInstance(0.25f, 0.25f));
             try {
                 PDImageXObject img = PDImageXObject.createFromFileByExtension(imageFile, doc);
-                cs.drawImage(img, 0, 0);
+                cs.drawImage(img, 1500, 150);
                 cs.restoreGraphicsState();
             } catch (IOException ioe) {
                 logger.getLogger().error(ioe.getMessage(), ioe);
-                throw new SignatureImageUnavailableException("Could not load signature image", ioe);
+                throw new ImageUnavailableException("Could not load image from file " + imageFile.getName(), ioe);
             }
         }
 
