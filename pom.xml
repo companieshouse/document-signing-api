@@ -216,11 +216,11 @@
                 <configuration>
                     <extraDirectories>
                         <paths>
-                            <path>src/test/resources
+                            <path>
                                 <from>src/main/resources</from>
                                 <into>/app/resources</into>
                             </path>
-                            <path>src/test/resources
+                            <path>
                                 <from>src/test/resources</from>
                                 <into>/test-resources</into>
                             </path>
