@@ -292,11 +292,6 @@ public class SigningService {
 
         // show text
         setTitle(cs, height,"Signature");
-        float fontSize = 10;
-        float leading = fontSize * 1.5f;
-        cs.setFont(PDType1Font.HELVETICA, fontSize);
-        cs.setLeading(leading);
-
         addLine(cs, "This document has been digitally signed.");
         addLine(cs, "By: " + SIGNING_AUTHORITY_NAME);
 
@@ -304,15 +299,9 @@ public class SigningService {
         // See https://stackoverflow.com/questions/12575990
         // for better date formatting]
         addLine(cs, "On: " + pdSignature.getSignDate().getTime());
+
         addLine(cs, "");
-
-        cs.setNonStrokingColor(Color.BLUE);
-        cs.showText ("Check signature validation status");
-
-        cs.endText();
-        cs.addRect(56,46, 4 * 33 + 14, 1);
-        cs.fill();
-
+        addPseudoLink(cs);
         cs.close();
 
         // no need to set annotations and /P entry
@@ -340,8 +329,20 @@ public class SigningService {
 
     private void addLine(final PDPageContentStream cs,
                          final String text) throws IOException {
+        float fontSize = 10;
+        float leading = fontSize * 1.5f;
+        cs.setFont(PDType1Font.HELVETICA, fontSize);
+        cs.setLeading(leading);
         cs.showText(text);
         cs.newLine();
+    }
+
+    private void addPseudoLink(final PDPageContentStream cs) throws IOException {
+        cs.setNonStrokingColor(Color.BLUE);
+        cs.showText ("Check signature validation status");
+        cs.endText();
+        cs.addRect(57,47, 145, 0.5F);
+        cs.fill();
     }
 
 
