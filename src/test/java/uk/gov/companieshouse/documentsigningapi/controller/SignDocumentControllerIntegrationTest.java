@@ -69,6 +69,7 @@ class SignDocumentControllerIntegrationTest {
     private static final String COMPANY_NUMBER = "12953358";
     private static final String FILING_HISTORY_DESCRIPTION = "Change of Registered Office Address";
     private static final String FILING_HISTORY_TYPE = "AD01";
+    private static final String COVER_SHEET_IMAGES_PATH = "src/main/resources/coversheet";
 
     @Container
     private static final LocalStackContainer localStackContainer =
@@ -95,6 +96,7 @@ class SignDocumentControllerIntegrationTest {
                     break;
             }
         });
+        ENVIRONMENT_VARIABLES.set("COVERSHEET_IMAGES_PATH", COVER_SHEET_IMAGES_PATH);
     }
 
     @Autowired

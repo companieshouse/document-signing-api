@@ -6,6 +6,7 @@ import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.documentsigningapi.dto.CoverSheetDataDTO;
 import uk.gov.companieshouse.documentsigningapi.exception.CoverSheetException;
@@ -16,12 +17,15 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
+import static org.apache.commons.lang.StringUtils.isEmpty;
 import static org.apache.pdfbox.pdmodel.common.PDRectangle.A4;
 
 @Service
 public class CoverSheetService {
 
     private final LoggingUtils logger;
+
+    private final String imagesPath;
 
     // Coversheet measurements
     private static final float DEFAULT_LEFT_MARGIN = 25;
@@ -42,9 +46,11 @@ public class CoverSheetService {
 
     // Other constants
     private static final String DAY_MONTH_YEAR_FORMAT = "d MMMM uuuu";
+    private static final String DIRECTORY_SEPARATOR = "/";
 
-    public CoverSheetService(LoggingUtils logger) {
+    public CoverSheetService(LoggingUtils logger, @Value("${environment.coversheet.images.path}") String imagesPath) {
         this.logger = logger;
+        this.imagesPath = imagesPath;
     }
 
     public byte[] addCoverSheet(final byte[] document, final CoverSheetDataDTO coverSheetData) {
@@ -68,10 +74,9 @@ public class CoverSheetService {
     private void buildCoverSheetContent(final PDDocument pdfDocument,
                                         final PDPage coverSheet,
                                         final CoverSheetDataDTO coverSheetData) throws IOException {
-        //TODO CURRENTLY HARDCODED THE LOCATION OF THE IMAGES FOR DOCKER ENV, WILL NEED TO BE UPDATED
-        PDImageXObject signatureImage = PDImageXObject.createFromFile("./app/resources/coversheet/signature.jpeg", pdfDocument);
-        PDImageXObject emailImage = PDImageXObject.createFromFile("./app/resources/coversheet/email.jpeg", pdfDocument);
-        PDImageXObject printerImage = PDImageXObject.createFromFile("./app/resources/coversheet/printer.jpeg", pdfDocument);
+        PDImageXObject signatureImage = createImage("signature.jpeg", pdfDocument);
+        PDImageXObject emailImage = createImage("email.jpeg", pdfDocument);
+        PDImageXObject printerImage = createImage("printer.jpeg", pdfDocument);
 
         PDPageContentStream contentStream = new PDPageContentStream(pdfDocument, coverSheet);
 
@@ -139,5 +144,10 @@ public class CoverSheetService {
 
     private String getFilingHistory(final CoverSheetDataDTO data) {
         return data.getFilingHistoryDescription() + " (" + data.getFilingHistoryType() + ")";
+    }
+
+    private PDImageXObject createImage(final String fileName, final PDDocument pdfDocument) throws IOException {
+        final String filePath = !isEmpty(imagesPath) ? imagesPath + DIRECTORY_SEPARATOR + fileName : fileName;
+        return PDImageXObject.createFromFile(filePath, pdfDocument);
     }
 }
