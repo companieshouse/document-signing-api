@@ -1,7 +1,5 @@
 package uk.gov.companieshouse.documentsigningapi.coversheet;
 
-import static org.apache.pdfbox.pdmodel.common.PDRectangle.A4;
-
 import org.apache.commons.lang.WordUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -14,6 +12,10 @@ import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
+import static org.apache.pdfbox.pdmodel.common.PDRectangle.A4;
 
 @Service
 public class CoverSheetService {
@@ -36,6 +38,9 @@ public class CoverSheetService {
     private static final String SIGNATURE_HELPTEXT = "This file has an embedded electronic signature " +
         "that is only accessible in Adobe Reader. You can download Adobe Reader for free";
     private static final String VIEW_FILE_HEADING = "View this file and signature in Adobe Reader";
+
+    // Other constants
+    private static final String DAY_MONTH_YEAR_FORMAT = "d MMMM uuuu";
 
     public CoverSheetService(LoggingUtils logger) {
         this.logger = logger;
@@ -67,9 +72,7 @@ public class CoverSheetService {
         PDPageContentStream contentStream = new PDPageContentStream(pdfDocument, coverSheet);
 
         insertText(contentStream, PAGE_HEADING, PDType1Font.HELVETICA_BOLD, 30, 770);
-
-        // TODO REPLACE WITH DATE OF SIGNATURE
-        insertText(contentStream, "2nd November 2022", PDType1Font.HELVETICA, 18, 750);
+        insertText(contentStream, getTodaysDate(), PDType1Font.HELVETICA, 18, 750);
         insertText(contentStream, CERTIFIED_DOCUMENT_TYPE, PDType1Font.HELVETICA_BOLD, 24, 650);
 
         //TODO REPLACE WITH COMPANY NAME FROM REQUEST
@@ -120,5 +123,11 @@ public class CoverSheetService {
         pdfDocument.save(byteArrayOutputStream);
         pdfDocument.close();
         return byteArrayOutputStream.toByteArray();
+    }
+
+    private String getTodaysDate() {
+        final var dtf = DateTimeFormatter.ofPattern(DAY_MONTH_YEAR_FORMAT);
+        final var localDate = LocalDate.now().minusDays(10);
+        return dtf.format(localDate);
     }
 }
