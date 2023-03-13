@@ -21,6 +21,9 @@ public class SignPdfRequestDTO {
     @JsonProperty("filename")
     private String filename;
 
+    @JsonProperty("cover_sheet_data")
+    private CoverSheetDataDTO coverSheetData;
+
     public String getDocumentLocation() {
         return documentLocation;
     }
@@ -61,6 +64,14 @@ public class SignPdfRequestDTO {
         this.filename = filename;
     }
 
+    public CoverSheetDataDTO getCoverSheetData() {
+        return coverSheetData;
+    }
+
+    public void setCoverSheetData(CoverSheetDataDTO coverSheetData) {
+        this.coverSheetData = coverSheetData;
+    }
+
     @Override
     public String toString() {
         return "SignPdfRequestDTO{" +
@@ -69,6 +80,7 @@ public class SignPdfRequestDTO {
                 ", signatureOptions=" + signatureOptions +
                 ", folderName='" + folderName + '\'' +
                 ", filename='" + filename + '\'' +
+                ", coverSheetData=" + coverSheetData +
                 '}';
     }
 }

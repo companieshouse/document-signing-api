@@ -29,6 +29,7 @@ import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import uk.gov.companieshouse.documentsigningapi.aws.S3Service;
+import uk.gov.companieshouse.documentsigningapi.dto.CoverSheetDataDTO;
 import uk.gov.companieshouse.documentsigningapi.dto.SignPdfRequestDTO;
 import uk.gov.companieshouse.documentsigningapi.dto.SignPdfResponseDTO;
 import uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker;
@@ -61,9 +62,13 @@ class SignDocumentControllerIntegrationTest {
     private static final String UNKNOWN_UNSIGNED_DOCUMENT_NAME = "UNKNOWN.pdf";
     private static final String CERTIFIED_COPY_DOCUMENT_TYPE = "certified-copy";
     private static final List<String> SIGNATURE_OPTIONS = List.of("cover-sheet");
-    public static final String SIGNED_DOC_STORAGE_PREFIX = "cidev";
-    public static final String FOLDER_NAME = "certified-copy-folder";
-    public static final String SIGNED_DOCUMENT_FILENAME = "CCD-123456-123456.pdf";
+    private static final String SIGNED_DOC_STORAGE_PREFIX = "cidev";
+    private static final String FOLDER_NAME = "certified-copy-folder";
+    private static final String SIGNED_DOCUMENT_FILENAME = "CCD-123456-123456.pdf";
+    private static final String COMPANY_NAME = "LINK EXPORTS (UK) LTD";
+    private static final String COMPANY_NUMBER = "12953358";
+    private static final String FILING_HISTORY_DESCRIPTION = "Change of Registered Office Address";
+    private static final String FILING_HISTORY_TYPE = "AD01";
 
     @Container
     private static final LocalStackContainer localStackContainer =
@@ -145,7 +150,7 @@ class SignDocumentControllerIntegrationTest {
 
 
     // TODO DCAC-97 Remove app/resources/coversheet and contents from project, set up temporarily
-    //  for this test.
+    // for this test.
     @Test
     @DisplayName("signPdf returns the signed document location and stores signed document there")
     void signPdfReturnsSignedDocumentLocation() throws Exception {
@@ -264,12 +269,18 @@ class SignDocumentControllerIntegrationTest {
     }
 
     private SignPdfRequestDTO createSignPdfRequest(final String unsignedDocumentLocation) {
+        final var coverSheetData = new CoverSheetDataDTO();
+        coverSheetData.setCompanyName(COMPANY_NAME);
+        coverSheetData.setCompanyNumber(COMPANY_NUMBER);
+        coverSheetData.setFilingHistoryDescription(FILING_HISTORY_DESCRIPTION);
+        coverSheetData.setFilingHistoryType(FILING_HISTORY_TYPE);
         final var signPdfRequestDTO = new SignPdfRequestDTO();
         signPdfRequestDTO.setDocumentLocation(unsignedDocumentLocation);
         signPdfRequestDTO.setDocumentType(CERTIFIED_COPY_DOCUMENT_TYPE);
         signPdfRequestDTO.setSignatureOptions(SIGNATURE_OPTIONS);
         signPdfRequestDTO.setFolderName(SIGNED_DOC_STORAGE_PREFIX + "/" + FOLDER_NAME);
         signPdfRequestDTO.setFilename(SIGNED_DOCUMENT_FILENAME);
+        signPdfRequestDTO.setCoverSheetData(coverSheetData);
         return signPdfRequestDTO;
     }
 

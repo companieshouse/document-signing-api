@@ -12,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedConstruction;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.companieshouse.documentsigningapi.dto.CoverSheetDataDTO;
 import uk.gov.companieshouse.documentsigningapi.exception.CoverSheetException;
 import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
 import uk.gov.companieshouse.logging.Logger;
@@ -62,7 +63,8 @@ class CoverSheetServiceTest {
                         when(document.getPages()).thenReturn(pages);
                         when(document.getPage(0)).thenReturn(page);
 
-                        final byte[] docWithCoverSheet = coverSheetService.addCoverSheet(new byte[]{});
+                        final byte[] docWithCoverSheet =
+                                coverSheetService.addCoverSheet(new byte[]{}, new CoverSheetDataDTO());
 
                         assertThat(pageConstructor.constructed().size(), is(1));
                         verify(pages).insertBefore(pageConstructor.constructed().get(0), page);
@@ -84,7 +86,8 @@ class CoverSheetServiceTest {
                 when(loggingUtils.getLogger()).thenReturn(logger);
 
                 final CoverSheetException exception =
-                        assertThrows(CoverSheetException.class, () -> coverSheetService.addCoverSheet(new byte[]{}));
+                        assertThrows(CoverSheetException.class,
+                                () -> coverSheetService.addCoverSheet(new byte[]{}, new CoverSheetDataDTO()));
 
                 assertThat(pageConstructor.constructed().size(), is(0));
                 verify(logger).error(PDF_BOX_ORIGINATED_EXCEPTION.getMessage(), PDF_BOX_ORIGINATED_EXCEPTION);

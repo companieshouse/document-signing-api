@@ -7,6 +7,7 @@ import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.springframework.stereotype.Service;
+import uk.gov.companieshouse.documentsigningapi.dto.CoverSheetDataDTO;
 import uk.gov.companieshouse.documentsigningapi.exception.CoverSheetException;
 import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
 
@@ -46,10 +47,10 @@ public class CoverSheetService {
         this.logger = logger;
     }
 
-    public byte[] addCoverSheet(final byte[] document) {
+    public byte[] addCoverSheet(final byte[] document, final CoverSheetDataDTO coverSheetData) {
         try {
             final var pdfDocument = PDDocument.load(document);
-            insertCoverSheet(pdfDocument);
+            insertCoverSheet(pdfDocument, coverSheetData);
             return getContents(pdfDocument);
         } catch (IOException ioe) {
             logger.getLogger().error(ioe.getMessage(), ioe);
@@ -57,13 +58,16 @@ public class CoverSheetService {
         }
     }
 
-    private void insertCoverSheet(final PDDocument pdfDocument) throws IOException {
+    private void insertCoverSheet(final PDDocument pdfDocument, final CoverSheetDataDTO coverSheetData)
+            throws IOException {
         final var coverSheet = new PDPage(A4);
-        buildCoverSheetContent(pdfDocument, coverSheet);
+        buildCoverSheetContent(pdfDocument, coverSheet, coverSheetData);
         pdfDocument.getPages().insertBefore(coverSheet, pdfDocument.getPage(0));
     }
 
-    private void buildCoverSheetContent(PDDocument pdfDocument, PDPage coverSheet) throws IOException {
+    private void buildCoverSheetContent(final PDDocument pdfDocument,
+                                        final PDPage coverSheet,
+                                        final CoverSheetDataDTO coverSheetData) throws IOException {
         //TODO CURRENTLY HARDCODED THE LOCATION OF THE IMAGES FOR DOCKER ENV, WILL NEED TO BE UPDATED
         PDImageXObject signatureImage = PDImageXObject.createFromFile("./app/resources/coversheet/signature.jpeg", pdfDocument);
         PDImageXObject emailImage = PDImageXObject.createFromFile("./app/resources/coversheet/email.jpeg", pdfDocument);
@@ -75,10 +79,8 @@ public class CoverSheetService {
         insertText(contentStream, getTodaysDate(), PDType1Font.HELVETICA, 18, 750);
         insertText(contentStream, CERTIFIED_DOCUMENT_TYPE, PDType1Font.HELVETICA_BOLD, 24, 650);
 
-        //TODO REPLACE WITH COMPANY NAME FROM REQUEST
-        textWrapper(contentStream, "TEST COMPANY NAME (00000000)", 18, DEFAULT_LEFT_MARGIN, 620);
-        //TODO REPLACE WITH DETAILS OF DOUCMENT BEING SIGNED
-        textWrapper(contentStream, "Change of Registered Office Address (ADO1) ef", 18, 25, 590);
+        textWrapper(contentStream, getCompany(coverSheetData), 18, DEFAULT_LEFT_MARGIN, 620);
+        textWrapper(contentStream, getFilingHistory(coverSheetData), 18, 25, 590);
         textWrapper(contentStream, DOCUMENT_SIGNED_TEXT, 18, DEFAULT_LEFT_MARGIN, 560);
 
         insertText(contentStream, PAGE_SPACER, PDType1Font.HELVETICA, 18, 530);
@@ -129,5 +131,13 @@ public class CoverSheetService {
         final var dtf = DateTimeFormatter.ofPattern(DAY_MONTH_YEAR_FORMAT);
         final var localDate = LocalDate.now().minusDays(10);
         return dtf.format(localDate);
+    }
+
+    private String getCompany(final CoverSheetDataDTO data) {
+        return data.getCompanyName() + " (" + data.getCompanyNumber()+ ")";
+    }
+
+    private String getFilingHistory(final CoverSheetDataDTO data) {
+        return data.getFilingHistoryDescription() + " (" + data.getFilingHistoryType() + ")";
     }
 }

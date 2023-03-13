@@ -89,7 +89,7 @@ public class SignDocumentController {
                                            final SignPdfRequestDTO request) {
         return request.getSignatureOptions() != null &&
                 request.getSignatureOptions().contains(COVER_SHEET_SIGNATURE_OPTION) ?
-                coverSheetService.addCoverSheet(document) : document;
+                coverSheetService.addCoverSheet(document, request.getCoverSheetData()) : document;
     }
 
     private ResponseEntity<Object> buildResponse(final String signedDocumentLocation,
