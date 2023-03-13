@@ -2,7 +2,9 @@ package uk.gov.companieshouse.documentsigningapi.coversheet;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.PDPageTree;
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -53,18 +55,22 @@ class CoverSheetServiceTest {
     @DisplayName("addCoverSheet delegates cover sheet creation to pdfBox")
     void delegatesCoverSheetCreationToPdfBox() throws IOException {
         try (final var pdfBox = mockStatic(PDDocument.class)) {
-            try (final MockedConstruction<PDPage> pageConstructor = mockConstruction(PDPage.class)){
-                pdfBox.when(() -> PDDocument.load(any(byte[].class))).thenReturn(document);
-                when(document.getPages()).thenReturn(pages);
-                when(document.getPage(0)).thenReturn(page);
+            try (final MockedConstruction<PDPage> pageConstructor = mockConstruction(PDPage.class)) {
+                try (final var image = mockStatic(PDImageXObject.class)) {
+                    try (final var stream = mockConstruction(PDPageContentStream.class)) {
+                        pdfBox.when(() -> PDDocument.load(any(byte[].class))).thenReturn(document);
+                        when(document.getPages()).thenReturn(pages);
+                        when(document.getPage(0)).thenReturn(page);
 
-                final byte[] docWithCoverSheet = coverSheetService.addCoverSheet(new byte[]{});
+                        final byte[] docWithCoverSheet = coverSheetService.addCoverSheet(new byte[]{});
 
-                assertThat(pageConstructor.constructed().size(), is(1));
-                verify(pages).insertBefore(pageConstructor.constructed().get(0), page);
-                verify(document).save(any(ByteArrayOutputStream.class));
-                verify(document).close();
-                assertThat(docWithCoverSheet, is(new byte[]{}));
+                        assertThat(pageConstructor.constructed().size(), is(1));
+                        verify(pages).insertBefore(pageConstructor.constructed().get(0), page);
+                        verify(document).save(any(ByteArrayOutputStream.class));
+                        verify(document).close();
+                        assertThat(docWithCoverSheet, is(new byte[]{}));
+                    }
+                }
             }
         }
     }

@@ -143,6 +143,9 @@ class SignDocumentControllerIntegrationTest {
         ENVIRONMENT_VARIABLES.clear(AllEnvironmentVariableNames);
     }
 
+
+    // TODO DCAC-97 Remove app/resources/coversheet and contents from project, set up temporarily
+    //  for this test.
     @Test
     @DisplayName("signPdf returns the signed document location and stores signed document there")
     void signPdfReturnsSignedDocumentLocation() throws Exception {
