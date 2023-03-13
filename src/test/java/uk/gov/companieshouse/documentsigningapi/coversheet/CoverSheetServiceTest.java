@@ -52,6 +52,9 @@ class CoverSheetServiceTest {
     @Mock
     private PDPage page;
 
+    @Mock
+    private CoverSheetDataDTO coverSheetData;
+
     @Test
     @DisplayName("addCoverSheet delegates cover sheet creation to pdfBox")
     void delegatesCoverSheetCreationToPdfBox() throws IOException {
@@ -87,7 +90,7 @@ class CoverSheetServiceTest {
 
                 final CoverSheetException exception =
                         assertThrows(CoverSheetException.class,
-                                () -> coverSheetService.addCoverSheet(new byte[]{}, new CoverSheetDataDTO()));
+                                () -> coverSheetService.addCoverSheet(new byte[]{}, coverSheetData));
 
                 assertThat(pageConstructor.constructed().size(), is(0));
                 verify(logger).error(PDF_BOX_ORIGINATED_EXCEPTION.getMessage(), PDF_BOX_ORIGINATED_EXCEPTION);
