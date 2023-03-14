@@ -4,8 +4,15 @@ import org.apache.commons.lang.WordUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
+import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import org.apache.pdfbox.pdmodel.interactive.action.PDActionURI;
+import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationLink;
+import org.apache.pdfbox.pdmodel.interactive.annotation.PDBorderStyleDictionary;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.documentsigningapi.dto.CoverSheetDataDTO;
@@ -40,8 +47,14 @@ public class CoverSheetService {
     private static final String PAGE_SPACER = "___________________________________________________";
     private static final String PRINTER_HELPTEXT = "This file is only valid in digital form as it contains a unique " +
         "electronic signature. Printed copies of this file will not be accepted.";
-    private static final String SIGNATURE_HELPTEXT = "This file has an embedded electronic signature " +
-        "that is only accessible in Adobe Reader. You can download Adobe Reader for free";
+
+    private static final String SIGNATURE_HELPTEXT_LINE_1 = "This file has an embedded electronic signature " +
+            "that is only accessible in Adobe";
+    private static final String SIGNATURE_HELPTEXT_LINE_2_START = "Reader. You can ";
+    private static final String SIGNATURE_HELPTEXT_LINE_2_LINK = "download Adobe Reader";
+    private static final String SIGNATURE_HELPTEXT_LINE_2_END = " for free.";
+    private static final String ADOBE_DOWNLOAD_URL = "https://get.adobe.com/reader/";
+
     private static final String VIEW_FILE_HEADING = "View this file and signature in Adobe Reader";
 
     // Other constants
@@ -92,7 +105,19 @@ public class CoverSheetService {
         insertText(contentStream, VIEW_FILE_HEADING, PDType1Font.HELVETICA_BOLD, 18, 480);
 
         contentStream.drawImage(signatureImage, DEFAULT_LEFT_MARGIN, 420, INFORMATION_SECTION_IMAGE_WIDTH, INFORMATION_SECTION_IMAGE_HEIGHT);
-        textWrapper(contentStream, SIGNATURE_HELPTEXT, 14, 70, 440);
+        textWrapper(contentStream, SIGNATURE_HELPTEXT_LINE_1, 14, 70, 440);
+
+        insertTextWithHyperLink(
+                SIGNATURE_HELPTEXT_LINE_2_START,
+                SIGNATURE_HELPTEXT_LINE_2_LINK,
+                SIGNATURE_HELPTEXT_LINE_2_END,
+                ADOBE_DOWNLOAD_URL,
+                PDType1Font.HELVETICA,
+                14,
+                coverSheet,
+                contentStream,
+                70,
+                420);
 
         contentStream.drawImage(emailImage, DEFAULT_LEFT_MARGIN, 370, INFORMATION_SECTION_IMAGE_WIDTH, INFORMATION_SECTION_IMAGE_HEIGHT);
         textWrapper(contentStream, EMAIL_HELPTEXT, 14, 70, 385);
@@ -149,5 +174,65 @@ public class CoverSheetService {
     private PDImageXObject createImage(final String fileName, final PDDocument pdfDocument) throws IOException {
         final String filePath = !isEmpty(imagesPath) ? imagesPath + DIRECTORY_SEPARATOR + fileName : fileName;
         return PDImageXObject.createFromFile(filePath, pdfDocument);
+    }
+
+
+    // TODO DCAC-97 Reduce number of parameters.
+    private void insertTextWithHyperLink(final String preLinkText,
+                                         final String linkText,
+                                         final String postLinkText,
+                                         final String linkUrl,
+                                         final PDFont font,
+                                         final float fontSize,
+                                         final PDPage page,
+                                         final PDPageContentStream contentStream,
+                                         final float xPosition,
+                                         final float yPosition)
+            throws IOException {
+        final float upperRightY = page.getMediaBox().getUpperRightY();
+
+        final var blue = new PDColor(new float[] { 0, 0, 1 }, PDDeviceRGB.INSTANCE);
+        final var black = new PDColor(new float[] { 0, 0, 0 }, PDDeviceRGB.INSTANCE);
+        contentStream.beginText();
+        contentStream.setFont(font, fontSize);
+        contentStream.moveTextPositionByAmount( xPosition, upperRightY - yPosition);
+        contentStream.drawString(preLinkText);
+
+        // TODO DCAC-97 Blue for links?
+        contentStream.setNonStrokingColor(blue);
+        contentStream.drawString(linkText);
+        contentStream.setNonStrokingColor(black);
+        contentStream.drawString(postLinkText);
+        contentStream.endText();
+
+        // Create a link annotation
+        final var txtLink = new PDAnnotationLink();
+
+        // TODO DCAC-97 Blue for links?
+        txtLink.setColor(blue);
+
+        // Add an underline - TODO DCAC-97 This line does not render in Chrome. Can this be fixed?
+        final var underline = new PDBorderStyleDictionary();
+        underline.setStyle(PDBorderStyleDictionary.STYLE_UNDERLINE);
+        txtLink.setBorderStyle(underline);
+
+        // Set up the markup area
+        float offset = (font.getStringWidth(preLinkText) / 1000) * fontSize;
+        float textWidth = (font.getStringWidth(linkText) / 1000) * fontSize;
+        float textHeight = (float )(font.getFontDescriptor().getFontBoundingBox().getHeight() / 1000 * fontSize * 0.865);
+        final var position = new PDRectangle();
+        position.setLowerLeftX(xPosition + offset);
+        position.setLowerLeftY(upperRightY - yPosition - 3);
+        position.setUpperRightX(xPosition + offset + textWidth);
+        position.setUpperRightY(upperRightY - yPosition + textHeight);
+        txtLink.setRectangle(position);
+
+        // Add an action
+        final var action = new PDActionURI();
+        action.setURI(linkUrl);
+        txtLink.setAction(action);
+
+        page.getAnnotations().add(txtLink);
+
     }
 }
