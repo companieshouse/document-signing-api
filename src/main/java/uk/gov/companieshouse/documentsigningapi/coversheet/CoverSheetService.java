@@ -134,7 +134,7 @@ public class CoverSheetService {
 
     private String getTodaysDate() {
         final var dtf = DateTimeFormatter.ofPattern(DAY_MONTH_YEAR_FORMAT);
-        final var localDate = LocalDate.now().minusDays(10);
+        final var localDate = LocalDate.now();
         return dtf.format(localDate);
     }
 
