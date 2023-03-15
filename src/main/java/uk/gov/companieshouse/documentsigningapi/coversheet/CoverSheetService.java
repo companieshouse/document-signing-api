@@ -61,6 +61,9 @@ public class CoverSheetService {
     private static final String DAY_MONTH_YEAR_FORMAT = "d MMMM uuuu";
     private static final String DIRECTORY_SEPARATOR = "/";
 
+    private static final PDColor BLUE = new PDColor(new float[] { 0, 0, 1 }, PDDeviceRGB.INSTANCE);
+    private static final PDColor BLACK = new PDColor(new float[] { 0, 0, 0 }, PDDeviceRGB.INSTANCE);
+
     public CoverSheetService(LoggingUtils logger, @Value("${environment.coversheet.images.path}") String imagesPath) {
         this.logger = logger;
         this.imagesPath = imagesPath;
@@ -107,7 +110,7 @@ public class CoverSheetService {
         contentStream.drawImage(signatureImage, DEFAULT_LEFT_MARGIN, 420, INFORMATION_SECTION_IMAGE_WIDTH, INFORMATION_SECTION_IMAGE_HEIGHT);
         textWrapper(contentStream, SIGNATURE_HELPTEXT_LINE_1, 14, 70, 440);
 
-        insertTextWithHyperLink(
+        renderTextWithLink(
                 SIGNATURE_HELPTEXT_LINE_2_START,
                 SIGNATURE_HELPTEXT_LINE_2_LINK,
                 SIGNATURE_HELPTEXT_LINE_2_END,
@@ -178,45 +181,77 @@ public class CoverSheetService {
 
 
     // TODO DCAC-97 Reduce number of parameters.
-    private void insertTextWithHyperLink(final String preLinkText,
-                                         final String linkText,
-                                         final String postLinkText,
-                                         final String linkUrl,
-                                         final PDFont font,
-                                         final float fontSize,
-                                         final PDPage page,
-                                         final PDPageContentStream contentStream,
-                                         final float xPosition,
-                                         final float yPosition)
+    private void renderTextWithLink(final String preLinkText,
+                                    final String linkText,
+                                    final String postLinkText,
+                                    final String linkUrl,
+                                    final PDFont font,
+                                    final float fontSize,
+                                    final PDPage page,
+                                    final PDPageContentStream contentStream,
+                                    final float xPosition,
+                                    final float yPosition)
             throws IOException {
         final float upperRightY = getMediaBox(page).getUpperRightY();
+        renderTextWithLink(
+                preLinkText, linkText, postLinkText, contentStream, font, fontSize, upperRightY, xPosition, yPosition);
+        buildLink(preLinkText, linkText, linkUrl, font, fontSize, page, upperRightY, xPosition, yPosition);
+    }
 
-        final var blue = new PDColor(new float[] { 0, 0, 1 }, PDDeviceRGB.INSTANCE);
-        final var black = new PDColor(new float[] { 0, 0, 0 }, PDDeviceRGB.INSTANCE);
+    private void renderTextWithLink(final String preLinkText,
+                                    final String linkText,
+                                    final String postLinkText,
+                                    final PDPageContentStream contentStream,
+                                    final PDFont font,
+                                    final float fontSize,
+                                    final float upperRightY,
+                                    final float xPosition,
+                                    final float yPosition) throws IOException {
         contentStream.beginText();
         contentStream.setFont(font, fontSize);
         contentStream.moveTextPositionByAmount( xPosition, upperRightY - yPosition);
         contentStream.drawString(preLinkText);
 
-        // TODO DCAC-97 Blue for links?
-        contentStream.setNonStrokingColor(blue);
+        contentStream.setNonStrokingColor(BLUE);
         contentStream.drawString(linkText);
-        contentStream.setNonStrokingColor(black);
+
+        contentStream.setNonStrokingColor(BLACK);
         contentStream.drawString(postLinkText);
         contentStream.endText();
+    }
 
-        // Create a link annotation
-        final var txtLink = new PDAnnotationLink();
+    private void buildLink(final String preLinkText,
+                           final String linkText,
+                           final String linkUrl,
+                           final PDFont font,
+                           final float fontSize,
+                           final PDPage page,
+                           final float upperRightY,
+                           final float xPosition,
+                           final float yPosition) throws IOException {
+        final var link = new PDAnnotationLink();
+        underlineLink(link);
+        markUpClickableArea(preLinkText, linkText, link, font, fontSize, upperRightY, xPosition, yPosition);
+        setUpLinkAction(link, linkUrl);
+        page.getAnnotations().add(link);
+    }
 
-        // TODO DCAC-97 Blue for links?
-        txtLink.setColor(blue);
-
-        // Add an underline - TODO DCAC-97 This line does not render in Chrome. Can this be fixed?
+    // TODO DCAC-97 This line does not render in Chrome. Can this be fixed?
+    private void underlineLink(final PDAnnotationLink link) {
         final var underline = new PDBorderStyleDictionary();
         underline.setStyle(PDBorderStyleDictionary.STYLE_UNDERLINE);
-        txtLink.setBorderStyle(underline);
+        link.setColor(BLUE);
+        link.setBorderStyle(underline);
+    }
 
-        // Set up the markup area
+    private void markUpClickableArea(final String preLinkText,
+                                     final String linkText,
+                                     final PDAnnotationLink link,
+                                     final PDFont font,
+                                     final float fontSize,
+                                     final float upperRightY,
+                                     final float xPosition,
+                                     final float yPosition) throws IOException {
         float offset = (font.getStringWidth(preLinkText) / 1000) * fontSize;
         float textWidth = (font.getStringWidth(linkText) / 1000) * fontSize;
         float textHeight = (float )(font.getFontDescriptor().getFontBoundingBox().getHeight() / 1000 * fontSize * 0.865);
@@ -225,15 +260,13 @@ public class CoverSheetService {
         position.setLowerLeftY(upperRightY - yPosition - 3);
         position.setUpperRightX(xPosition + offset + textWidth);
         position.setUpperRightY(upperRightY - yPosition + textHeight);
-        txtLink.setRectangle(position);
+        link.setRectangle(position);
+    }
 
-        // Add an action
+    private void setUpLinkAction(final PDAnnotationLink link, final String linkUrl) {
         final var action = new PDActionURI();
         action.setURI(linkUrl);
-        txtLink.setAction(action);
-
-        page.getAnnotations().add(txtLink);
-
+        link.setAction(action);
     }
 
     protected PDRectangle getMediaBox(final PDPage page) {
