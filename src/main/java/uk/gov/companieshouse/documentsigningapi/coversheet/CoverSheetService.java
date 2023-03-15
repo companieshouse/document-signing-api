@@ -268,8 +268,7 @@ public class CoverSheetService {
                                      final Position position) throws IOException {
         final float offset = (font.pdFont.getStringWidth(preLinkText) / 1000) * font.size;
         final float textWidth = (font.pdFont.getStringWidth(linkText) / 1000) * font.size;
-        final float textHeight =
-                (float )(font.pdFont.getFontDescriptor().getFontBoundingBox().getHeight() / 1000 * font.size * 0.865);
+        final float textHeight = font.pdFont.getFontDescriptor().getCapHeight() / 1000 * font.size;
         final var rectangle = new PDRectangle();
         rectangle.setLowerLeftX(position.x + offset);
         rectangle.setLowerLeftY(upperRightY - position.y - 3);
