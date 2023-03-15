@@ -30,6 +30,36 @@ import static org.apache.pdfbox.pdmodel.common.PDRectangle.A4;
 @Service
 public class CoverSheetService {
 
+    private static class Link {
+        private final String text;
+        private final String url;
+
+        private Link(String text, String url) {
+            this.text = text;
+            this.url = url;
+        }
+    }
+
+    private static class Font {
+        private final PDFont pdFont;
+        private final float size;
+
+        private Font(PDFont pdFont, float size) {
+            this.pdFont = pdFont;
+            this.size = size;
+        }
+    }
+
+    private static class Position {
+        private final float x;
+        private final float y;
+
+        private Position(float x, float y) {
+            this.x = x;
+            this.y = y;
+        }
+    }
+
     private final LoggingUtils logger;
 
     private final String imagesPath;
@@ -112,15 +142,12 @@ public class CoverSheetService {
 
         renderTextWithLink(
                 SIGNATURE_HELPTEXT_LINE_2_START,
-                SIGNATURE_HELPTEXT_LINE_2_LINK,
                 SIGNATURE_HELPTEXT_LINE_2_END,
-                ADOBE_DOWNLOAD_URL,
-                PDType1Font.HELVETICA,
-                14,
+                new Link(SIGNATURE_HELPTEXT_LINE_2_LINK, ADOBE_DOWNLOAD_URL),
+                new Font(PDType1Font.HELVETICA, 14),
                 coverSheet,
                 contentStream,
-                70,
-                420);
+                new Position(70, 420));
 
         contentStream.drawImage(emailImage, DEFAULT_LEFT_MARGIN, 370, INFORMATION_SECTION_IMAGE_WIDTH, INFORMATION_SECTION_IMAGE_HEIGHT);
         textWrapper(contentStream, EMAIL_HELPTEXT, 14, 70, 385);
@@ -179,37 +206,29 @@ public class CoverSheetService {
         return PDImageXObject.createFromFile(filePath, pdfDocument);
     }
 
-
-    // TODO DCAC-97 Reduce number of parameters.
     private void renderTextWithLink(final String preLinkText,
-                                    final String linkText,
                                     final String postLinkText,
-                                    final String linkUrl,
-                                    final PDFont font,
-                                    final float fontSize,
+                                    final Link link,
+                                    final Font font,
                                     final PDPage page,
                                     final PDPageContentStream contentStream,
-                                    final float xPosition,
-                                    final float yPosition)
+                                    final Position position)
             throws IOException {
         final float upperRightY = getMediaBox(page).getUpperRightY();
-        renderTextWithLink(
-                preLinkText, linkText, postLinkText, contentStream, font, fontSize, upperRightY, xPosition, yPosition);
-        buildLink(preLinkText, linkText, linkUrl, font, fontSize, page, upperRightY, xPosition, yPosition);
+        renderTextWithLink(preLinkText, link.text, postLinkText, contentStream, font, upperRightY, position);
+        buildLink(preLinkText, link, font, page, upperRightY, position);
     }
 
     private void renderTextWithLink(final String preLinkText,
                                     final String linkText,
                                     final String postLinkText,
                                     final PDPageContentStream contentStream,
-                                    final PDFont font,
-                                    final float fontSize,
+                                    final Font font,
                                     final float upperRightY,
-                                    final float xPosition,
-                                    final float yPosition) throws IOException {
+                                    final Position position) throws IOException {
         contentStream.beginText();
-        contentStream.setFont(font, fontSize);
-        contentStream.moveTextPositionByAmount( xPosition, upperRightY - yPosition);
+        contentStream.setFont(font.pdFont, font.size);
+        contentStream.moveTextPositionByAmount(position.x, upperRightY - position.y);
         contentStream.drawString(preLinkText);
 
         contentStream.setNonStrokingColor(BLUE);
@@ -221,19 +240,16 @@ public class CoverSheetService {
     }
 
     private void buildLink(final String preLinkText,
-                           final String linkText,
-                           final String linkUrl,
-                           final PDFont font,
-                           final float fontSize,
+                           final Link link,
+                           final Font font,
                            final PDPage page,
                            final float upperRightY,
-                           final float xPosition,
-                           final float yPosition) throws IOException {
-        final var link = new PDAnnotationLink();
-        underlineLink(link);
-        markUpClickableArea(preLinkText, linkText, link, font, fontSize, upperRightY, xPosition, yPosition);
-        setUpLinkAction(link, linkUrl);
-        page.getAnnotations().add(link);
+                           final Position position) throws IOException {
+        final var linkAnnotation = new PDAnnotationLink();
+        underlineLink(linkAnnotation);
+        markUpClickableArea(preLinkText, link.text, linkAnnotation, font, upperRightY, position);
+        setUpLinkAction(linkAnnotation, link.url);
+        page.getAnnotations().add(linkAnnotation);
     }
 
     // TODO DCAC-97 This line does not render in Chrome. Can this be fixed?
@@ -247,20 +263,19 @@ public class CoverSheetService {
     private void markUpClickableArea(final String preLinkText,
                                      final String linkText,
                                      final PDAnnotationLink link,
-                                     final PDFont font,
-                                     final float fontSize,
+                                     final Font font,
                                      final float upperRightY,
-                                     final float xPosition,
-                                     final float yPosition) throws IOException {
-        float offset = (font.getStringWidth(preLinkText) / 1000) * fontSize;
-        float textWidth = (font.getStringWidth(linkText) / 1000) * fontSize;
-        float textHeight = (float )(font.getFontDescriptor().getFontBoundingBox().getHeight() / 1000 * fontSize * 0.865);
-        final var position = new PDRectangle();
-        position.setLowerLeftX(xPosition + offset);
-        position.setLowerLeftY(upperRightY - yPosition - 3);
-        position.setUpperRightX(xPosition + offset + textWidth);
-        position.setUpperRightY(upperRightY - yPosition + textHeight);
-        link.setRectangle(position);
+                                     final Position position) throws IOException {
+        final float offset = (font.pdFont.getStringWidth(preLinkText) / 1000) * font.size;
+        final float textWidth = (font.pdFont.getStringWidth(linkText) / 1000) * font.size;
+        final float textHeight =
+                (float )(font.pdFont.getFontDescriptor().getFontBoundingBox().getHeight() / 1000 * font.size * 0.865);
+        final var rectangle = new PDRectangle();
+        rectangle.setLowerLeftX(position.x + offset);
+        rectangle.setLowerLeftY(upperRightY - position.y - 3);
+        rectangle.setUpperRightX(position.x + offset + textWidth);
+        rectangle.setUpperRightY(upperRightY - position.y + textHeight);
+        link.setRectangle(rectangle);
     }
 
     private void setUpLinkAction(final PDAnnotationLink link, final String linkUrl) {
