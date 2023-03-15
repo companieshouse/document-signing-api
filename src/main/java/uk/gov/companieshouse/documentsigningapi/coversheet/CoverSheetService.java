@@ -68,6 +68,7 @@ public class CoverSheetService {
     private static final float DEFAULT_LEFT_MARGIN = 25;
     private static final float INFORMATION_SECTION_IMAGE_HEIGHT = 25;
     private static final float INFORMATION_SECTION_IMAGE_WIDTH = 25;
+    private static final float OFFSET_TO_RIGHT_OF_IMAGES = 70;
 
     // Coversheet Strings
     private static final String CERTIFIED_DOCUMENT_TYPE = "Certified document";
@@ -93,6 +94,10 @@ public class CoverSheetService {
 
     private static final PDColor BLUE = new PDColor(new float[] { 0, 0, 1 }, PDDeviceRGB.INSTANCE);
     private static final PDColor BLACK = new PDColor(new float[] { 0, 0, 0 }, PDDeviceRGB.INSTANCE);
+
+    // Probably what this value represents?
+    private static final float POSTSCRIPT_TYPE_1_FONT_UPM = 1000;
+    private static final float LINE_OFFSET_BELOW_FONT = 3;
 
     public CoverSheetService(LoggingUtils logger, @Value("${environment.coversheet.images.path}") String imagesPath) {
         this.logger = logger;
@@ -131,14 +136,14 @@ public class CoverSheetService {
         insertText(contentStream, CERTIFIED_DOCUMENT_TYPE, PDType1Font.HELVETICA_BOLD, 24, 650);
 
         textWrapper(contentStream, getCompany(coverSheetData), 18, DEFAULT_LEFT_MARGIN, 620);
-        textWrapper(contentStream, getFilingHistory(coverSheetData), 18, 25, 590);
+        textWrapper(contentStream, getFilingHistory(coverSheetData), 18, DEFAULT_LEFT_MARGIN, 590);
         textWrapper(contentStream, DOCUMENT_SIGNED_TEXT, 18, DEFAULT_LEFT_MARGIN, 560);
 
         insertText(contentStream, PAGE_SPACER, PDType1Font.HELVETICA, 18, 530);
         insertText(contentStream, VIEW_FILE_HEADING, PDType1Font.HELVETICA_BOLD, 18, 480);
 
         contentStream.drawImage(signatureImage, DEFAULT_LEFT_MARGIN, 420, INFORMATION_SECTION_IMAGE_WIDTH, INFORMATION_SECTION_IMAGE_HEIGHT);
-        textWrapper(contentStream, SIGNATURE_HELPTEXT_LINE_1, 14, 70, 440);
+        textWrapper(contentStream, SIGNATURE_HELPTEXT_LINE_1, 14, OFFSET_TO_RIGHT_OF_IMAGES, 440);
 
         renderTextWithLink(
                 SIGNATURE_HELPTEXT_LINE_2_START,
@@ -147,13 +152,13 @@ public class CoverSheetService {
                 new Font(PDType1Font.HELVETICA, 14),
                 coverSheet,
                 contentStream,
-                new Position(70, 420));
+                new Position(OFFSET_TO_RIGHT_OF_IMAGES, 420));
 
         contentStream.drawImage(emailImage, DEFAULT_LEFT_MARGIN, 370, INFORMATION_SECTION_IMAGE_WIDTH, INFORMATION_SECTION_IMAGE_HEIGHT);
-        textWrapper(contentStream, EMAIL_HELPTEXT, 14, 70, 385);
+        textWrapper(contentStream, EMAIL_HELPTEXT, 14, OFFSET_TO_RIGHT_OF_IMAGES, 385);
 
         contentStream.drawImage(printerImage, DEFAULT_LEFT_MARGIN, 325, INFORMATION_SECTION_IMAGE_WIDTH, INFORMATION_SECTION_IMAGE_HEIGHT);
-        textWrapper(contentStream, PRINTER_HELPTEXT, 14, 70, 340);
+        textWrapper(contentStream, PRINTER_HELPTEXT, 14, OFFSET_TO_RIGHT_OF_IMAGES, 340);
 
         contentStream.close();
     }
@@ -266,12 +271,13 @@ public class CoverSheetService {
                                      final Font font,
                                      final float upperRightY,
                                      final Position position) throws IOException {
-        final float offset = (font.pdFont.getStringWidth(preLinkText) / 1000) * font.size;
-        final float textWidth = (font.pdFont.getStringWidth(linkText) / 1000) * font.size;
-        final float textHeight = font.pdFont.getFontDescriptor().getCapHeight() / 1000 * font.size;
+        final float offset = font.pdFont.getStringWidth(preLinkText) / POSTSCRIPT_TYPE_1_FONT_UPM * font.size;
+        final float textWidth = font.pdFont.getStringWidth(linkText) / POSTSCRIPT_TYPE_1_FONT_UPM * font.size;
+        final float textHeight =
+                font.pdFont.getFontDescriptor().getCapHeight() / POSTSCRIPT_TYPE_1_FONT_UPM * font.size;
         final var rectangle = new PDRectangle();
         rectangle.setLowerLeftX(position.x + offset);
-        rectangle.setLowerLeftY(upperRightY - position.y - 3);
+        rectangle.setLowerLeftY(upperRightY - position.y - LINE_OFFSET_BELOW_FONT);
         rectangle.setUpperRightX(position.x + offset + textWidth);
         rectangle.setUpperRightY(upperRightY - position.y + textHeight);
         link.setRectangle(rectangle);
