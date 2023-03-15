@@ -189,7 +189,7 @@ public class CoverSheetService {
                                          final float xPosition,
                                          final float yPosition)
             throws IOException {
-        final float upperRightY = page.getMediaBox().getUpperRightY();
+        final float upperRightY = getMediaBox(page).getUpperRightY();
 
         final var blue = new PDColor(new float[] { 0, 0, 1 }, PDDeviceRGB.INSTANCE);
         final var black = new PDColor(new float[] { 0, 0, 0 }, PDDeviceRGB.INSTANCE);
@@ -234,5 +234,9 @@ public class CoverSheetService {
 
         page.getAnnotations().add(txtLink);
 
+    }
+
+    protected PDRectangle getMediaBox(final PDPage page) {
+        return page.getMediaBox();
     }
 }

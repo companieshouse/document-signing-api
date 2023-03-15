@@ -4,6 +4,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.PDPageTree;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,10 +33,21 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class CoverSheetServiceTest {
 
+    private static final class TestCoverSheetService extends CoverSheetService {
+
+        public TestCoverSheetService(LoggingUtils logger, String imagesPath) {
+            super(logger, imagesPath);
+        }
+
+        protected PDRectangle getMediaBox(final PDPage page) {
+            return new PDRectangle();
+        }
+    }
+
     private static final IOException PDF_BOX_ORIGINATED_EXCEPTION = new IOException("Test originated exception");
 
     @InjectMocks
-    private CoverSheetService coverSheetService;
+    private TestCoverSheetService coverSheetService;
 
     @Mock
     private LoggingUtils loggingUtils;
