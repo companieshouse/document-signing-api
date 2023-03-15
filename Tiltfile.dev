@@ -1,18 +1,26 @@
 local_resource(
   name = 'dev:document-signing-api-build',
-  cmd = 'mvn compile',
+  cmd = 'export JAVA_HOME=/Users/vjackson/.sdkman/candidates/java/11.0.13.8.1-amzn && mvn compile',
   deps = ['src']
 )
 
 custom_build(
   ref = '169942020521.dkr.ecr.eu-west-1.amazonaws.com/local/document-signing-api',
-  command = 'mvn compile jib:dockerBuild -Dimage=$EXPECTED_REF',
+  command = 'export JAVA_HOME=/Users/vjackson/.sdkman/candidates/java/11.0.13.8.1-amzn && mvn compile jib:dockerBuild -Dimage=$EXPECTED_REF',
   live_update = [
     sync(
       local_path = './target/classes',
       remote_path = '/app/classes'
     ),
+    sync(
+      local_path = './src/test/resources/keystore.jks',
+      remote_path = '/app/keystore.jks'
+    ),
+    sync(
+          local_path = './src/main/resources/signature.png',
+          remote_path = '/app/signature.png'
+        ),
     restart_container()
   ],
-  deps = ['./target/classes']
+  deps = ['./target/classes', './src/test/resources/keystore.jks', './src/main/resources/signature.png']
 )
