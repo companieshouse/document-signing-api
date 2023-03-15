@@ -228,14 +228,14 @@ public class CoverSheetService {
                                     final Position position) throws IOException {
         contentStream.beginText();
         contentStream.setFont(font.pdFont, font.size);
-        contentStream.moveTextPositionByAmount(position.x, upperRightY - position.y);
-        contentStream.drawString(preLinkText);
+        contentStream.newLineAtOffset(position.x, upperRightY - position.y);
+        contentStream.showText(preLinkText);
 
         contentStream.setNonStrokingColor(BLUE);
-        contentStream.drawString(linkText);
+        contentStream.showText(linkText);
 
         contentStream.setNonStrokingColor(BLACK);
-        contentStream.drawString(postLinkText);
+        contentStream.showText(postLinkText);
         contentStream.endText();
     }
 
