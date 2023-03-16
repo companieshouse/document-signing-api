@@ -277,8 +277,8 @@ class SignDocumentControllerIntegrationTest {
         signPdfRequestDTO.setDocumentLocation(unsignedDocumentLocation);
         signPdfRequestDTO.setDocumentType(CERTIFIED_COPY_DOCUMENT_TYPE);
         signPdfRequestDTO.setSignatureOptions(SIGNATURE_OPTIONS);
-        signPdfRequestDTO.setFolderName(SIGNED_DOC_STORAGE_PREFIX + "/" + FOLDER_NAME);
-        signPdfRequestDTO.setFilename(SIGNED_DOCUMENT_FILENAME);
+        signPdfRequestDTO.setPrefix(SIGNED_DOC_STORAGE_PREFIX + "/" + FOLDER_NAME);
+        signPdfRequestDTO.setKey(SIGNED_DOCUMENT_FILENAME);
         signPdfRequestDTO.setCoverSheetData(coverSheetData);
         return signPdfRequestDTO;
     }
