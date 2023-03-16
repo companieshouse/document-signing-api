@@ -92,8 +92,8 @@ public class CoverSheetService {
     private static final String DAY_MONTH_YEAR_FORMAT = "d MMMM uuuu";
     private static final String DIRECTORY_SEPARATOR = "/";
 
-    private static final PDColor BLUE = new PDColor(new float[] { 0, 0, 1 }, PDDeviceRGB.INSTANCE);
-    private static final PDColor BLACK = new PDColor(new float[] { 0, 0, 0 }, PDDeviceRGB.INSTANCE);
+    static final PDColor BLUE = new PDColor(new float[] { 0, 0, 1 }, PDDeviceRGB.INSTANCE);
+    static final PDColor BLACK = new PDColor(new float[] { 0, 0, 0 }, PDDeviceRGB.INSTANCE);
 
     // Probably what this value represents?
     private static final float POSTSCRIPT_TYPE_1_FONT_UPM = 1000;
