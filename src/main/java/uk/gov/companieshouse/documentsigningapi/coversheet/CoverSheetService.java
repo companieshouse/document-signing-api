@@ -257,7 +257,6 @@ public class CoverSheetService {
         page.getAnnotations().add(linkAnnotation);
     }
 
-    // TODO DCAC-97 This line does not render in Chrome. Can this be fixed?
     private void underlineLink(final PDAnnotationLink link) {
         final var underline = new PDBorderStyleDictionary();
         underline.setStyle(PDBorderStyleDictionary.STYLE_UNDERLINE);
@@ -281,6 +280,12 @@ public class CoverSheetService {
         rectangle.setUpperRightX(position.x + offset + textWidth);
         rectangle.setUpperRightY(upperRightY - position.y + textHeight);
         link.setRectangle(rectangle);
+
+        // Apparently this ensures the reliable rendering of annotations.
+        // See https://issues.apache.org/jira/browse/PDFBOX-3141.
+        // Without it, cannot see the link underline in Chrome browser.
+        // Call this AFTER the rectangle has been set.
+        link.constructAppearances();
     }
 
     private void setUpLinkAction(final PDAnnotationLink link, final String linkUrl) {
