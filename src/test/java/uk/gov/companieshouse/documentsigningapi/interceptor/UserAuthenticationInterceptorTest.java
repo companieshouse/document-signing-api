@@ -33,26 +33,53 @@ class UserAuthenticationInterceptorTest {
         assertTrue(userAuthenticationInterceptor.preHandle(request, response, null));
     }
     @Test
-    @DisplayName("Authentication : ERIC-Identity header missing")
-    void missingEricIdentityHeader() {
+    @DisplayName("Authentication : ERIC-Identity header EMPTY")
+    void emptyEricIdentityHeader() {
         lenient().doReturn("").when(request).getHeader(ERIC_IDENTITY_HEADER_NAME);
         lenient().doReturn(ERIC_IDENTITY_HEADER_VALUE).when(request).getHeader(ERIC_IDENTITY_TYPE_HEADER_NAME);
 
         assertFalse(userAuthenticationInterceptor.preHandle(request, response, null));
     }
     @Test
-    @DisplayName("Authentication : ERIC-Identity-Type header missing")
-    void missingEricIdentityTypeHeader() {
+    @DisplayName("Authentication : ERIC-Identity-Type header EMPTY")
+    void emptyEricIdentityTypeHeader() {
         lenient().doReturn(ERIC_IDENTITY_HEADER_VALUE).when(request).getHeader(ERIC_IDENTITY_HEADER_NAME);
         lenient().doReturn("").when(request).getHeader(ERIC_IDENTITY_TYPE_HEADER_NAME);
 
         assertFalse(userAuthenticationInterceptor.preHandle(request, response, null));
     }
     @Test
-    @DisplayName("Authentication : ERIC headers missing")
-    void missingBothEricHeaders() {
+    @DisplayName("Authentication : ERIC headers EMPTY")
+    void emptyBothEricHeaders() {
         lenient().doReturn("").when(request).getHeader(ERIC_IDENTITY_HEADER_NAME);
         lenient().doReturn("").when(request).getHeader(ERIC_IDENTITY_TYPE_HEADER_NAME);
+
+        assertFalse(userAuthenticationInterceptor.preHandle(request, response, null));
+    }
+    @Test
+    @DisplayName("Authentication : ERIC-Identity header MISSING")
+    void missingEricIdentityHeader() {
+
+        lenient().doReturn(null).when(request).getHeader(ERIC_IDENTITY_HEADER_NAME);
+        lenient().doReturn(ERIC_IDENTITY_HEADER_VALUE).when(request).getHeader(ERIC_IDENTITY_TYPE_HEADER_NAME);
+
+        assertFalse(userAuthenticationInterceptor.preHandle(request, response, null));
+    }
+    @Test
+    @DisplayName("Authentication : ERIC-Identity-Type header MISSING")
+    void missingEricIdentityTypeHeader() {
+
+        lenient().doReturn(ERIC_IDENTITY_HEADER_VALUE).when(request).getHeader(ERIC_IDENTITY_HEADER_NAME);
+        lenient().doReturn(null).when(request).getHeader(ERIC_IDENTITY_TYPE_HEADER_NAME);
+
+        assertFalse(userAuthenticationInterceptor.preHandle(request, response, null));
+    }
+    @Test
+    @DisplayName("Authentication : ERIC headers MISSING")
+    void missingBothEricHeaders() {
+
+        lenient().doReturn(null).when(request).getHeader(ERIC_IDENTITY_HEADER_NAME);
+        lenient().doReturn(null).when(request).getHeader(ERIC_IDENTITY_TYPE_HEADER_NAME);
 
         assertFalse(userAuthenticationInterceptor.preHandle(request, response, null));
     }

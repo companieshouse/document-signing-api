@@ -25,8 +25,8 @@ public class UserAuthorisationInterceptorTest {
     private HttpServletResponse response;
 
     @Test
-    @DisplayName("preHandle ERIC-Authorised-Key-Roles is present")
-    void willAuthorise_IfEricHeadersArePresent() throws Exception {
+    @DisplayName("preHandle ERIC-Authorised-Key-Roles is present and CORRECT value")
+    void willAuthorise_IfEricHeadersArePresentAndCorrectValue() throws Exception {
         lenient()
             .doReturn("*")
             .when(request)
@@ -35,10 +35,20 @@ public class UserAuthorisationInterceptorTest {
         assertTrue(userAuthorisationInterceptor.preHandle(request, response, null));
     }
     @Test
-    @DisplayName("preHandle ERIC-Authorised-Key-Roles is NOT present")
-    void willNotAuthorise_IfEricHeadersAreNotPresent() throws Exception {
+    @DisplayName("preHandle ERIC-Authorised-Key-Roles is MISSING")
+    void willNotAuthorise_IfEricHeadersAreMissing() throws Exception {
         lenient()
             .doReturn(null)
+            .when(request)
+            .getHeader(ERIC_AUTHORIZED_KEY_ROLES);
+
+        assertFalse(userAuthorisationInterceptor.preHandle(request, response, null));
+    }
+    @Test
+    @DisplayName("preHandle ERIC-Authorised-Key-Roles is present and INCORRECT value")
+    void willNotAuthorise_IfEricHeadersPresentAndIncorrectValue() throws Exception {
+        lenient()
+            .doReturn("xxx")
             .when(request)
             .getHeader(ERIC_AUTHORIZED_KEY_ROLES);
 
