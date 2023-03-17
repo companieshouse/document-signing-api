@@ -14,6 +14,7 @@ import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.NoSuchBucketException;
 import uk.gov.companieshouse.documentsigningapi.aws.S3Service;
 import uk.gov.companieshouse.documentsigningapi.coversheet.CoverSheetService;
+import uk.gov.companieshouse.documentsigningapi.dto.CoverSheetDataDTO;
 import uk.gov.companieshouse.documentsigningapi.dto.SignPdfRequestDTO;
 import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
 import uk.gov.companieshouse.documentsigningapi.signing.SigningService;
@@ -121,19 +122,19 @@ class SignDocumentControllerTest {
     @DisplayName("signPdf adds cover sheet if required")
     void addsCoverSheetIfRequired() throws Exception {
         when(s3Service.retrieveUnsignedDocument(anyString())).thenReturn(unsignedDocument);
-        when(coverSheetService.addCoverSheet(any(byte[].class))).thenReturn(new byte[]{});
+        when(coverSheetService.addCoverSheet(any(byte[].class), any(CoverSheetDataDTO.class))).thenReturn(new byte[]{});
         when(unsignedDocument.readAllBytes()).thenReturn(new byte[]{});
         when(loggingUtils.getLogger()).thenReturn(logger);
-
 
         final SignPdfRequestDTO signPdfRequestDTO = new SignPdfRequestDTO();
         signPdfRequestDTO.setDocumentLocation(TOKEN_UNSIGNED_DOCUMENT_LOCATION);
         signPdfRequestDTO.setDocumentType("certified-copy");
         signPdfRequestDTO.setSignatureOptions(List.of("cover-sheet"));
+        signPdfRequestDTO.setCoverSheetData(new CoverSheetDataDTO());
 
         controller.signPdf(signPdfRequestDTO);
 
-        verify(coverSheetService).addCoverSheet(any(byte[].class));
+        verify(coverSheetService).addCoverSheet(any(byte[].class), any(CoverSheetDataDTO.class));
 
     }
 
@@ -149,7 +150,8 @@ class SignDocumentControllerTest {
 
         controller.signPdf(signPdfRequestDTO);
 
-        verify(coverSheetService, times(0)).addCoverSheet(any(byte[].class));
+        verify(coverSheetService, times(0))
+                .addCoverSheet(any(byte[].class), any(CoverSheetDataDTO.class));
     }
 
 }

@@ -66,8 +66,8 @@ public class SignDocumentController {
     public ResponseEntity<Object> signPdf(final @RequestBody SignPdfRequestDTO signPdfRequestDTO) {
 
         final var unsignedDocumentLocation = signPdfRequestDTO.getDocumentLocation();
-        final var folderName = signPdfRequestDTO.getFolderName();
-        final var filename = signPdfRequestDTO.getFilename();
+        final var prefix = signPdfRequestDTO.getPrefix();
+        final var key = signPdfRequestDTO.getKey();
         final var map = logger.createLogMap();
         map.put(SIGN_PDF_REQUEST, signPdfRequestDTO);
         try {
@@ -75,7 +75,7 @@ public class SignDocumentController {
             final var coveredDoc = addCoverSheetIfRequired(unsignedDoc.readAllBytes(), signPdfRequestDTO);
             final var signedPDF = signingService.signPDF(coveredDoc);
             final var signedDocumentLocation =
-                    s3Service.storeSignedDocument(signedPDF, folderName, filename);
+                    s3Service.storeSignedDocument(signedPDF, prefix, key);
             return buildResponse(signedDocumentLocation, signPdfRequestDTO, map);
         } catch (URISyntaxException use) {
             return buildErrorResponse(BAD_REQUEST.value(), use, map);
@@ -91,7 +91,7 @@ public class SignDocumentController {
                                            final SignPdfRequestDTO request) {
         return request.getSignatureOptions() != null &&
                 request.getSignatureOptions().contains(COVER_SHEET_SIGNATURE_OPTION) ?
-                coverSheetService.addCoverSheet(document) : document;
+                coverSheetService.addCoverSheet(document, request.getCoverSheetData()) : document;
     }
 
     private ResponseEntity<Object> buildResponse(final String signedDocumentLocation,
