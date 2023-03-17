@@ -49,15 +49,15 @@ public class S3Service {
 
     /**
      * Writes the (signed) document content provided to a specific location in a specific S3 bucket.
-     * The bucket name is obtained from configuration. The location (S3 key) is derived from the folder
-     * name (effectively a path) and the filename.
+     * The bucket name is obtained from configuration. The location (S3 key) is derived from the prefix
+     * (effectively a path) and the key (effectively a filename).
      * @param signedDocument byte array containing the signed document content
-     * @param folderName the name of the folder within which the document will be stored in the S3 bucket
-     * @param fileName the name given to the file stored in the S3 bucket
+     * @param prefix the path of the "folder" within which the document will be stored in the S3 bucket
+     * @param key the name given to the object (file) stored in the S3 bucket (i.e., the document filename)
      * @return the location of signed document stored in S3, as an S3 URI string
      */
-    public String storeSignedDocument(final byte[] signedDocument, final String folderName, final String fileName) {
-        final var filePath = folderName + DIRECTORY_SEPARATOR + fileName;
+    public String storeSignedDocument(final byte[] signedDocument, final String prefix, final String key) {
+        final var filePath = prefix + DIRECTORY_SEPARATOR + key;
         final var putObjectRequest = PutObjectRequest.builder()
                 .bucket(signedDocBucketName)
                 .key(filePath)
