@@ -13,18 +13,17 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.pdmodel.interactive.action.PDActionURI;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationLink;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDBorderStyleDictionary;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.documentsigningapi.dto.CoverSheetDataDTO;
 import uk.gov.companieshouse.documentsigningapi.exception.CoverSheetException;
 import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
+import uk.gov.companieshouse.documentsigningapi.util.ImagesBean;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-import static org.apache.commons.lang.StringUtils.isEmpty;
 import static org.apache.pdfbox.pdmodel.common.PDRectangle.A4;
 
 @Service
@@ -60,10 +59,6 @@ public class CoverSheetService {
         }
     }
 
-    private final LoggingUtils logger;
-
-    private final String imagesPath;
-
     // Coversheet measurements
     private static final float DEFAULT_LEFT_MARGIN = 25;
     private static final float INFORMATION_SECTION_IMAGE_HEIGHT = 25;
@@ -90,7 +85,6 @@ public class CoverSheetService {
 
     // Other constants
     private static final String DAY_MONTH_YEAR_FORMAT = "d MMMM uuuu";
-    private static final String DIRECTORY_SEPARATOR = "/";
 
     static final PDColor BLUE = new PDColor(new float[] { 0, 0, 1 }, PDDeviceRGB.INSTANCE);
     static final PDColor BLACK = new PDColor(new float[] { 0, 0, 0 }, PDDeviceRGB.INSTANCE);
@@ -99,9 +93,13 @@ public class CoverSheetService {
     private static final float POSTSCRIPT_TYPE_1_FONT_UPM = 1000;
     private static final float LINE_OFFSET_BELOW_FONT = 3;
 
-    public CoverSheetService(LoggingUtils logger, @Value("${environment.coversheet.images.path}") String imagesPath) {
+    private final LoggingUtils logger;
+
+    private final ImagesBean images;
+
+    public CoverSheetService(LoggingUtils logger, ImagesBean images) {
         this.logger = logger;
-        this.imagesPath = imagesPath;
+        this.images = images;
     }
 
     public byte[] addCoverSheet(final byte[] document, final CoverSheetDataDTO coverSheetData) {
@@ -125,9 +123,9 @@ public class CoverSheetService {
     private void buildCoverSheetContent(final PDDocument pdfDocument,
                                         final PDPage coverSheet,
                                         final CoverSheetDataDTO coverSheetData) throws IOException {
-        PDImageXObject signatureImage = createImage("signature.jpeg", pdfDocument);
-        PDImageXObject emailImage = createImage("email.jpeg", pdfDocument);
-        PDImageXObject printerImage = createImage("printer.jpeg", pdfDocument);
+        PDImageXObject signatureImage = images.createImage("signature.jpeg", pdfDocument);
+        PDImageXObject emailImage = images.createImage("email.jpeg", pdfDocument);
+        PDImageXObject printerImage = images.createImage("printer.jpeg", pdfDocument);
 
         PDPageContentStream contentStream = new PDPageContentStream(pdfDocument, coverSheet);
 
@@ -204,11 +202,6 @@ public class CoverSheetService {
 
     private String getFilingHistory(final CoverSheetDataDTO data) {
         return data.getFilingHistoryDescription() + " (" + data.getFilingHistoryType() + ")";
-    }
-
-    private PDImageXObject createImage(final String fileName, final PDDocument pdfDocument) throws IOException {
-        final String filePath = !isEmpty(imagesPath) ? imagesPath + DIRECTORY_SEPARATOR + fileName : fileName;
-        return PDImageXObject.createFromFile(filePath, pdfDocument);
     }
 
     private void renderTextWithLink(final String preLinkText,

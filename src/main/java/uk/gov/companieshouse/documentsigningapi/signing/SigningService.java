@@ -11,7 +11,6 @@ import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
-import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationTextMarkup;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceDictionary;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceStream;
@@ -29,6 +28,7 @@ import uk.gov.companieshouse.documentsigningapi.exception.DocumentSigningExcepti
 import uk.gov.companieshouse.documentsigningapi.exception.DocumentUnavailableException;
 import uk.gov.companieshouse.documentsigningapi.exception.ImageUnavailableException;
 import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
+import uk.gov.companieshouse.documentsigningapi.util.ImagesBean;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -56,24 +56,25 @@ public class SigningService {
 
     private static final String SIGNING_AUTHORITY_NAME = "Companies House";
 
-    private static final String DIGITAL_SEARCH_COPY_STAMP_PATH = "app/digital-search-copy-stamp.png";
-
     private final String keystoreType;
     private final String keystorePath;
     private final String keystorePassword;
     private final String certificateAlias;
     private final LoggingUtils logger;
 
+    private final ImagesBean images;
+
     public SigningService(@Value("${environment.keystore.type}") String keystoreType,
                           @Value("${environment.keystore.path}") String keystorePath,
                           @Value("${environment.keystore.password}") String keystorePassword,
                           @Value("${environment.certificate.alias}") String certificateAlias,
-                          LoggingUtils logger) {
+                          LoggingUtils logger, ImagesBean images) {
         this.keystoreType = keystoreType;
         this.keystorePath = keystorePath;
         this.keystorePassword = keystorePassword;
         this.certificateAlias = certificateAlias;
         this.logger = logger;
+        this.images = images;
     }
 
     public byte[] signPDF(byte[] pdfToSign) throws DocumentSigningException, DocumentUnavailableException {
@@ -143,9 +144,14 @@ public class SigningService {
         final Rectangle2D humanRect = new Rectangle2D.Float(50, 600, 500, 150);
         final PDRectangle rect = createSignatureRectangle(document, humanRect);
         final SignatureOptions signatureOptions = new SignatureOptions();
-        final File imageFile = ResourceUtils.getFile(DIGITAL_SEARCH_COPY_STAMP_PATH);
         signatureOptions.setVisualSignature(
-                createVisualSignatureTemplate(document, 0, rect, pdSignature, (Signature) signature, imageFile));
+                createVisualSignatureTemplate(
+                        document,
+                        0,
+                        rect,
+                        pdSignature,
+                        (Signature) signature,
+                        "digital-search-copy-stamp.jpeg"));
         signatureOptions.setPage(0);
 
         // register signature dictionary and sign interface
@@ -203,7 +209,7 @@ public class SigningService {
                                                       PDRectangle rect,
                                                       PDSignature pdSignature,
                                                       Signature signature,
-                                                      File imageFile) throws IOException
+                                                      String filename) throws IOException
     {
         PDDocument doc = new PDDocument();
 
@@ -274,20 +280,17 @@ public class SigningService {
         cs.addRect(-5000, -5000, 10000, 10000);
         cs.fill();
 
-        if (imageFile != null)
-        {
-            // show background image
-            // save and restore graphics if the image is too large and needs to be scaled
-            cs.saveGraphicsState();
-            cs.transform(Matrix.getScaleInstance(0.25f, 0.25f));
-            try {
-                PDImageXObject img = PDImageXObject.createFromFileByExtension(imageFile, doc);
-                cs.drawImage(img, 1500, 150);
-                cs.restoreGraphicsState();
-            } catch (IOException ioe) {
-                logger.getLogger().error(ioe.getMessage(), ioe);
-                throw new ImageUnavailableException("Could not load image from file " + imageFile.getName(), ioe);
-            }
+        // show background image
+        // save and restore graphics if the image is too large and needs to be scaled
+        cs.saveGraphicsState();
+        cs.transform(Matrix.getScaleInstance(0.25f, 0.25f));
+        try {
+            PDImageXObject img = images.createImage(filename, doc);
+            cs.drawImage(img, 1500, 150);
+            cs.restoreGraphicsState();
+        } catch (IOException ioe) {
+            logger.getLogger().error(ioe.getMessage(), ioe);
+            throw new ImageUnavailableException("Could not load image from file " + filename, ioe);
         }
 
         // show text
@@ -297,7 +300,7 @@ public class SigningService {
 
         // TODO DCAC-108 Is date format in line with prototype? Also, needs to include timezone, unlike prototype.
         // See https://stackoverflow.com/questions/12575990
-        // for better date formatting]
+        // for better date formatting.
         addLine(cs, "On: " + pdSignature.getSignDate().getTime());
 
         addLine(cs, "");

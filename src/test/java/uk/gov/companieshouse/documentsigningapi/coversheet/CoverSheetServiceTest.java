@@ -21,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.documentsigningapi.dto.CoverSheetDataDTO;
 import uk.gov.companieshouse.documentsigningapi.exception.CoverSheetException;
 import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
+import uk.gov.companieshouse.documentsigningapi.util.ImagesBean;
 import uk.gov.companieshouse.logging.Logger;
 
 import java.io.ByteArrayOutputStream;
@@ -46,8 +47,8 @@ class CoverSheetServiceTest {
 
     private static final class TestCoverSheetService extends CoverSheetService {
 
-        public TestCoverSheetService(LoggingUtils logger, String imagesPath) {
-            super(logger, imagesPath);
+        public TestCoverSheetService(LoggingUtils logger, ImagesBean images) {
+            super(logger, images);
         }
 
         protected PDRectangle getMediaBox(final PDPage page) {
@@ -65,6 +66,9 @@ class CoverSheetServiceTest {
 
     @Mock
     private Logger logger;
+
+    @Mock
+    private ImagesBean imagesBean;
 
     @Mock
     private PDDocument document;
@@ -88,7 +92,6 @@ class CoverSheetServiceTest {
     interface TestExecutor {
         void executeTest(MockedStatic<PDDocument> pdfBox,
                          MockedConstruction<PDPage> pageConstructor,
-                         MockedStatic<PDImageXObject> mockedImage,
                          MockedConstruction<PDPageContentStream> streamConstructor,
                          MockedConstruction<PDAnnotationLink> linkConstructor) throws IOException;
     }
@@ -96,7 +99,7 @@ class CoverSheetServiceTest {
     @Test
     @DisplayName("addCoverSheet delegates cover sheet creation to pdfBox")
     void delegatesCoverSheetCreationToPdfBox() throws IOException {
-        executeTest((pdfBox, pageConstructor, mockedImage, streamConstructor, linkConstructor) -> {
+        executeTest((pdfBox, pageConstructor, streamConstructor, linkConstructor) -> {
 
             final byte[] docWithCoverSheet =
                     coverSheetService.addCoverSheet(new byte[]{}, new CoverSheetDataDTO());
@@ -112,16 +115,13 @@ class CoverSheetServiceTest {
     @Test
     @DisplayName("addCoverSheet loads and renders 3 images")
     void loadsAndRendersImages() throws IOException {
-        executeTest((pdfBox, pageConstructor, mockedImage, streamConstructor, linkConstructor) -> {
+        executeTest((pdfBox, pageConstructor, streamConstructor, linkConstructor) -> {
 
-            mockedImage.when(
-                            () -> PDImageXObject.createFromFile(any(String.class), eq(document)))
-                    .thenReturn(image);
+            when(imagesBean.createImage(any(String.class), eq(document))).thenReturn(image);
 
             coverSheetService.addCoverSheet(new byte[]{}, new CoverSheetDataDTO());
 
-            mockedImage.verify(
-                    () -> PDImageXObject.createFromFile(any(String.class), eq(document)), times(3));
+            verify(imagesBean, times(3)).createImage(any(String.class), eq(document));
             assertThat(streamConstructor.constructed().size(), is (1));
             final var stream = streamConstructor.constructed().get(0);
             verify(stream, times(3))
@@ -136,7 +136,7 @@ class CoverSheetServiceTest {
     @Test
     @DisplayName("addCoverSheet renders text 15 times")
     void rendersText() throws IOException {
-        executeTest((pdfBox, pageConstructor, mockedImage, streamConstructor, linkConstructor) -> {
+        executeTest((pdfBox, pageConstructor, streamConstructor, linkConstructor) -> {
 
             coverSheetService.addCoverSheet(new byte[]{}, new CoverSheetDataDTO());
 
@@ -149,7 +149,7 @@ class CoverSheetServiceTest {
     @Test
     @DisplayName("addCoverSheet creates hyperlink and adds it to the coversheet")
     void createsLinkAndAddsItToCoverSheet() throws IOException {
-        executeTest((pdfBox, pageConstructor, mockedImage, streamConstructor, linkConstructor) -> {
+        executeTest((pdfBox, pageConstructor, streamConstructor, linkConstructor) -> {
 
             coverSheetService.addCoverSheet(new byte[]{}, new CoverSheetDataDTO());
 
@@ -165,7 +165,7 @@ class CoverSheetServiceTest {
     @Test
     @DisplayName("addCoverSheet renders link text in blue")
     void rendersLinkTextInBlue() throws IOException {
-        executeTest((pdfBox, pageConstructor, mockedImage, streamConstructor, linkConstructor) -> {
+        executeTest((pdfBox, pageConstructor, streamConstructor, linkConstructor) -> {
 
             coverSheetService.addCoverSheet(new byte[]{}, new CoverSheetDataDTO());
 
@@ -179,7 +179,7 @@ class CoverSheetServiceTest {
     @Test
     @DisplayName("addCoverSheet underlines the hyperlink")
     void underlinesLink() throws IOException {
-        executeTest((pdfBox, pageConstructor, mockedImage, streamConstructor, linkConstructor) -> {
+        executeTest((pdfBox, pageConstructor, streamConstructor, linkConstructor) -> {
 
             coverSheetService.addCoverSheet(new byte[]{}, new CoverSheetDataDTO());
 
@@ -193,7 +193,7 @@ class CoverSheetServiceTest {
     @Test
     @DisplayName("addCoverSheet marks up the clickable area")
     void marksUpClickableArea() throws IOException {
-        executeTest((pdfBox, pageConstructor, mockedImage, streamConstructor, linkConstructor) -> {
+        executeTest((pdfBox, pageConstructor, streamConstructor, linkConstructor) -> {
 
             coverSheetService.addCoverSheet(new byte[]{}, new CoverSheetDataDTO());
 
@@ -207,7 +207,7 @@ class CoverSheetServiceTest {
     @Test
     @DisplayName("addCoverSheet sets up the hyperlink with a URI action")
     void setsUpLinkAction() throws IOException {
-        executeTest((pdfBox, pageConstructor, mockedImage, streamConstructor, linkConstructor) -> {
+        executeTest((pdfBox, pageConstructor, streamConstructor, linkConstructor) -> {
 
             coverSheetService.addCoverSheet(new byte[]{}, new CoverSheetDataDTO());
 
@@ -241,15 +241,12 @@ class CoverSheetServiceTest {
         try (final var pdfBox = mockStatic(PDDocument.class)) {
             try (final MockedConstruction<PDPage> pageConstructor =
                          mockConstructionWithAnswer(PDPage.class, invocationOnMock -> annotations)) {
-                try (final var mockedImage = mockStatic(PDImageXObject.class)) {
-                    try (final var streamConstructor = mockConstruction(PDPageContentStream.class)) {
-                        try (final var linkConstructor = mockConstruction(PDAnnotationLink.class)) {
-                            pdfBox.when(() -> PDDocument.load(any(byte[].class))).thenReturn(document);
-                            when(document.getPages()).thenReturn(pages);
-                            when(document.getPage(0)).thenReturn(page);
-                            executor.executeTest(
-                                    pdfBox, pageConstructor, mockedImage, streamConstructor, linkConstructor);
-                        }
+                try (final var streamConstructor = mockConstruction(PDPageContentStream.class)) {
+                    try (final var linkConstructor = mockConstruction(PDAnnotationLink.class)) {
+                        pdfBox.when(() -> PDDocument.load(any(byte[].class))).thenReturn(document);
+                        when(document.getPages()).thenReturn(pages);
+                        when(document.getPage(0)).thenReturn(page);
+                        executor.executeTest(pdfBox, pageConstructor, streamConstructor, linkConstructor);
                     }
                 }
             }
