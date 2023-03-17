@@ -51,6 +51,8 @@ import java.security.cert.CertificateException;
 import java.util.Calendar;
 import java.util.List;
 
+import static uk.gov.companieshouse.documentsigningapi.coversheet.LayoutConstants.DEFAULT_MARGIN;
+
 @Service
 public class SigningService {
 
@@ -141,13 +143,18 @@ public class SigningService {
         // So a human would want to position a signature (x,y) units from the
         // top left of the displayed page, and the field has a horizontal width and a vertical height
         // regardless of page rotation.
-        final Rectangle2D humanRect = new Rectangle2D.Float(50, 600, 500, 150);
+        final PDPage coverSheet = document.getPage(0);
+        final Rectangle2D humanRect =
+                new Rectangle2D.Float(
+                        DEFAULT_MARGIN,
+                        600,
+                        coverSheet.getBBox().getWidth() - 2 * DEFAULT_MARGIN,
+                        150);
         final PDRectangle rect = createSignatureRectangle(document, humanRect);
         final SignatureOptions signatureOptions = new SignatureOptions();
         signatureOptions.setVisualSignature(
                 createVisualSignatureTemplate(
-                        document,
-                        0,
+                        coverSheet,
                         rect,
                         pdSignature,
                         (Signature) signature,
@@ -204,8 +211,7 @@ public class SigningService {
     }
 
     // create a template PDF document with empty signature and return it as a stream.
-    private InputStream createVisualSignatureTemplate(PDDocument srcDoc,
-                                                      int pageNum,
+    private InputStream createVisualSignatureTemplate(final PDPage coverSheet,
                                                       PDRectangle rect,
                                                       PDSignature pdSignature,
                                                       Signature signature,
@@ -213,7 +219,7 @@ public class SigningService {
     {
         PDDocument doc = new PDDocument();
 
-        PDPage page = new PDPage(srcDoc.getPage(pageNum).getMediaBox());
+        PDPage page = new PDPage(coverSheet.getMediaBox());
         doc.addPage(page);
         PDAcroForm acroForm = new PDAcroForm(doc);
         doc.getDocumentCatalog().setAcroForm(acroForm);
@@ -236,7 +242,7 @@ public class SigningService {
         PDRectangle bbox = new PDRectangle(rect.getWidth(), rect.getHeight());
         float height = bbox.getHeight();
         Matrix initialScale = null;
-        switch (srcDoc.getPage(pageNum).getRotation())
+        switch (coverSheet.getRotation())
         {
             case 90:
                 form.setMatrix(AffineTransform.getQuadrantRotateInstance(1));

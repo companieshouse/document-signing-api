@@ -25,6 +25,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 import static org.apache.pdfbox.pdmodel.common.PDRectangle.A4;
+import static uk.gov.companieshouse.documentsigningapi.coversheet.LayoutConstants.DEFAULT_MARGIN;
 
 @Service
 public class CoverSheetService {
@@ -60,7 +61,6 @@ public class CoverSheetService {
     }
 
     // Coversheet measurements
-    private static final float DEFAULT_LEFT_MARGIN = 25;
     private static final float INFORMATION_SECTION_IMAGE_HEIGHT = 25;
     private static final float INFORMATION_SECTION_IMAGE_WIDTH = 25;
     private static final float OFFSET_TO_RIGHT_OF_IMAGES = 70;
@@ -133,14 +133,14 @@ public class CoverSheetService {
         insertText(contentStream, getTodaysDate(), PDType1Font.HELVETICA, 18, 750);
         insertText(contentStream, CERTIFIED_DOCUMENT_TYPE, PDType1Font.HELVETICA_BOLD, 24, 650);
 
-        textWrapper(contentStream, getCompany(coverSheetData), 18, DEFAULT_LEFT_MARGIN, 620);
-        textWrapper(contentStream, getFilingHistory(coverSheetData), 18, DEFAULT_LEFT_MARGIN, 590);
-        textWrapper(contentStream, DOCUMENT_SIGNED_TEXT, 18, DEFAULT_LEFT_MARGIN, 560);
+        textWrapper(contentStream, getCompany(coverSheetData), 18, DEFAULT_MARGIN, 620);
+        textWrapper(contentStream, getFilingHistory(coverSheetData), 18, DEFAULT_MARGIN, 590);
+        textWrapper(contentStream, DOCUMENT_SIGNED_TEXT, 18, DEFAULT_MARGIN, 560);
 
         insertText(contentStream, PAGE_SPACER, PDType1Font.HELVETICA, 18, 530);
         insertText(contentStream, VIEW_FILE_HEADING, PDType1Font.HELVETICA_BOLD, 18, 480);
 
-        contentStream.drawImage(signatureImage, DEFAULT_LEFT_MARGIN, 420, INFORMATION_SECTION_IMAGE_WIDTH, INFORMATION_SECTION_IMAGE_HEIGHT);
+        contentStream.drawImage(signatureImage, DEFAULT_MARGIN, 420, INFORMATION_SECTION_IMAGE_WIDTH, INFORMATION_SECTION_IMAGE_HEIGHT);
         textWrapper(contentStream, SIGNATURE_HELPTEXT_LINE_1, 14, OFFSET_TO_RIGHT_OF_IMAGES, 440);
 
         renderTextWithLink(
@@ -152,10 +152,10 @@ public class CoverSheetService {
                 contentStream,
                 new Position(OFFSET_TO_RIGHT_OF_IMAGES, 420));
 
-        contentStream.drawImage(emailImage, DEFAULT_LEFT_MARGIN, 370, INFORMATION_SECTION_IMAGE_WIDTH, INFORMATION_SECTION_IMAGE_HEIGHT);
+        contentStream.drawImage(emailImage, DEFAULT_MARGIN, 370, INFORMATION_SECTION_IMAGE_WIDTH, INFORMATION_SECTION_IMAGE_HEIGHT);
         textWrapper(contentStream, EMAIL_HELPTEXT, 14, OFFSET_TO_RIGHT_OF_IMAGES, 385);
 
-        contentStream.drawImage(printerImage, DEFAULT_LEFT_MARGIN, 325, INFORMATION_SECTION_IMAGE_WIDTH, INFORMATION_SECTION_IMAGE_HEIGHT);
+        contentStream.drawImage(printerImage, DEFAULT_MARGIN, 325, INFORMATION_SECTION_IMAGE_WIDTH, INFORMATION_SECTION_IMAGE_HEIGHT);
         textWrapper(contentStream, PRINTER_HELPTEXT, 14, OFFSET_TO_RIGHT_OF_IMAGES, 340);
 
         contentStream.close();
@@ -165,7 +165,7 @@ public class CoverSheetService {
                             float fontSize, float yPosition) throws IOException {
         contentStream.beginText();
         contentStream.setFont(font, fontSize);
-        contentStream.newLineAtOffset(DEFAULT_LEFT_MARGIN, yPosition);
+        contentStream.newLineAtOffset(DEFAULT_MARGIN, yPosition);
         contentStream.showText(text);
         contentStream.endText();
     }
