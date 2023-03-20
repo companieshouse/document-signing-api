@@ -29,6 +29,7 @@ import uk.gov.companieshouse.documentsigningapi.exception.DocumentUnavailableExc
 import uk.gov.companieshouse.documentsigningapi.exception.ImageUnavailableException;
 import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
 import uk.gov.companieshouse.documentsigningapi.util.ImagesBean;
+import uk.gov.companieshouse.documentsigningapi.util.OrdinalDateTimeFormatter;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -63,20 +64,22 @@ public class SigningService {
     private final String keystorePassword;
     private final String certificateAlias;
     private final LoggingUtils logger;
-
     private final ImagesBean images;
+
+    private final OrdinalDateTimeFormatter formatter;
 
     public SigningService(@Value("${environment.keystore.type}") String keystoreType,
                           @Value("${environment.keystore.path}") String keystorePath,
                           @Value("${environment.keystore.password}") String keystorePassword,
                           @Value("${environment.certificate.alias}") String certificateAlias,
-                          LoggingUtils logger, ImagesBean images) {
+                          LoggingUtils logger, ImagesBean images, OrdinalDateTimeFormatter formatter) {
         this.keystoreType = keystoreType;
         this.keystorePath = keystorePath;
         this.keystorePassword = keystorePassword;
         this.certificateAlias = certificateAlias;
         this.logger = logger;
         this.images = images;
+        this.formatter = formatter;
     }
 
     public byte[] signPDF(byte[] pdfToSign) throws DocumentSigningException, DocumentUnavailableException {
@@ -303,11 +306,7 @@ public class SigningService {
         setTitle(cs, height,"Signature");
         addLine(cs, "This document has been digitally signed.");
         addLine(cs, "By: " + SIGNING_AUTHORITY_NAME);
-
-        // TODO DCAC-108 Is date format in line with prototype? Also, needs to include timezone, unlike prototype.
-        // See https://stackoverflow.com/questions/12575990
-        // for better date formatting.
-        addLine(cs, "On: " + pdSignature.getSignDate().getTime());
+        addLine(cs, "On: " + formatter.getDateTimeString(pdSignature.getSignDate().getTime()));
 
         addLine(cs, "");
         addPseudoLink(cs);

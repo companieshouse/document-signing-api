@@ -10,6 +10,7 @@ import uk.gov.companieshouse.documentsigningapi.exception.DocumentSigningExcepti
 import uk.gov.companieshouse.documentsigningapi.exception.DocumentUnavailableException;
 import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
 import uk.gov.companieshouse.documentsigningapi.util.ImagesBean;
+import uk.gov.companieshouse.documentsigningapi.util.OrdinalDateTimeFormatter;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -24,9 +25,19 @@ class SigningServiceTest {
     @Mock
     private ImagesBean images;
 
+    @Mock
+    private OrdinalDateTimeFormatter formatter;
+
     @InjectMocks
     private SigningService signingService =
-            new SigningService("jks", "src/test/resources/keystore.jks", "testkey", "alias", logger, images);
+            new SigningService(
+                    "jks",
+                    "src/test/resources/keystore.jks",
+                    "testkey",
+                    "alias",
+                    logger,
+                    images,
+                    formatter);
 
     @Test
     @DisplayName("Throws DocumentUnavailableException when unable to load keystore")
@@ -41,7 +52,14 @@ class SigningServiceTest {
     @DisplayName("Throws DocumentSigningException when failing to obtain keystore")
     void throwsDocumentSigningExceptionExceptionWhenFailingToObtainKeystore() {
         SigningService incorrectKeystoreTypeInitialised =
-                new SigningService("unknown", "src/test/resources/keystore.jks", "testkey", "alias", logger, images);
+                new SigningService(
+                        "unknown",
+                        "src/test/resources/keystore.jks",
+                        "testkey",
+                        "alias",
+                        logger,
+                        images,
+                        formatter);
         final DocumentSigningException exception = assertThrows(DocumentSigningException.class,
             () -> incorrectKeystoreTypeInitialised.signPDF(new byte[]{}));
         assertThat(exception.getMessage(),
