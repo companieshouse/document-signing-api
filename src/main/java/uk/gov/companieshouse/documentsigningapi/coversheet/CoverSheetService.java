@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.documentsigningapi.dto.CoverSheetDataDTO;
 import uk.gov.companieshouse.documentsigningapi.exception.CoverSheetException;
 import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
-import uk.gov.companieshouse.documentsigningapi.util.ImagesBean;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

@@ -21,7 +21,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.documentsigningapi.dto.CoverSheetDataDTO;
 import uk.gov.companieshouse.documentsigningapi.exception.CoverSheetException;
 import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
-import uk.gov.companieshouse.documentsigningapi.util.ImagesBean;
 import uk.gov.companieshouse.logging.Logger;
 
 import java.io.ByteArrayOutputStream;

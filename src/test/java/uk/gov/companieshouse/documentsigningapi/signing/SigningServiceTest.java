@@ -6,11 +6,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.companieshouse.documentsigningapi.coversheet.VisualSignature;
 import uk.gov.companieshouse.documentsigningapi.exception.DocumentSigningException;
 import uk.gov.companieshouse.documentsigningapi.exception.DocumentUnavailableException;
-import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
-import uk.gov.companieshouse.documentsigningapi.util.ImagesBean;
-import uk.gov.companieshouse.documentsigningapi.util.OrdinalDateTimeFormatter;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -20,13 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class SigningServiceTest {
 
     @Mock
-    private LoggingUtils logger;
-
-    @Mock
-    private ImagesBean images;
-
-    @Mock
-    private OrdinalDateTimeFormatter formatter;
+    private VisualSignature visualSignature;
 
     @InjectMocks
     private SigningService signingService =
@@ -35,9 +27,7 @@ class SigningServiceTest {
                     "src/test/resources/keystore.jks",
                     "testkey",
                     "alias",
-                    logger,
-                    images,
-                    formatter);
+                    visualSignature);
 
     @Test
     @DisplayName("Throws DocumentUnavailableException when unable to load keystore")
@@ -57,9 +47,7 @@ class SigningServiceTest {
                         "src/test/resources/keystore.jks",
                         "testkey",
                         "alias",
-                        logger,
-                        images,
-                        formatter);
+                        visualSignature);
         final DocumentSigningException exception = assertThrows(DocumentSigningException.class,
             () -> incorrectKeystoreTypeInitialised.signPDF(new byte[]{}));
         assertThat(exception.getMessage(),

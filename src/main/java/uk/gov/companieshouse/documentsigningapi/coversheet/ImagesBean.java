@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.documentsigningapi.util;
+package uk.gov.companieshouse.documentsigningapi.coversheet;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;

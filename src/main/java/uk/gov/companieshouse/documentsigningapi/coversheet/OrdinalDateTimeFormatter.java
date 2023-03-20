@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.documentsigningapi.util;
+package uk.gov.companieshouse.documentsigningapi.coversheet;
 
 import org.springframework.stereotype.Component;
 

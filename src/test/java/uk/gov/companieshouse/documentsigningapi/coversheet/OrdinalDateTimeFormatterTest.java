@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.documentsigningapi.util;
+package uk.gov.companieshouse.documentsigningapi.coversheet;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
