@@ -25,6 +25,7 @@ import java.time.format.DateTimeFormatter;
 
 import static org.apache.pdfbox.pdmodel.common.PDRectangle.A4;
 import static uk.gov.companieshouse.documentsigningapi.coversheet.LayoutConstants.DEFAULT_MARGIN;
+import static uk.gov.companieshouse.documentsigningapi.coversheet.LayoutConstants.POSTSCRIPT_TYPE_1_FONT_UPM;
 
 @Service
 public class CoverSheetService {
@@ -69,7 +70,6 @@ public class CoverSheetService {
     private static final String DOCUMENT_SIGNED_TEXT = "This file has been electronically signed by Companies House.";
     private static final String EMAIL_HELPTEXT = "This file can be emailed. You cannot make changes to this file.";
     private static final String PAGE_HEADING = "Companies House";
-    private static final String PAGE_SPACER = "___________________________________________________";
     private static final String PRINTER_HELPTEXT = "This file is only valid in digital form as it contains a unique " +
         "electronic signature. Printed copies of this file will not be accepted.";
 
@@ -88,17 +88,18 @@ public class CoverSheetService {
     static final PDColor BLUE = new PDColor(new float[] { 0, 0, 1 }, PDDeviceRGB.INSTANCE);
     static final PDColor BLACK = new PDColor(new float[] { 0, 0, 0 }, PDDeviceRGB.INSTANCE);
 
-    // Probably what this value represents?
-    private static final float POSTSCRIPT_TYPE_1_FONT_UPM = 1000;
     private static final float LINE_OFFSET_BELOW_FONT = 3;
 
     private final LoggingUtils logger;
 
     private final ImagesBean images;
 
-    public CoverSheetService(LoggingUtils logger, ImagesBean images) {
+    private final Renderer renderer;
+
+    public CoverSheetService(LoggingUtils logger, ImagesBean images, Renderer renderer) {
         this.logger = logger;
         this.images = images;
+        this.renderer = renderer;
     }
 
     public byte[] addCoverSheet(final byte[] document, final CoverSheetDataDTO coverSheetData) {
@@ -128,16 +129,16 @@ public class CoverSheetService {
 
         PDPageContentStream contentStream = new PDPageContentStream(pdfDocument, coverSheet);
 
-        insertText(contentStream, PAGE_HEADING, PDType1Font.HELVETICA_BOLD, 30, 770);
-        insertText(contentStream, getTodaysDate(), PDType1Font.HELVETICA, 18, 750);
-        insertText(contentStream, CERTIFIED_DOCUMENT_TYPE, PDType1Font.HELVETICA_BOLD, 24, 650);
+        renderer.insertText(contentStream, PAGE_HEADING, PDType1Font.HELVETICA_BOLD, 30, 770);
+        renderer.insertText(contentStream, getTodaysDate(), PDType1Font.HELVETICA, 18, 750);
+        renderer.insertText(contentStream, CERTIFIED_DOCUMENT_TYPE, PDType1Font.HELVETICA_BOLD, 24, 650);
 
         textWrapper(contentStream, getCompany(coverSheetData), 18, DEFAULT_MARGIN, 620);
         textWrapper(contentStream, getFilingHistory(coverSheetData), 18, DEFAULT_MARGIN, 590);
         textWrapper(contentStream, DOCUMENT_SIGNED_TEXT, 18, DEFAULT_MARGIN, 560);
 
-        insertText(contentStream, PAGE_SPACER, PDType1Font.HELVETICA, 18, 530);
-        insertText(contentStream, VIEW_FILE_HEADING, PDType1Font.HELVETICA_BOLD, 18, 480);
+        renderer.renderPageSpacer(contentStream, 530);
+        renderer.insertText(contentStream, VIEW_FILE_HEADING, PDType1Font.HELVETICA_BOLD, 18, 480);
 
         contentStream.drawImage(signatureImage, DEFAULT_MARGIN, 420, INFORMATION_SECTION_IMAGE_WIDTH, INFORMATION_SECTION_IMAGE_HEIGHT);
         textWrapper(contentStream, SIGNATURE_HELPTEXT_LINE_1, 14, OFFSET_TO_RIGHT_OF_IMAGES, 440);
@@ -157,16 +158,9 @@ public class CoverSheetService {
         contentStream.drawImage(printerImage, DEFAULT_MARGIN, 325, INFORMATION_SECTION_IMAGE_WIDTH, INFORMATION_SECTION_IMAGE_HEIGHT);
         textWrapper(contentStream, PRINTER_HELPTEXT, 14, OFFSET_TO_RIGHT_OF_IMAGES, 340);
 
-        contentStream.close();
-    }
+        renderVisualSignaturePageSpacers(contentStream);
 
-    private void insertText(PDPageContentStream contentStream, String text, PDType1Font font,
-                            float fontSize, float yPosition) throws IOException {
-        contentStream.beginText();
-        contentStream.setFont(font, fontSize);
-        contentStream.newLineAtOffset(DEFAULT_MARGIN, yPosition);
-        contentStream.showText(text);
-        contentStream.endText();
+        contentStream.close();
     }
 
     private void textWrapper(PDPageContentStream contentStream, String textToWrap, float fontSize, float xPosition, float yPosition) throws IOException {
@@ -284,6 +278,11 @@ public class CoverSheetService {
         final var action = new PDActionURI();
         action.setURI(linkUrl);
         link.setAction(action);
+    }
+
+    private void renderVisualSignaturePageSpacers(final PDPageContentStream contentStream) throws IOException {
+        renderer.renderPageSpacer(contentStream, 280);
+        renderer.renderPageSpacer(contentStream, 80);
     }
 
     protected PDRectangle getMediaBox(final PDPage page) {

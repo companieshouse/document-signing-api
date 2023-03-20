@@ -35,17 +35,20 @@ import java.io.InputStream;
 import java.util.List;
 
 import static uk.gov.companieshouse.documentsigningapi.coversheet.LayoutConstants.DEFAULT_MARGIN;
+import static uk.gov.companieshouse.documentsigningapi.coversheet.LayoutConstants.POSTSCRIPT_TYPE_1_FONT_UPM;
 
 @Component
 public class VisualSignature {
 
-    private static final String SIGNING_AUTHORITY_NAME = "Companies House";
+    private static final String SIGNING_AUTHORITY_NAME = "Registrar of Companies";
 
     private final LoggingUtils logger;
     private final ImagesBean images;
     private final OrdinalDateTimeFormatter formatter;
 
-    public VisualSignature(LoggingUtils logger, ImagesBean images, OrdinalDateTimeFormatter formatter) {
+    public VisualSignature(LoggingUtils logger,
+                           ImagesBean images,
+                           OrdinalDateTimeFormatter formatter) {
         this.logger = logger;
         this.images = images;
         this.formatter = formatter;
@@ -54,12 +57,14 @@ public class VisualSignature {
     public SignatureOptions render(final SignatureInterface signature,
                                    final PDSignature pdSignature,
                                    final PDDocument document) throws IOException {
+
+        final PDPage coverSheet = document.getPage(0);
+
         // Set the signature rectangle
         // Although PDF coordinates start from the bottom, humans start from the top.
         // So a human would want to position a signature (x,y) units from the
         // top left of the displayed page, and the field has a horizontal width and a vertical height
         // regardless of page rotation.
-        final PDPage coverSheet = document.getPage(0);
         final Rectangle2D humanRect =
                 new Rectangle2D.Float(
                         DEFAULT_MARGIN,
@@ -191,7 +196,7 @@ public class VisualSignature {
             cs.transform(initialScale);
         }
 
-        // show background (just for debugging, to see the rect size + position)
+        // show background
         cs.setNonStrokingColor(Color.white);
         cs.addRect(-5000, -5000, 10000, 10000);
         cs.fill();
@@ -202,7 +207,7 @@ public class VisualSignature {
         cs.transform(Matrix.getScaleInstance(0.25f, 0.25f));
         try {
             PDImageXObject img = images.createImage(filename, doc);
-            cs.drawImage(img, 1500, 150);
+            cs.drawImage(img, 1200, 140);
             cs.restoreGraphicsState();
         } catch (IOException ioe) {
             logger.getLogger().error(ioe.getMessage(), ioe);
@@ -215,8 +220,7 @@ public class VisualSignature {
         addLine(cs, "By: " + SIGNING_AUTHORITY_NAME);
         addLine(cs, "On: " + formatter.getDateTimeString(pdSignature.getSignDate().getTime()));
 
-        addLine(cs, "");
-        addPseudoLink(cs);
+        addPseudoLink("Check signature validation status", cs);
         cs.close();
 
         // no need to set annotations and /P entry
@@ -230,21 +234,21 @@ public class VisualSignature {
                           final float boxHeight,
                           final String title)
             throws IOException {
-        final float fontSize = 14;
+        final float fontSize = 18;
         final float leading = fontSize * 1.5f;
         cs.beginText();
-        cs.setFont(PDType1Font.HELVETICA_BOLD, fontSize);
+        cs.setFont(PDType1Font.HELVETICA, fontSize);
         cs.setNonStrokingColor(Color.black);
-        cs.newLineAtOffset(fontSize, boxHeight - leading);
+        cs.newLineAtOffset(0, boxHeight - leading);
         cs.setLeading(leading);
         cs.showText(title);
         cs.newLine();
-        cs.newLineAtOffset(fontSize * 3, 0);
+        cs.newLineAtOffset(0, 0);
     }
 
     private void addLine(final PDPageContentStream cs,
                          final String text) throws IOException {
-        float fontSize = 10;
+        float fontSize = 14;
         float leading = fontSize * 1.5f;
         cs.setFont(PDType1Font.HELVETICA, fontSize);
         cs.setLeading(leading);
@@ -252,11 +256,15 @@ public class VisualSignature {
         cs.newLine();
     }
 
-    private void addPseudoLink(final PDPageContentStream cs) throws IOException {
+    private void addPseudoLink(final String linkText, final PDPageContentStream cs) throws IOException {
+        cs.newLineAtOffset(0, -14);
+        final float fontSize = 14;
+        final PDFont font = PDType1Font.HELVETICA;
+        final float textWidth = font.getStringWidth(linkText) / POSTSCRIPT_TYPE_1_FONT_UPM * fontSize;
         cs.setNonStrokingColor(Color.BLUE);
-        cs.showText ("Check signature validation status");
+        cs.showText(linkText);
         cs.endText();
-        cs.addRect(57,47, 145, 0.5F);
+        cs.addRect(0, 17, textWidth, 1);
         cs.fill();
     }
 

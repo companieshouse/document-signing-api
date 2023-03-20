@@ -17,6 +17,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.documentsigningapi.dto.CoverSheetDataDTO;
 import uk.gov.companieshouse.documentsigningapi.exception.CoverSheetException;
@@ -46,8 +47,8 @@ class CoverSheetServiceTest {
 
     private static final class TestCoverSheetService extends CoverSheetService {
 
-        public TestCoverSheetService(LoggingUtils logger, ImagesBean images) {
-            super(logger, images);
+        public TestCoverSheetService(LoggingUtils logger, ImagesBean images, Renderer renderer) {
+            super(logger, images, renderer);
         }
 
         protected PDRectangle getMediaBox(final PDPage page) {
@@ -86,6 +87,9 @@ class CoverSheetServiceTest {
 
     @Mock
     private CoverSheetDataDTO coverSheetData;
+
+    @Spy
+    private Renderer renderer = new Renderer();
 
     @FunctionalInterface
     interface TestExecutor {
@@ -133,7 +137,7 @@ class CoverSheetServiceTest {
     }
 
     @Test
-    @DisplayName("addCoverSheet renders text 15 times")
+    @DisplayName("addCoverSheet renders text 17 times")
     void rendersText() throws IOException {
         executeTest((pdfBox, pageConstructor, streamConstructor, linkConstructor) -> {
 
@@ -141,7 +145,7 @@ class CoverSheetServiceTest {
 
             assertThat(streamConstructor.constructed().size(), is (1));
             final var stream = streamConstructor.constructed().get(0);
-            verify(stream, times(15)).showText(any(String.class));
+            verify(stream, times(17)).showText(any(String.class));
         });
     }
 
