@@ -19,6 +19,7 @@ import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
 import uk.gov.companieshouse.documentsigningapi.signing.SigningService;
 import uk.gov.companieshouse.logging.Logger;
 
+import javax.servlet.http.HttpServletRequest;
 import java.net.URISyntaxException;
 import java.util.List;
 
@@ -26,9 +27,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.lenient;
+import static uk.gov.companieshouse.documentsigningapi.util.TestConstants.*;
 
 /**
  * Partially unit tests the {@link SignDocumentController} class.
@@ -59,6 +60,9 @@ class SignDocumentControllerTest {
 
     @Mock
     private SigningService signingService;
+
+    @Mock
+    private HttpServletRequest request;
 
     @Test
     @DisplayName("signPdf reports URISyntaxException as a bad request (400)")
@@ -124,7 +128,12 @@ class SignDocumentControllerTest {
         when(coverSheetService.addCoverSheet(any(byte[].class))).thenReturn(new byte[]{});
         when(unsignedDocument.readAllBytes()).thenReturn(new byte[]{});
         when(loggingUtils.getLogger()).thenReturn(logger);
-
+        //
+        // ERIC headers for auth-auth
+        //
+        lenient().doReturn(ERIC_IDENTITY_HEADER_VALUE).when(request).getHeader(ERIC_IDENTITY_HEADER_NAME);
+        lenient().doReturn(ERIC_IDENTITY_HEADER_VALUE).when(request).getHeader(ERIC_IDENTITY_TYPE_HEADER_NAME);
+        lenient().doReturn(ERIC_AUTHORIZED_KEY_ROLES_VALUE).when(request).getHeader(ERIC_AUTHORIZED_KEY_ROLES );
 
         final SignPdfRequestDTO signPdfRequestDTO = new SignPdfRequestDTO();
         signPdfRequestDTO.setDocumentLocation(TOKEN_UNSIGNED_DOCUMENT_LOCATION);
@@ -142,6 +151,12 @@ class SignDocumentControllerTest {
     void doesNotAddCoverSheetIfNotRequired() throws Exception {
         when(s3Service.retrieveUnsignedDocument(anyString())).thenReturn(unsignedDocument);
         when(loggingUtils.getLogger()).thenReturn(logger);
+        //
+        // ERIC headers for auth-auth
+        //
+        lenient().doReturn(ERIC_IDENTITY_HEADER_VALUE).when(request).getHeader(ERIC_IDENTITY_HEADER_NAME);
+        lenient().doReturn(ERIC_IDENTITY_HEADER_VALUE).when(request).getHeader(ERIC_IDENTITY_TYPE_HEADER_NAME);
+        lenient().doReturn(ERIC_AUTHORIZED_KEY_ROLES_VALUE).when(request).getHeader(ERIC_AUTHORIZED_KEY_ROLES );
 
         final SignPdfRequestDTO signPdfRequestDTO = new SignPdfRequestDTO();
         signPdfRequestDTO.setDocumentLocation(TOKEN_UNSIGNED_DOCUMENT_LOCATION);
