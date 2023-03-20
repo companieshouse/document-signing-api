@@ -282,7 +282,7 @@ public class CoverSheetService {
 
     private void renderVisualSignaturePageSpacers(final PDPageContentStream contentStream) throws IOException {
         renderer.renderPageSpacer(contentStream, 280);
-        renderer.renderPageSpacer(contentStream, 80);
+        renderer.renderPageSpacer(contentStream, 100);
     }
 
     protected PDRectangle getMediaBox(final PDPage page) {

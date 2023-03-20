@@ -14,7 +14,6 @@ import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceDictionary;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceStream;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
-import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureInterface;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureOptions;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
@@ -23,10 +22,8 @@ import org.apache.pdfbox.util.Matrix;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.documentsigningapi.exception.ImageUnavailableException;
 import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
-import uk.gov.companieshouse.documentsigningapi.signing.Signature;
 
 import java.awt.*;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -54,8 +51,7 @@ public class VisualSignature {
         this.formatter = formatter;
     }
 
-    public SignatureOptions render(final SignatureInterface signature,
-                                   final PDSignature pdSignature,
+    public SignatureOptions render(final PDSignature pdSignature,
                                    final PDDocument document) throws IOException {
 
         final PDPage coverSheet = document.getPage(0);
@@ -68,133 +64,108 @@ public class VisualSignature {
         final Rectangle2D humanRect =
                 new Rectangle2D.Float(
                         DEFAULT_MARGIN,
-                        600,
+                        580,
                         coverSheet.getBBox().getWidth() - 2 * DEFAULT_MARGIN,
                         150);
-        final PDRectangle rect = createSignatureRectangle(document, humanRect);
-        final SignatureOptions signatureOptions = new SignatureOptions();
+        final PDRectangle signatureRectangle = createSignatureRectangle(document, humanRect);
+        final var signatureOptions = new SignatureOptions();
         signatureOptions.setVisualSignature(
                 createVisualSignatureTemplate(
                         coverSheet,
-                        rect,
+                        signatureRectangle,
                         pdSignature,
-                        (Signature) signature,
                         "digital-search-copy-stamp.jpeg"));
         signatureOptions.setPage(0);
         return signatureOptions;
     }
 
-    private PDRectangle createSignatureRectangle(PDDocument doc, Rectangle2D humanRect)
+    private PDRectangle createSignatureRectangle(final PDDocument doc, final Rectangle2D humanRect)
     {
-        float x = (float) humanRect.getX();
-        float y = (float) humanRect.getY();
-        float width = (float) humanRect.getWidth();
-        float height = (float) humanRect.getHeight();
-        PDPage page = doc.getPage(0);
-        PDRectangle pageRect = page.getCropBox();
-        PDRectangle rect = new PDRectangle();
-        // signing should be at the same position regardless of page rotation.
-        switch (page.getRotation())
-        {
-            case 90:
-                rect.setLowerLeftY(x);
-                rect.setUpperRightY(x + width);
-                rect.setLowerLeftX(y);
-                rect.setUpperRightX(y + height);
-                break;
-            case 180:
-                rect.setUpperRightX(pageRect.getWidth() - x);
-                rect.setLowerLeftX(pageRect.getWidth() - x - width);
-                rect.setLowerLeftY(y);
-                rect.setUpperRightY(y + height);
-                break;
-            case 270:
-                rect.setLowerLeftY(pageRect.getHeight() - x - width);
-                rect.setUpperRightY(pageRect.getHeight() - x);
-                rect.setLowerLeftX(pageRect.getWidth() - y - height);
-                rect.setUpperRightX(pageRect.getWidth() - y);
-                break;
-            case 0:
-            default:
-                rect.setLowerLeftX(x);
-                rect.setUpperRightX(x + width);
-                rect.setLowerLeftY(pageRect.getHeight() - y - height);
-                rect.setUpperRightY(pageRect.getHeight() - y);
-                break;
-        }
-        return rect;
+        final float x = (float) humanRect.getX();
+        final float y = (float) humanRect.getY();
+        final float width = (float) humanRect.getWidth();
+        final float height = (float) humanRect.getHeight();
+        final PDPage coverSheet = doc.getPage(0);
+        final PDRectangle coverSheetCropBox = coverSheet.getCropBox();
+        final var signatureRectangle = new PDRectangle();
+        signatureRectangle.setLowerLeftX(x);
+        signatureRectangle.setUpperRightX(x + width);
+        signatureRectangle.setLowerLeftY(coverSheetCropBox.getHeight() - y - height);
+        signatureRectangle.setUpperRightY(coverSheetCropBox.getHeight() - y);
+        return signatureRectangle;
     }
 
     // create a template PDF document with empty signature and return it as a stream.
     private InputStream createVisualSignatureTemplate(final PDPage coverSheet,
-                                                      PDRectangle rect,
-                                                      PDSignature pdSignature,
-                                                      Signature signature,
-                                                      String filename) throws IOException
+                                                      final PDRectangle signatureRectangle,
+                                                      final PDSignature pdSignature,
+                                                      final String stampFilename) throws IOException
     {
-        PDDocument doc = new PDDocument();
+        final PDDocument doc = createDocumentForVisualSignature(coverSheet);
+        final PDAnnotationWidget widget = buildVisualSignatureWidget(doc, signatureRectangle);
+        final PDFormXObject form = buildVisualSignatureForm(doc, signatureRectangle);
+        final PDAppearanceStream appearanceStream = buildAppearanceDictionary(form, widget);
+        buildVisualSignatureContent(doc, appearanceStream, pdSignature, stampFilename, form.getBBox().getHeight());
+        return saveToInputStream(doc);
+    }
 
-        PDPage page = new PDPage(coverSheet.getMediaBox());
-        doc.addPage(page);
-        PDAcroForm acroForm = new PDAcroForm(doc);
+    private InputStream saveToInputStream(final PDDocument doc) throws IOException {
+        // no need to set annotations and /P entry
+        final var outputStream = new ByteArrayOutputStream();
+        doc.save(outputStream);
+        doc.close();
+        return new ByteArrayInputStream(outputStream.toByteArray());
+    }
+
+    private PDFormXObject buildVisualSignatureForm(final PDDocument doc, final PDRectangle signatureRectangle) {
+        final var stream = new PDStream(doc);
+        final var form = new PDFormXObject(stream);
+        final var res = new PDResources();
+        form.setResources(res);
+        form.setFormType(1);
+        final var bbox = new PDRectangle(signatureRectangle.getWidth(), signatureRectangle.getHeight());
+        form.setBBox(bbox);
+        return form;
+    }
+
+    private PDAnnotationWidget buildVisualSignatureWidget(final PDDocument doc, final PDRectangle signatureRectangle)
+            throws IOException {
+        final var acroForm = new PDAcroForm(doc);
         doc.getDocumentCatalog().setAcroForm(acroForm);
-        PDSignatureField signatureField = new PDSignatureField(acroForm);
-        PDAnnotationWidget widget = signatureField.getWidgets().get(0);
-        List<PDField> acroFormFields = acroForm.getFields();
+        final var signatureField = new PDSignatureField(acroForm);
+        final PDAnnotationWidget widget = signatureField.getWidgets().get(0);
+        final List<PDField> acroFormFields = acroForm.getFields();
         acroForm.setSignaturesExist(true);
         acroForm.setAppendOnly(true);
         acroForm.getCOSObject().setDirect(true);
         acroFormFields.add(signatureField);
 
-        widget.setRectangle(rect);
+        widget.setRectangle(signatureRectangle);
+        return widget;
+    }
 
-        // from PDVisualSigBuilder.createHolderForm()
-        PDStream stream = new PDStream(doc);
-        PDFormXObject form = new PDFormXObject(stream);
-        PDResources res = new PDResources();
-        form.setResources(res);
-        form.setFormType(1);
-        PDRectangle bbox = new PDRectangle(rect.getWidth(), rect.getHeight());
-        float height = bbox.getHeight();
-        Matrix initialScale = null;
-        switch (coverSheet.getRotation())
-        {
-            case 90:
-                form.setMatrix(AffineTransform.getQuadrantRotateInstance(1));
-                initialScale = Matrix.getScaleInstance(bbox.getWidth() / bbox.getHeight(), bbox.getHeight() / bbox.getWidth());
-                height = bbox.getWidth();
-                break;
-            case 180:
-                form.setMatrix(AffineTransform.getQuadrantRotateInstance(2));
-                break;
-            case 270:
-                form.setMatrix(AffineTransform.getQuadrantRotateInstance(3));
-                initialScale = Matrix.getScaleInstance(bbox.getWidth() / bbox.getHeight(), bbox.getHeight() / bbox.getWidth());
-                height = bbox.getWidth();
-                break;
-            case 0:
-            default:
-                break;
-        }
-        form.setBBox(bbox);
-        PDFont font = PDType1Font.HELVETICA;
+    private PDDocument createDocumentForVisualSignature(final PDPage coverSheet) {
+        final var doc = new PDDocument();
+        final var page = new PDPage(coverSheet.getMediaBox());
+        doc.addPage(page);
+        return doc;
+    }
 
-        // from PDVisualSigBuilder.createAppearanceDictionary()
-        PDAppearanceDictionary appearance = new PDAppearanceDictionary();
+    private PDAppearanceStream buildAppearanceDictionary(final PDFormXObject form, final PDAnnotationWidget widget) {
+        final var appearance = new PDAppearanceDictionary();
         appearance.getCOSObject().setDirect(true);
-        PDAppearanceStream appearanceStream = new PDAppearanceStream(form.getCOSObject());
+        final var appearanceStream = new PDAppearanceStream(form.getCOSObject());
         appearance.setNormalAppearance(appearanceStream);
         widget.setAppearance(appearance);
+        return appearanceStream;
+    }
 
-        PDPageContentStream cs = new PDPageContentStream(doc, appearanceStream);
-
-        // for 90° and 270° scale ratio of width / height
-        // not really sure about this
-        // why does scale have no effect when done in the form matrix???
-        if (initialScale != null)
-        {
-            cs.transform(initialScale);
-        }
+    private void buildVisualSignatureContent(final PDDocument doc,
+                                             final PDAppearanceStream appearanceStream,
+                                             final PDSignature pdSignature,
+                                             final String stampFilename,
+                                             final float height) throws IOException {
+        final var cs = new PDPageContentStream(doc, appearanceStream);
 
         // show background
         cs.setNonStrokingColor(Color.white);
@@ -206,12 +177,12 @@ public class VisualSignature {
         cs.saveGraphicsState();
         cs.transform(Matrix.getScaleInstance(0.25f, 0.25f));
         try {
-            PDImageXObject img = images.createImage(filename, doc);
+            final PDImageXObject img = images.createImage(stampFilename, doc);
             cs.drawImage(img, 1200, 140);
             cs.restoreGraphicsState();
         } catch (IOException ioe) {
             logger.getLogger().error(ioe.getMessage(), ioe);
-            throw new ImageUnavailableException("Could not load image from file " + filename, ioe);
+            throw new ImageUnavailableException("Could not load image from file " + stampFilename, ioe);
         }
 
         // show text
@@ -222,12 +193,6 @@ public class VisualSignature {
 
         addPseudoLink("Check signature validation status", cs);
         cs.close();
-
-        // no need to set annotations and /P entry
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        doc.save(baos);
-        doc.close();
-        return new ByteArrayInputStream(baos.toByteArray());
     }
 
     private void setTitle(final PDPageContentStream cs,

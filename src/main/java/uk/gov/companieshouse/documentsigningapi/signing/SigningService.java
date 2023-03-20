@@ -108,7 +108,7 @@ public class SigningService {
         // the signing date, needed for valid signature
         pdSignature.setSignDate(Calendar.getInstance());
 
-        final var signatureOptions = visualSignature.render(signature, pdSignature, document);
+        final var signatureOptions = visualSignature.render(pdSignature, document);
 
         // register signature dictionary and sign interface
         document.addSignature(pdSignature, signature, signatureOptions);
