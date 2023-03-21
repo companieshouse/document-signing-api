@@ -4,6 +4,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureInterface;
+import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureOptions;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
@@ -108,14 +109,18 @@ public class SigningService {
         // the signing date, needed for valid signature
         pdSignature.setSignDate(Calendar.getInstance());
 
-        final var signatureOptions = visualSignature.render(pdSignature, document);
+        try (final var signatureOptions = new SignatureOptions()) {
 
-        // register signature dictionary and sign interface
-        document.addSignature(pdSignature, signature, signatureOptions);
+            visualSignature.render(pdSignature, signatureOptions, document);
 
-        // write incremental (only for signing purpose)
-        // use saveIncremental to add signature, using plain save method may break up a document
-        document.saveIncremental(output);
+            // register signature dictionary, signature interface and options
+            document.addSignature(pdSignature, signature, signatureOptions);
+
+            // write incremental (only for signing purpose)
+            // use saveIncremental to add signature, using plain save method may break up a document
+            document.saveIncremental(output);
+        }
+
     }
 
 }
