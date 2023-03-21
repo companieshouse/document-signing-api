@@ -1,5 +1,5 @@
 variable "environment" {
-  description = "The environment name to use within Concourse"
+  description = "The environment name to use"
   type        = string
 }
 
