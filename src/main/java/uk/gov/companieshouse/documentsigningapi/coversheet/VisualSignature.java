@@ -165,34 +165,44 @@ public class VisualSignature {
                                              final PDSignature pdSignature,
                                              final String stampFilename,
                                              final float height) throws IOException {
-        final var cs = new PDPageContentStream(doc, appearanceStream);
+        final var contentStream = new PDPageContentStream(doc, appearanceStream);
+        renderBackground(contentStream);
+        renderSigningStamp(doc, contentStream, stampFilename);
+        renderText(contentStream, pdSignature, height);
+        contentStream.close();
+    }
 
-        // show background
-        cs.setNonStrokingColor(Color.white);
-        cs.addRect(-5000, -5000, 10000, 10000);
-        cs.fill();
+    private void renderBackground(final PDPageContentStream contentStream) throws IOException {
+        contentStream.setNonStrokingColor(Color.white);
+        contentStream.addRect(-5000, -5000, 10000, 10000);
+        contentStream.fill();
+    }
 
+    private void renderSigningStamp(final PDDocument doc,
+                                    final PDPageContentStream contentStream,
+                                    final String stampFilename) throws IOException {
         // show background image
         // save and restore graphics if the image is too large and needs to be scaled
-        cs.saveGraphicsState();
-        cs.transform(Matrix.getScaleInstance(0.25f, 0.25f));
+        contentStream.saveGraphicsState();
+        contentStream.transform(Matrix.getScaleInstance(0.25f, 0.25f));
         try {
             final PDImageXObject img = images.createImage(stampFilename, doc);
-            cs.drawImage(img, 1200, 140);
-            cs.restoreGraphicsState();
+            contentStream.drawImage(img, 1200, 140);
+            contentStream.restoreGraphicsState();
         } catch (IOException ioe) {
             logger.getLogger().error(ioe.getMessage(), ioe);
             throw new ImageUnavailableException("Could not load image from file " + stampFilename, ioe);
         }
+    }
 
-        // show text
-        setTitle(cs, height,"Signature");
-        addLine(cs, "This document has been digitally signed.");
-        addLine(cs, "By: " + SIGNING_AUTHORITY_NAME);
-        addLine(cs, "On: " + formatter.getDateTimeString(pdSignature.getSignDate().getTime()));
-
-        addPseudoLink("Check signature validation status", cs);
-        cs.close();
+    private void renderText(final PDPageContentStream contentStream,
+                            final PDSignature pdSignature,
+                            final float height) throws IOException {
+        setTitle(contentStream, height,"Signature");
+        addLine(contentStream, "This document has been digitally signed.");
+        addLine(contentStream, "By: " + SIGNING_AUTHORITY_NAME);
+        addLine(contentStream, "On: " + formatter.getDateTimeString(pdSignature.getSignDate().getTime()));
+        addPseudoLink("Check signature validation status", contentStream);
     }
 
     private void setTitle(final PDPageContentStream cs,
