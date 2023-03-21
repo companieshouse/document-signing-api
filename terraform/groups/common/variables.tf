@@ -23,6 +23,6 @@ variable "service" {
 
 variable "signed_bucket_name" {
   default     = "document-signing-api"
-  description = "The name of the signed bucket"
+  description = "The name of the signed images bucket"
   type        = string
 }
