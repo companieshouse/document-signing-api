@@ -186,13 +186,12 @@ public class VisualSignature {
     private void renderSigningStamp(final PDDocument doc,
                                     final PDPageContentStream contentStream,
                                     final String stampFilename) throws IOException {
-        // show background image
-        // save and restore graphics if the image is too large and needs to be scaled
+        // Save and restore graphics as the image is too large and needs to be scaled.
         contentStream.saveGraphicsState();
         contentStream.transform(Matrix.getScaleInstance(0.25f, 0.25f));
         try {
             final PDImageXObject img = images.createImage(stampFilename, doc);
-            contentStream.drawImage(img, 1200, 140);
+            contentStream.drawImage(img, 1150, 50);
             contentStream.restoreGraphicsState();
         } catch (IOException ioe) {
             logger.getLogger().error(ioe.getMessage(), ioe);
