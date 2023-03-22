@@ -9,7 +9,7 @@ data "aws_iam_policy_document" "image_bucket" {
     ]
 
     resources = [
-      local.images_bucket_arn
+      "arn:aws:s3:::${var.image_bucket_name_prefix}-*"
     ]
   }
 
@@ -23,7 +23,7 @@ data "aws_iam_policy_document" "image_bucket" {
     ]
 
     resources = [
-      "${local.images_bucket_arn}/*"
+      "arn:aws:s3:::${var.image_bucket_name_prefix}-*/*"
     ]
   }
 }
@@ -54,7 +54,7 @@ data "aws_iam_policy_document" "signed_bucket" {
     ]
 
     resources = [
-      "${local.signed_bucket_arn}/${var.environment}/*"
+      "${local.signed_bucket_arn}/*/*"
     ]
   }
 }
@@ -64,12 +64,4 @@ data "aws_iam_policy_document" "user" {
     data.aws_iam_policy_document.image_bucket.json,
     data.aws_iam_policy_document.signed_bucket.json
   ]
-}
-
-data "aws_s3_bucket" "image_bucket" {
-  bucket = "${var.image_bucket_name_prefix}-${var.environment}"
-}
-
-data "aws_s3_bucket" "signed_bucket" {
-  bucket = var.signed_bucket_name
 }

@@ -1,5 +1,5 @@
 resource "aws_iam_user" "user" {
-  name = "${var.service}-${var.environment}"
+  name = var.service
 }
 
 resource "aws_iam_access_key" "access_key" {
