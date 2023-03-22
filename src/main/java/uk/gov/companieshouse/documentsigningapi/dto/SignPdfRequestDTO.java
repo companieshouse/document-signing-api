@@ -15,11 +15,14 @@ public class SignPdfRequestDTO {
     @JsonProperty("signature_options")
     private List<String> signatureOptions;
 
-    @JsonProperty("folder_name")
-    private String folderName;
+    @JsonProperty("prefix")
+    private String prefix;
 
-    @JsonProperty("filename")
-    private String filename;
+    @JsonProperty("key")
+    private String key;
+
+    @JsonProperty("cover_sheet_data")
+    private CoverSheetDataDTO coverSheetData;
 
     public String getDocumentLocation() {
         return documentLocation;
@@ -45,20 +48,28 @@ public class SignPdfRequestDTO {
         this.signatureOptions = signatureOptions;
     }
 
-    public String getFolderName() {
-        return folderName;
+    public String getPrefix() {
+        return prefix;
     }
 
-    public void setFolderName(String folderName) {
-        this.folderName = folderName;
+    public void setPrefix(String prefix) {
+        this.prefix = prefix;
     }
 
-    public String getFilename() {
-        return filename;
+    public String getKey() {
+        return key;
     }
 
-    public void setFilename(String filename) {
-        this.filename = filename;
+    public void setKey(String key) {
+        this.key = key;
+    }
+
+    public CoverSheetDataDTO getCoverSheetData() {
+        return coverSheetData;
+    }
+
+    public void setCoverSheetData(CoverSheetDataDTO coverSheetData) {
+        this.coverSheetData = coverSheetData;
     }
 
     @Override
@@ -67,8 +78,9 @@ public class SignPdfRequestDTO {
                 "documentLocation='" + documentLocation + '\'' +
                 ", documentType='" + documentType + '\'' +
                 ", signatureOptions=" + signatureOptions +
-                ", folderName='" + folderName + '\'' +
-                ", filename='" + filename + '\'' +
+                ", prefix='" + prefix + '\'' +
+                ", key='" + key + '\'' +
+                ", coverSheetData=" + coverSheetData +
                 '}';
     }
 }
