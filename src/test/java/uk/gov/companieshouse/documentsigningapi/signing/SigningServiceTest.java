@@ -15,13 +15,29 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(MockitoExtension.class)
-public class SigningServiceTest {
+class SigningServiceTest {
+
+    private static class TestSigningService extends SigningService {
+        public TestSigningService(String keystoreType,
+                                  String keystorePath,
+                                  String keystorePassword,
+                                  String certificateAlias,
+                                  LoggingUtils logger) {
+            super(keystoreType, keystorePath, keystorePassword, certificateAlias, logger);
+        }
+
+        @Override
+        protected void logError(Exception exception) {
+            // DOES NOTHING HERE
+        }
+    }
 
     @Mock
     private LoggingUtils logger;
 
     @InjectMocks
-    private SigningService signingService = new SigningService("jks", "src/test/resources/keystore.jks", "testkey", "alias", logger);
+    private SigningService signingService =
+            new TestSigningService("jks", "src/test/resources/keystore.jks", "testkey", "alias", logger);
 
     @Test
     @DisplayName("Throws DocumentUnavailableException when unable to load keystore")
@@ -35,7 +51,8 @@ public class SigningServiceTest {
     @Test
     @DisplayName("Throws DocumentSigningException when failing to obtain keystore")
     void throwsDocumentSigningExceptionExceptionWhenFailingToObtainKeystore() {
-        SigningService incorrectKeystoreTypeInitialised = new SigningService("unknown", "src/test/resources/keystore.jks", "testkey", "alias", logger);
+        SigningService incorrectKeystoreTypeInitialised =
+                new TestSigningService("unknown", "src/test/resources/keystore.jks", "testkey", "alias", logger);
         final DocumentSigningException exception = assertThrows(DocumentSigningException.class,
             () -> incorrectKeystoreTypeInitialised.signPDF(new byte[]{}));
         assertThat(exception.getMessage(),

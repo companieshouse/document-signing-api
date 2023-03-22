@@ -72,8 +72,10 @@ public class SigningService {
 
 
         } catch (NoSuchAlgorithmException | CertificateException | UnrecoverableKeyException | KeyStoreException e) {
+            logError(e);
             throw new DocumentSigningException("Failed to obtain proper KeyStore or Certificate", e);
         } catch (IOException e) {
+            logError(e);
             throw new DocumentUnavailableException("Unable to load Keystore or Certificate", e);
         }
     }
@@ -110,6 +112,10 @@ public class SigningService {
         // write incremental (only for signing purpose)
         // use saveIncremental to add signature, using plain save method may break up a document
         document.saveIncremental(output);
+    }
+
+    protected void logError(final Exception exception) {
+        logger.getLogger().error(exception.getMessage(), exception);
     }
 
 }
