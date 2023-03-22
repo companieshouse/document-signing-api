@@ -18,7 +18,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.AWS_ACCESS_KEY_ID;
 import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.AWS_REGION;
 import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.AWS_SECRET_ACCESS_KEY;
-import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.AWS_SESSION_TOKEN;
 import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.CERTIFICATE_ALIAS;
 import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.KEYSTORE_PASSWORD;
 import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.KEYSTORE_PATH;
@@ -69,12 +68,6 @@ class EnvironmentVariablesCheckerTest {
     @Test
     void checkEnvironmentVariablesAllPresentReturnsFalseIfSecretAccessKeyMissing() {
         populateAllVariablesExceptOneAndAssertSomethingMissing(AWS_SECRET_ACCESS_KEY);
-    }
-
-    @DisplayName("returns false if AWS_SESSION_TOKEN is missing")
-    @Test
-    void checkEnvironmentVariablesAllPresentReturnsFalseIfSessionTokenMissing() {
-        populateAllVariablesExceptOneAndAssertSomethingMissing(AWS_SESSION_TOKEN);
     }
 
     @DisplayName("returns false if KEYSTORE_TYPE is missing")
