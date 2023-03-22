@@ -141,7 +141,6 @@ class SignDocumentControllerTest {
         signPdfRequestDTO.setSignatureOptions(List.of("cover-sheet"));
 
         controller.signPdf(signPdfRequestDTO);
-
         verify(coverSheetService).addCoverSheet(any(byte[].class));
 
     }
@@ -163,7 +162,6 @@ class SignDocumentControllerTest {
         signPdfRequestDTO.setDocumentType("certified-copy");
 
         controller.signPdf(signPdfRequestDTO);
-
         verify(coverSheetService, times(0)).addCoverSheet(any(byte[].class));
     }
 
