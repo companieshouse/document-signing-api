@@ -76,8 +76,10 @@ public class SigningService {
 
 
         } catch (NoSuchAlgorithmException | CertificateException | UnrecoverableKeyException | KeyStoreException e) {
+            logError(e);
             throw new DocumentSigningException("Failed to obtain proper KeyStore or Certificate", e);
         } catch (IOException e) {
+            logError(e);
             throw new DocumentUnavailableException("Unable to load Keystore or Certificate", e);
         }
     }
@@ -121,6 +123,10 @@ public class SigningService {
             document.saveIncremental(output);
         }
 
+    }
+
+    protected void logError(final Exception exception) {
+        logger.getLogger().error(exception.getMessage(), exception);
     }
 
 }

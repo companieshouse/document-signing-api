@@ -19,9 +19,8 @@ The supported environmental variables have been categorised by use case and are 
 | Name                   | Description                                                    | Mandatory | Default | Example                     |
 |------------------------|----------------------------------------------------------------|-----------|---------|-----------------------------|
 | AWS_REGION             | AWS region                                                     | √         | N/A     | `eu-west-2`                 |
-| AWS_ACCESS_KEY_ID      | Part of temporary AWS credentials.                             | √         | N/A     | `ASIA...`                   |
-| AWS_SECRET_ACCESS_KEY  | Part of temporary AWS credentials.                             | √         | N/A     | `UgO8...`                   |
-| AWS_SESSION_TOKEN      | Part of temporary AWS credentials.                             | √         | N/A     | `IQoJ...`                   |
+| AWS_ACCESS_KEY_ID      | Part of AWS credentials.                                       | √         | N/A     | `ASIA...`                   |
+| AWS_SECRET_ACCESS_KEY  | Part of AWS credentials.                                       | √         | N/A     | `UgO8...`                   |
 | KEYSTORE_TYPE          | The type of keystore used to sign a document.                  | √         | N/A     | `jks`                       |
 | KEYSTORE_PATH          | The path to the keystore used to sign a document.              | √         | N/A     | `/keystore.jks`             |
 | KEYSTORE_PATH          | The password to the keystore used to sign a document.          | √         | N/A     | `examplepassword`           |
