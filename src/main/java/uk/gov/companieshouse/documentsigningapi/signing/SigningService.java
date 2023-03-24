@@ -11,6 +11,7 @@ import org.springframework.util.ResourceUtils;
 import uk.gov.companieshouse.documentsigningapi.coversheet.VisualSignature;
 import uk.gov.companieshouse.documentsigningapi.exception.DocumentSigningException;
 import uk.gov.companieshouse.documentsigningapi.exception.DocumentUnavailableException;
+import uk.gov.companieshouse.documentsigningapi.exception.VisualSignatureException;
 import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
 
 import java.io.File;
@@ -53,7 +54,8 @@ public class SigningService {
         this.visualSignature = visualSignature;
     }
 
-    public byte[] signPDF(byte[] pdfToSign) throws DocumentSigningException, DocumentUnavailableException {
+    public byte[] signPDF(byte[] pdfToSign)
+            throws DocumentSigningException, DocumentUnavailableException, VisualSignatureException {
         try {
             KeyStore keyStore = getKeyStore();
             Signature signature = new Signature(keyStore, this.keystorePassword.toCharArray(), certificateAlias);
@@ -81,6 +83,9 @@ public class SigningService {
         } catch (NoSuchAlgorithmException | CertificateException | UnrecoverableKeyException | KeyStoreException e) {
             logError(e);
             throw new DocumentSigningException("Failed to obtain proper KeyStore or Certificate", e);
+        } catch (VisualSignatureException vse) {
+            // Already logged, caught and thrown to prevent being handled as an IOException.
+            throw vse;
         } catch (IOException e) {
             logError(e);
             throw new DocumentUnavailableException("Unable to load Keystore or Certificate", e);
@@ -124,6 +129,9 @@ public class SigningService {
             // write incremental (only for signing purpose)
             // use saveIncremental to add signature, using plain save method may break up a document
             document.saveIncremental(output);
+        } catch (IOException ioe) {
+            logError(ioe);
+            throw new VisualSignatureException("Failed to add visual signature to document", ioe);
         }
 
     }

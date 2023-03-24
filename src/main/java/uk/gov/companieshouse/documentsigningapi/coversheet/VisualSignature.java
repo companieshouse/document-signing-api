@@ -21,7 +21,6 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
 import org.apache.pdfbox.util.Matrix;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.documentsigningapi.exception.ImageUnavailableException;
-import uk.gov.companieshouse.documentsigningapi.exception.VisualSignatureException;
 import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
 
 import java.awt.*;
@@ -54,34 +53,27 @@ public class VisualSignature {
 
     public void render(final PDSignature pdSignature,
                        final SignatureOptions signatureOptions,
-                       final PDDocument document) {
-
-        try {
-            final PDPage coverSheet = document.getPage(0);
-            // Set the signature rectangle
-            // Although PDF coordinates start from the bottom, humans start from the top.
-            // So a human would want to position a signature (x,y) units from the
-            // top left of the displayed page, and the field has a horizontal width and a vertical height
-            // regardless of page rotation.
-            final Rectangle2D humanRect =
-                    new Rectangle2D.Float(
-                            DEFAULT_MARGIN,
-                            580,
-                            coverSheet.getBBox().getWidth() - 2 * DEFAULT_MARGIN,
-                            150);
-            final PDRectangle signatureRectangle = createSignatureRectangle(document, humanRect);
-            signatureOptions.setVisualSignature(
-                    createVisualSignatureTemplate(
-                            coverSheet,
-                            signatureRectangle,
-                            pdSignature,
-                            "digital-search-copy-stamp.jpeg"));
-            signatureOptions.setPage(0);
-        } catch (IOException ioe) {
-            logger.getLogger().error(ioe.getMessage(), ioe);
-            throw new VisualSignatureException("Failed to add visual signature to document", ioe);
-        }
-
+                       final PDDocument document) throws IOException {
+        final PDPage coverSheet = document.getPage(0);
+        // Set the signature rectangle
+        // Although PDF coordinates start from the bottom, humans start from the top.
+        // So a human would want to position a signature (x,y) units from the
+        // top left of the displayed page, and the field has a horizontal width and a vertical height
+        // regardless of page rotation.
+        final Rectangle2D humanRect =
+                new Rectangle2D.Float(
+                        DEFAULT_MARGIN,
+                        580,
+                        coverSheet.getBBox().getWidth() - 2 * DEFAULT_MARGIN,
+                        150);
+        final PDRectangle signatureRectangle = createSignatureRectangle(document, humanRect);
+        signatureOptions.setVisualSignature(
+                createVisualSignatureTemplate(
+                        coverSheet,
+                        signatureRectangle,
+                        pdSignature,
+                        "digital-search-copy-stamp.jpeg"));
+        signatureOptions.setPage(0);
     }
 
     private PDRectangle createSignatureRectangle(final PDDocument doc, final Rectangle2D humanRect)
