@@ -11,6 +11,7 @@ import org.springframework.util.ResourceUtils;
 import uk.gov.companieshouse.documentsigningapi.coversheet.VisualSignature;
 import uk.gov.companieshouse.documentsigningapi.exception.DocumentSigningException;
 import uk.gov.companieshouse.documentsigningapi.exception.DocumentUnavailableException;
+import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -35,6 +36,7 @@ public class SigningService {
     private final String keystorePath;
     private final String keystorePassword;
     private final String certificateAlias;
+    private final LoggingUtils logger;
 
     private final VisualSignature visualSignature;
 
@@ -42,11 +44,12 @@ public class SigningService {
                           @Value("${environment.keystore.path}") String keystorePath,
                           @Value("${environment.keystore.password}") String keystorePassword,
                           @Value("${environment.certificate.alias}") String certificateAlias,
-                          VisualSignature visualSignature) {
+                          LoggingUtils logger, VisualSignature visualSignature) {
         this.keystoreType = keystoreType;
         this.keystorePath = keystorePath;
         this.keystorePassword = keystorePassword;
         this.certificateAlias = certificateAlias;
+        this.logger = logger;
         this.visualSignature = visualSignature;
     }
 

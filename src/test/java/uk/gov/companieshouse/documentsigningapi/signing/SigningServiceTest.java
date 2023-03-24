@@ -23,8 +23,9 @@ class SigningServiceTest {
                                   String keystorePath,
                                   String keystorePassword,
                                   String certificateAlias,
-                                  LoggingUtils logger) {
-            super(keystoreType, keystorePath, keystorePassword, certificateAlias, logger);
+                                  LoggingUtils logger,
+                                  VisualSignature visualSignature) {
+            super(keystoreType, keystorePath, keystorePassword, certificateAlias, logger, visualSignature);
         }
 
         @Override
@@ -34,18 +35,19 @@ class SigningServiceTest {
     }
 
     @Mock
+    private LoggingUtils logger;
+
+    @Mock
     private VisualSignature visualSignature;
 
     @InjectMocks
     private SigningService signingService =
-            new TestSigningService("jks", "src/test/resources/keystore.jks", "testkey", "alias", logger);
-    private SigningService signingService =
-            new SigningService(
+            new TestSigningService(
                     "jks",
                     "src/test/resources/keystore.jks",
                     "testkey",
                     "alias",
-                    visualSignature);
+                    logger, visualSignature);
 
     @Test
     @DisplayName("Throws DocumentUnavailableException when unable to load keystore")
@@ -60,14 +62,12 @@ class SigningServiceTest {
     @DisplayName("Throws DocumentSigningException when failing to obtain keystore")
     void throwsDocumentSigningExceptionExceptionWhenFailingToObtainKeystore() {
         SigningService incorrectKeystoreTypeInitialised =
-                new TestSigningService("unknown", "src/test/resources/keystore.jks", "testkey", "alias", logger);
-        SigningService incorrectKeystoreTypeInitialised =
-                new SigningService(
+                new TestSigningService(
                         "unknown",
                         "src/test/resources/keystore.jks",
                         "testkey",
                         "alias",
-                        visualSignature);
+                        logger, visualSignature);
         final DocumentSigningException exception = assertThrows(DocumentSigningException.class,
             () -> incorrectKeystoreTypeInitialised.signPDF(new byte[]{}));
         assertThat(exception.getMessage(),
