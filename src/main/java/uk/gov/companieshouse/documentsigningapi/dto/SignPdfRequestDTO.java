@@ -24,6 +24,18 @@ public class SignPdfRequestDTO {
     @JsonProperty("cover_sheet_data")
     private CoverSheetDataDTO coverSheetData;
 
+    public SignPdfRequestDTO(String documentLocation, String documentType, List<String> signatureOptions, String prefix, String key, CoverSheetDataDTO coverSheetData) {
+        this.documentLocation = documentLocation;
+        this.documentType = documentType;
+        this.signatureOptions = signatureOptions;
+        this.prefix = prefix;
+        this.key = key;
+        this.coverSheetData = coverSheetData;
+    }
+
+    public SignPdfRequestDTO() {
+    }
+
     public String getDocumentLocation() {
         return documentLocation;
     }

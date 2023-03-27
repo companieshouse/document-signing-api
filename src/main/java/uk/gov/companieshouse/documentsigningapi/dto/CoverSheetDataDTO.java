@@ -16,6 +16,16 @@ public class CoverSheetDataDTO {
     @JsonProperty("filing_history_type")
     private String filingHistoryType;
 
+    public CoverSheetDataDTO(String companyName, String companyNumber, String filingHistoryDescription, String filingHistoryType) {
+        this.companyName = companyName;
+        this.companyNumber = companyNumber;
+        this.filingHistoryDescription = filingHistoryDescription;
+        this.filingHistoryType = filingHistoryType;
+    }
+
+    public CoverSheetDataDTO() {
+    }
+
     public String getCompanyName() {
         return companyName;
     }
