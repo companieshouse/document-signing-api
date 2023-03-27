@@ -75,7 +75,7 @@ public class SignDocumentController {
         map.put(SIGN_PDF_REQUEST, signPdfRequestDTO);
 
         List<String> errors = requestValidator.validateRequest(signPdfRequestDTO);
-        if (!requestValidator.validateRequest(signPdfRequestDTO).isEmpty()) {
+        if (!errors.isEmpty()) {
             return buildValidationResponse(BAD_REQUEST.value(), errors, map);
         }
 
