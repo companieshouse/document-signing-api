@@ -6,8 +6,6 @@ import uk.gov.companieshouse.documentsigningapi.dto.SignPdfRequestDTO;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Stream;
 
 @Component
 public class RequestValidator {
@@ -17,7 +15,8 @@ public class RequestValidator {
     private static final String DOCUMENT_TYPE_MISSING_VALIDATION_MESSAGE = "document_type: is a mandatory field and is not present";
     private static final String DOCUMENT_LOCATION_MISSING_VALIDATION_MESSAGE = "document_location: is a mandatory field and is not present";
     private static final String COVER_SHEET_DATA_MISSING_VALIDATION_MESSAGE= "cover_sheet_data: must be present when signature_options contains 'cover-sheet' value";
-    private static final String COVER_SHEET_DATA_FIELDS_MISSING_VALIDATION_MESSAGE = "cover_sheet_data: there are missing coversheet data fields";
+    private static final String COVER_SHEET_DATA_FIELDS_MISSING_VALIDATION_MESSAGE = "cover_sheet_data: there are missing coversheet data fields, " +
+        "please check that company_name, company_number, filing_history_type and filing_history_description are present in request";
 
     public List<String> validateRequest(SignPdfRequestDTO dto) {
         final List<String> errors = new ArrayList<>();
@@ -43,12 +42,11 @@ public class RequestValidator {
                 return;
             }
 
-            boolean hasMissingCoverSheetFields = Stream.of(dto.getCoverSheetData().getCompanyName(),
-                dto.getCoverSheetData().getCompanyNumber(),
-                dto.getCoverSheetData().getFilingHistoryType(),
-                dto.getCoverSheetData().getFilingHistoryDescription()).allMatch(Objects::isNull);
+            if (StringUtils.isBlank(dto.getCoverSheetData().getCompanyName()) ||
+                StringUtils.isBlank(dto.getCoverSheetData().getCompanyNumber()) ||
+                StringUtils.isBlank(dto.getCoverSheetData().getFilingHistoryType()) ||
+                StringUtils.isBlank(dto.getCoverSheetData().getFilingHistoryDescription())) {
 
-            if (hasMissingCoverSheetFields) {
                 errors.add(COVER_SHEET_DATA_FIELDS_MISSING_VALIDATION_MESSAGE);
             }
         }

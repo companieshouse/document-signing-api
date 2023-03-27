@@ -22,13 +22,16 @@ class RequestValidatorTest {
     private static final String FILING_HISTORY_DESCRIPTION = "this is an ad01 description";
     private static final CoverSheetDataDTO COVER_SHEET_DATA= new CoverSheetDataDTO(COMPANY_NAME, COMPANY_NUMBER,
         FILING_HISTORY_DESCRIPTION, FILING_HISTORY_TYPE);
+    private static final CoverSheetDataDTO COVER_SHEET_DATA_MISSING_FIELD= new CoverSheetDataDTO(COMPANY_NAME, null,
+        FILING_HISTORY_DESCRIPTION, FILING_HISTORY_TYPE);
 
     private static final String PREFIX_MISSING_VALIDATION_MESSAGE = "prefix: is a mandatory field and is not present";
     private static final String KEY_MISSING_VALIDATION_MESSAGE = "key: is a mandatory field and is not present";
     private static final String DOCUMENT_TYPE_MISSING_VALIDATION_MESSAGE = "document_type: is a mandatory field and is not present";
     private static final String DOCUMENT_LOCATION_MISSING_VALIDATION_MESSAGE = "document_location: is a mandatory field and is not present";
     private static final String COVER_SHEET_DATA_MISSING_VALIDATION_MESSAGE= "cover_sheet_data: must be present when signature_options contains 'cover-sheet' value";
-    private static final String COVER_SHEET_DATA_FIELDS_MISSING_VALIDATION_MESSAGE = "cover_sheet_data: there are missing coversheet data fields";
+    private static final String COVER_SHEET_DATA_FIELDS_MISSING_VALIDATION_MESSAGE = "cover_sheet_data: there are missing coversheet data fields, " +
+        "please check that company_name, company_number, filing_history_type and filing_history_description are present in request";
 
     @Test
     @DisplayName("validate request returns no errors")
@@ -105,5 +108,18 @@ class RequestValidatorTest {
 
         Assertions.assertEquals(1, errors.size());
         Assertions.assertEquals(COVER_SHEET_DATA_MISSING_VALIDATION_MESSAGE, errors.get(0));
+    }
+
+    @Test
+    @DisplayName("validate request returns cover sheet data fields missing error")
+    void validateRequestReturnsCoverSheetDataFieldsMissingError() {
+        final SignPdfRequestDTO dto = new SignPdfRequestDTO(DOCUMENT_LOCATION, DOCUMENT_TYPE,
+            SIGNATURE_OPTIONS, PREFIX, KEY, COVER_SHEET_DATA_MISSING_FIELD);
+
+        RequestValidator requestValidator = new RequestValidator();
+        List<String> errors = requestValidator.validateRequest(dto);
+
+        Assertions.assertEquals(1, errors.size());
+        Assertions.assertEquals(COVER_SHEET_DATA_FIELDS_MISSING_VALIDATION_MESSAGE, errors.get(0));
     }
 }
