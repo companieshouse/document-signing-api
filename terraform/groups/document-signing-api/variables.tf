@@ -1,3 +1,8 @@
+variable "aws_account" {
+  description = "The name of the AWS account"
+  type        = string
+}
+
 variable "image_bucket_name_prefix" {
   default     = "document-api-images"
   description = "The name prefix of the image bucket"
@@ -18,11 +23,5 @@ variable "region" {
 variable "service" {
   default     = "document-signing-api"
   description = "The service name to be used when creating AWS resources"
-  type        = string
-}
-
-variable "signed_bucket_name" {
-  default     = "document-signing-api"
-  description = "The name of the signed images bucket"
   type        = string
 }

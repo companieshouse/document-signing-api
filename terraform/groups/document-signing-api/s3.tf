@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "signed" {
-  bucket = var.signed_bucket_name
+  bucket = "${var.service}.${var.aws_account}.ch.gov.uk"
 }
 
 resource "aws_s3_bucket_acl" "signed" {
