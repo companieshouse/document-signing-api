@@ -1,5 +1,13 @@
 package uk.gov.companieshouse.documentsigningapi.controller;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,18 +26,11 @@ import uk.gov.companieshouse.documentsigningapi.dto.CoverSheetDataDTO;
 import uk.gov.companieshouse.documentsigningapi.dto.SignPdfRequestDTO;
 import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
 import uk.gov.companieshouse.documentsigningapi.signing.SigningService;
+import uk.gov.companieshouse.documentsigningapi.validation.RequestValidator;
 import uk.gov.companieshouse.logging.Logger;
 
 import java.net.URISyntaxException;
 import java.util.List;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 /**
  * Partially unit tests the {@link SignDocumentController} class.
@@ -60,6 +61,9 @@ class SignDocumentControllerTest {
 
     @Mock
     private SigningService signingService;
+
+    @Mock
+    private RequestValidator requestValidator;
 
     @Test
     @DisplayName("signPdf reports URISyntaxException as a bad request (400)")
