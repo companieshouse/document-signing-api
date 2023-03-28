@@ -46,6 +46,18 @@ class RequestValidatorTest {
     }
 
     @Test
+    @DisplayName("validate request returns no errors without optional fields")
+    void validateRequestReturnsNoErrorsWithoutOptionals() {
+        final SignPdfRequestDTO dto = new SignPdfRequestDTO(DOCUMENT_LOCATION, DOCUMENT_TYPE,
+            null, PREFIX, KEY, null);
+
+        RequestValidator requestValidator = new RequestValidator();
+        List<String> errors = requestValidator.validateRequest(dto);
+
+        Assertions.assertEquals(0, errors.size());
+    }
+
+    @Test
     @DisplayName("validate request returns prefix missing error")
     void validateRequestReturnsPrefixMissingError() {
         final SignPdfRequestDTO dto = new SignPdfRequestDTO(DOCUMENT_LOCATION, DOCUMENT_TYPE,

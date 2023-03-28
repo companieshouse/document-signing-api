@@ -35,7 +35,7 @@ public class RequestValidator {
     }
 
     private void validateCoverSheet(SignPdfRequestDTO dto, List<String> errors) {
-        if (!dto.getSignatureOptions().isEmpty() && dto.getSignatureOptions().contains(("cover-sheet"))) {
+        if (dto.getSignatureOptions() != null && !dto.getSignatureOptions().isEmpty() && dto.getSignatureOptions().contains(("cover-sheet"))) {
 
             if(dto.getCoverSheetData() == null) {
                 errors.add(COVER_SHEET_DATA_MISSING_VALIDATION_MESSAGE);
