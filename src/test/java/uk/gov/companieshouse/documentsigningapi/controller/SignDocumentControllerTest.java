@@ -1,5 +1,18 @@
 package uk.gov.companieshouse.documentsigningapi.controller;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.companieshouse.documentsigningapi.util.TestConstants.ERIC_AUTHORIZED_KEY_ROLES;
+import static uk.gov.companieshouse.documentsigningapi.util.TestConstants.ERIC_AUTHORIZED_KEY_ROLES_VALUE;
+import static uk.gov.companieshouse.documentsigningapi.util.TestConstants.ERIC_IDENTITY_HEADER_NAME;
+import static uk.gov.companieshouse.documentsigningapi.util.TestConstants.ERIC_IDENTITY_HEADER_VALUE;
+import static uk.gov.companieshouse.documentsigningapi.util.TestConstants.ERIC_IDENTITY_TYPE_HEADER_NAME;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,25 +31,12 @@ import uk.gov.companieshouse.documentsigningapi.dto.CoverSheetDataDTO;
 import uk.gov.companieshouse.documentsigningapi.dto.SignPdfRequestDTO;
 import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
 import uk.gov.companieshouse.documentsigningapi.signing.SigningService;
+import uk.gov.companieshouse.documentsigningapi.validation.RequestValidator;
 import uk.gov.companieshouse.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.URISyntaxException;
 import java.util.List;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static uk.gov.companieshouse.documentsigningapi.util.TestConstants.ERIC_AUTHORIZED_KEY_ROLES;
-import static uk.gov.companieshouse.documentsigningapi.util.TestConstants.ERIC_AUTHORIZED_KEY_ROLES_VALUE;
-import static uk.gov.companieshouse.documentsigningapi.util.TestConstants.ERIC_IDENTITY_HEADER_NAME;
-import static uk.gov.companieshouse.documentsigningapi.util.TestConstants.ERIC_IDENTITY_HEADER_VALUE;
-import static uk.gov.companieshouse.documentsigningapi.util.TestConstants.ERIC_IDENTITY_TYPE_HEADER_NAME;
 
 
 /**
@@ -71,6 +71,9 @@ class SignDocumentControllerTest {
 
     @Mock
     private HttpServletRequest request;
+
+    @Mock
+    private RequestValidator requestValidator;
 
     @Test
     @DisplayName("signPdf reports URISyntaxException as a bad request (400)")
