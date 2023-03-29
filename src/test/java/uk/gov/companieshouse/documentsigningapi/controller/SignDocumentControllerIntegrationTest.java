@@ -164,10 +164,6 @@ class SignDocumentControllerIntegrationTest {
         final var pdf = s3Service.retrieveUnsignedDocument(unsignedDocumentLocation);
         when(signingService.signPDF(any())).thenReturn(pdf.readAllBytes());
 
-//        lenient().doReturn(ERIC_IDENTITY_HEADER_VALUE).when(request).getHeader(ERIC_IDENTITY_HEADER_NAME);
-//        lenient().doReturn(ERIC_IDENTITY_HEADER_VALUE).when(request).getHeader(ERIC_IDENTITY_TYPE_HEADER_NAME);
-//        lenient().doReturn(ERIC_AUTHORIZED_KEY_ROLES_VALUE).when(request).getHeader(ERIC_AUTHORIZED_KEY_ROLES );
-//
         final var resultActions = mockMvc.perform(post("/document-signing/sign-pdf")
                 .header(ERIC_IDENTITY_HEADER_NAME, ERIC_IDENTITY_HEADER_VALUE)
                 .header(ERIC_IDENTITY_TYPE_HEADER_NAME, ERIC_IDENTITY_HEADER_VALUE)
@@ -204,11 +200,11 @@ class SignDocumentControllerIntegrationTest {
         final var signPdfRequestDTO = createSignPdfRequest(unsignedDocumentLocation);
 
         final var resultActions = mockMvc.perform(post("/document-signing/sign-pdf")
-                        .header(ERIC_IDENTITY_HEADER_NAME, ERIC_IDENTITY_HEADER_VALUE)
-                        .header(ERIC_IDENTITY_TYPE_HEADER_NAME, ERIC_IDENTITY_HEADER_VALUE)
-                        .header(ERIC_AUTHORIZED_KEY_ROLES, ERIC_AUTHORIZED_KEY_ROLES_VALUE)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(signPdfRequestDTO)))
+                .header(ERIC_IDENTITY_HEADER_NAME, ERIC_IDENTITY_HEADER_VALUE)
+                .header(ERIC_IDENTITY_TYPE_HEADER_NAME, ERIC_IDENTITY_HEADER_VALUE)
+                .header(ERIC_AUTHORIZED_KEY_ROLES, ERIC_AUTHORIZED_KEY_ROLES_VALUE)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(signPdfRequestDTO)))
                 .andExpect(status().isBadRequest());
 
         final var body = resultActions.andReturn().getResponse().getContentAsString();
@@ -226,11 +222,11 @@ class SignDocumentControllerIntegrationTest {
         final var signPdfRequestDTO = createSignPdfRequest(unsignedDocumentLocation);
 
         final var resultActions = mockMvc.perform(post("/document-signing/sign-pdf")
-                        .header(ERIC_IDENTITY_HEADER_NAME, ERIC_IDENTITY_HEADER_VALUE)
-                        .header(ERIC_IDENTITY_TYPE_HEADER_NAME, ERIC_IDENTITY_HEADER_VALUE)
-                        .header(ERIC_AUTHORIZED_KEY_ROLES, ERIC_AUTHORIZED_KEY_ROLES_VALUE)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(signPdfRequestDTO)))
+                .header(ERIC_IDENTITY_HEADER_NAME, ERIC_IDENTITY_HEADER_VALUE)
+                .header(ERIC_IDENTITY_TYPE_HEADER_NAME, ERIC_IDENTITY_HEADER_VALUE)
+                .header(ERIC_AUTHORIZED_KEY_ROLES, ERIC_AUTHORIZED_KEY_ROLES_VALUE)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(signPdfRequestDTO)))
                 .andExpect(status().isNotFound());
 
         final var body = resultActions.andReturn().getResponse().getContentAsString();

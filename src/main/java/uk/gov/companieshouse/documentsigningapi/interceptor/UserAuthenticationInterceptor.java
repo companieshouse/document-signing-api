@@ -26,7 +26,7 @@ public class UserAuthenticationInterceptor implements HandlerInterceptor {
         //
         // Any value will do for ERIC-Identity-Type so long as it is NOT empty.
         //
-        final String identityType = EricHeaderHelper.getIdentityType(request);
+        String identityType = EricHeaderHelper.getIdentityType(request);
         if(identityType == null) {
             logMap.put(IDENTITY_TYPE_LOG_KEY, MISSING_REQUIRED_INFO);
             logMap.put(STATUS_LOG_KEY, UNAUTHORIZED);
@@ -37,7 +37,7 @@ public class UserAuthenticationInterceptor implements HandlerInterceptor {
         //
         // Any value will do for ERIC-Identity so long as it is NOT empty.
         //
-        final String identity = EricHeaderHelper.getIdentity(request);
+        String identity = EricHeaderHelper.getIdentity(request);
         if(identity == null) {
             logMap.put(IDENTITY_LOG_KEY, MISSING_REQUIRED_INFO);
             logMap.put(STATUS_LOG_KEY, UNAUTHORIZED);

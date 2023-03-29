@@ -37,10 +37,7 @@ public class UserAuthorisationInterceptor implements HandlerInterceptor {
     private boolean hasInternalUserRole(HttpServletRequest request) {
         Map<String, Object> logMap = new HashMap<>();
         logMap.put(REQUEST_ID_LOG_KEY, request.getHeader(REQUEST_ID_HEADER_NAME));
-        //
-        // Taken from companieshouse.certificates.orders.api => UserAuthorisationInterceptor
-        // Extra filters can be applied here e.g. only GET or POST allowed.
-        //
+
         if(AuthorisationUtil.hasInternalUserRole(request)) {
             LOGGER.trace("API is permitted to view the resource", logMap);
             return(true);

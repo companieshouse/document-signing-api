@@ -26,7 +26,7 @@ public class UserAuthorisationInterceptorTest {
 
     @Test
     @DisplayName("preHandle ERIC-Authorised-Key-Roles is present and CORRECT value")
-    void willAuthorise_IfEricHeadersArePresentAndCorrectValue() throws Exception {
+    void willAuthoriseIfEricHeadersArePresentAndCorrectValue() throws Exception {
         lenient()
             .doReturn("*")
             .when(request)
@@ -36,7 +36,7 @@ public class UserAuthorisationInterceptorTest {
     }
     @Test
     @DisplayName("preHandle ERIC-Authorised-Key-Roles is MISSING")
-    void willNotAuthorise_IfEricHeadersAreMissing() throws Exception {
+    void willNotAuthoriseIfEricHeadersAreMissing() throws Exception {
         lenient()
             .doReturn(null)
             .when(request)
@@ -46,7 +46,7 @@ public class UserAuthorisationInterceptorTest {
     }
     @Test
     @DisplayName("preHandle ERIC-Authorised-Key-Roles is present and INCORRECT value")
-    void willNotAuthorise_IfEricHeadersPresentAndIncorrectValue() throws Exception {
+    void willNotAuthoriseIfEricHeadersPresentAndIncorrectValue() throws Exception {
         lenient()
             .doReturn("xxx")
             .when(request)
