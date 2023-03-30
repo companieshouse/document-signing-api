@@ -6,7 +6,6 @@ import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.common.PDStream;
-import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
@@ -35,12 +34,30 @@ import static uk.gov.companieshouse.documentsigningapi.coversheet.LayoutConstant
 public class VisualSignature {
 
     private static final String SIGNING_AUTHORITY_NAME = "Registrar of Companies";
-
+    private static final String TITLE_TEXT = "Signature";
+    private static final String THIS_DOCUMENT_TEXT = "This document has been digitally signed.";
+    private static final String SIGNING_AUTHORITY_PREFIX = "By: ";
+    private static final String SIGNING_DATE_PREFIX = "On: ";
     private static final String LINK_TEXT = "Check signature validation status";
+
+    private static final int TOP_PAGE_SPACER_OFFSET_FROM_BOTTOM = 280;
+    private static final int  BOTTOM_PAGE_SPACER_OFFSET_FROM_BOTTOM = 100;
+    private static final float STAMP_SCALING_FACTOR = 0.25f;
+    private static final int STAMP_OFFSET_FROM_LEFT = 350;
+    private static final int STAMP_OFFSET_FROM_BOTTOM = 150;
+    private static final int TEXT_OFFSET_FROM_TOP = 580;
+    private static final int LINK_OFFSET_FROM_TOP = 698;
+    private static final int LINK_HEIGHT = 20;
+    private static final int LINK_UNDERLINING_OFFSET_FROM_BOTTOM = 128;
+    private static final int LINK_UNDERLINING_THICKNESS = 1;
+    private static final int COVER_SHEET_PAGE_NO = 0;
+
+    private static final Font TITLE_FONT = new Font(PDType1Font.HELVETICA, 18);
+    private static final Font TEXT_FONT = new Font(PDType1Font.HELVETICA, 14);
+
     private final ImagesBean images;
     private final OrdinalDateTimeFormatter formatter;
     private final Renderer renderer;
-
 
     public VisualSignature(ImagesBean images,
                            OrdinalDateTimeFormatter formatter,
@@ -55,42 +72,32 @@ public class VisualSignature {
                             final PDPage coverSheet,
                             final Calendar signingDate) throws IOException {
         renderVisualSignaturePageSpacers(contentStream);
-
-        final PDImageXObject img = images.createImage("digital-search-copy-stamp.jpeg", document);
-        contentStream.drawImage(img, 350, 150, img.getWidth() * 0.25f, img.getHeight() * 0.25f);
-        renderText(contentStream, coverSheet.getCropBox().getHeight() - 580, signingDate);
+        renderCompaniesHouseStamp(contentStream, document);
+        renderText(contentStream, coverSheet.getCropBox().getHeight() - TEXT_OFFSET_FROM_TOP, signingDate);
     }
 
-    public void render(final SignatureOptions signatureOptions,
-                       final PDDocument document) throws IOException {
-        final PDPage coverSheet = document.getPage(0);
+    public void renderSignatureLink(final SignatureOptions signatureOptions,
+                                    final PDDocument document) throws IOException {
         // Set the signature rectangle
         // Although PDF coordinates start from the bottom, humans start from the top.
         // So a human would want to position a signature (x,y) units from the
         // top left of the displayed page, and the field has a horizontal width and a vertical height
         // regardless of page rotation.
         final Rectangle2D humanRect =
-                new Rectangle2D.Float(
-                        DEFAULT_MARGIN,
-                        698,
-                        getTextWidth(LINK_TEXT),
-                        20);
+                new Rectangle2D.Float(DEFAULT_MARGIN, LINK_OFFSET_FROM_TOP, getTextWidth(LINK_TEXT), LINK_HEIGHT);
         final PDRectangle signatureRectangle = createSignatureRectangle(document, humanRect);
-        signatureOptions.setVisualSignature(
-                createVisualSignatureTemplate(
-                        coverSheet,
-                        signatureRectangle));
-        signatureOptions.setPage(0);
+        final PDPage coverSheet = getCoverSheet(document);
+        signatureOptions.setVisualSignature(createVisualSignatureTemplate(coverSheet, signatureRectangle));
+        signatureOptions.setPage(COVER_SHEET_PAGE_NO);
     }
 
-    private PDRectangle createSignatureRectangle(final PDDocument doc, final Rectangle2D humanRect)
+    private PDRectangle createSignatureRectangle(final PDDocument document, final Rectangle2D humanRect)
     {
         final float x = (float) humanRect.getX();
         final float y = (float) humanRect.getY();
         final float width = (float) humanRect.getWidth();
         final float height = (float) humanRect.getHeight();
-        final PDPage coverSheet = doc.getPage(0);
-        final PDRectangle coverSheetCropBox = coverSheet.getCropBox();
+        final PDRectangle coverSheetCropBox = getCoverSheet(document).getCropBox();
         final var signatureRectangle = new PDRectangle();
         signatureRectangle.setLowerLeftX(x);
         signatureRectangle.setUpperRightX(x + width);
@@ -110,16 +117,16 @@ public class VisualSignature {
         return saveToInputStream(doc);
     }
 
-    private InputStream saveToInputStream(final PDDocument doc) throws IOException {
+    private InputStream saveToInputStream(final PDDocument document) throws IOException {
         // no need to set annotations and /P entry
         final var outputStream = new ByteArrayOutputStream();
-        doc.save(outputStream);
-        doc.close();
+        document.save(outputStream);
+        document.close();
         return new ByteArrayInputStream(outputStream.toByteArray());
     }
 
-    private PDFormXObject buildVisualSignatureForm(final PDDocument doc, final PDRectangle signatureRectangle) {
-        final var stream = new PDStream(doc);
+    private PDFormXObject buildVisualSignatureForm(final PDDocument document, final PDRectangle signatureRectangle) {
+        final var stream = new PDStream(document);
         final var form = new PDFormXObject(stream);
         final var res = new PDResources();
         form.setResources(res);
@@ -129,10 +136,11 @@ public class VisualSignature {
         return form;
     }
 
-    private PDAnnotationWidget buildVisualSignatureWidget(final PDDocument doc, final PDRectangle signatureRectangle)
+    private PDAnnotationWidget buildVisualSignatureWidget(
+            final PDDocument document, final PDRectangle signatureRectangle)
             throws IOException {
-        final var acroForm = new PDAcroForm(doc);
-        doc.getDocumentCatalog().setAcroForm(acroForm);
+        final var acroForm = new PDAcroForm(document);
+        document.getDocumentCatalog().setAcroForm(acroForm);
         final var signatureField = new PDSignatureField(acroForm);
         final PDAnnotationWidget widget = signatureField.getWidgets().get(0);
         final List<PDField> acroFormFields = acroForm.getFields();
@@ -146,10 +154,10 @@ public class VisualSignature {
     }
 
     private PDDocument createDocumentForVisualSignature(final PDPage coverSheet) {
-        final var doc = new PDDocument();
+        final var document = new PDDocument();
         final var page = new PDPage(coverSheet.getMediaBox());
-        doc.addPage(page);
-        return doc;
+        document.addPage(page);
+        return document;
     }
 
     private void buildAppearanceDictionary(final PDFormXObject form, final PDAnnotationWidget widget) {
@@ -164,56 +172,69 @@ public class VisualSignature {
                             final float height,
                             final Calendar signingDate) throws IOException {
         contentStream.beginText();
-        setTitle(contentStream, height,"Signature");
-        addLine(contentStream, "This document has been digitally signed.");
-        addLine(contentStream, "By: " + SIGNING_AUTHORITY_NAME);
-        addLine(contentStream, "On: " + formatter.getDateTimeString(signingDate.getTime()));
+        setTitle(contentStream, height, TITLE_TEXT);
+        addLine(contentStream, THIS_DOCUMENT_TEXT);
+        addLine(contentStream, SIGNING_AUTHORITY_PREFIX + SIGNING_AUTHORITY_NAME);
+        addLine(contentStream, SIGNING_DATE_PREFIX + formatter.getDateTimeString(signingDate.getTime()));
         addPseudoLink(LINK_TEXT, contentStream);
     }
 
-    private void setTitle(final PDPageContentStream cs,
+    private void setTitle(final PDPageContentStream contentStream,
                           final float boxHeight,
                           final String title)
             throws IOException {
-        final float fontSize = 18;
-        final float leading = fontSize * 1.5f;
-        cs.setFont(PDType1Font.HELVETICA, fontSize);
-        cs.setNonStrokingColor(Color.black);
-        cs.newLineAtOffset(DEFAULT_MARGIN, boxHeight - leading);
-        cs.setLeading(leading);
-        cs.showText(title);
-        cs.newLine();
-        cs.newLineAtOffset(0, 0);
+        contentStream.setFont(TITLE_FONT.getPdFont(), TITLE_FONT.getSize());
+        contentStream.setNonStrokingColor(Color.black);
+        contentStream.newLineAtOffset(DEFAULT_MARGIN, boxHeight - TITLE_FONT.getLeading());
+        contentStream.setLeading(TITLE_FONT.getLeading());
+        contentStream.showText(title);
+        contentStream.newLine();
+        contentStream.newLineAtOffset(0, 0);
     }
 
-    private void addLine(final PDPageContentStream cs,
+    private void addLine(final PDPageContentStream contentStream,
                          final String text) throws IOException {
-        float fontSize = 14;
-        float leading = fontSize * 1.5f;
-        cs.setFont(PDType1Font.HELVETICA, fontSize);
-        cs.setLeading(leading);
-        cs.showText(text);
-        cs.newLine();
+        contentStream.setFont(TEXT_FONT.getPdFont(), TEXT_FONT.getSize());
+        contentStream.setLeading(TEXT_FONT.getLeading());
+        contentStream.showText(text);
+        contentStream.newLine();
     }
 
-    private void addPseudoLink(final String linkText, final PDPageContentStream cs) throws IOException {
-        cs.newLineAtOffset(0, -14);
-        cs.setNonStrokingColor(Color.BLUE);
-        cs.showText(linkText);
-        cs.endText();
-        cs.addRect(DEFAULT_MARGIN, 128, getTextWidth(linkText), 1);
-        cs.fill();
+    private void addPseudoLink(final String linkText, final PDPageContentStream contentStream) throws IOException {
+        contentStream.newLineAtOffset(0, -TEXT_FONT.getSize());
+        contentStream.setNonStrokingColor(Color.BLUE);
+        contentStream.showText(linkText);
+        contentStream.endText();
+        contentStream.addRect(
+                DEFAULT_MARGIN,
+                LINK_UNDERLINING_OFFSET_FROM_BOTTOM,
+                getTextWidth(linkText),
+                LINK_UNDERLINING_THICKNESS);
+        contentStream.fill();
     }
 
     private void renderVisualSignaturePageSpacers(final PDPageContentStream contentStream) throws IOException {
-        renderer.renderPageSpacer(contentStream, 280);
-        renderer.renderPageSpacer(contentStream, 100);
+        renderer.renderPageSpacer(contentStream, TOP_PAGE_SPACER_OFFSET_FROM_BOTTOM);
+        renderer.renderPageSpacer(contentStream, BOTTOM_PAGE_SPACER_OFFSET_FROM_BOTTOM);
     }
 
     private float getTextWidth(final String text) throws IOException {
-        final float fontSize = 14;
-        final PDFont font = PDType1Font.HELVETICA;
-        return font.getStringWidth(text) / POSTSCRIPT_TYPE_1_FONT_UPM * fontSize;
+        return TEXT_FONT.getPdFont().getStringWidth(text) / POSTSCRIPT_TYPE_1_FONT_UPM * TEXT_FONT.getSize();
+    }
+
+    private void renderCompaniesHouseStamp(final PDPageContentStream contentStream,
+                                           final PDDocument document) throws IOException {
+        final PDImageXObject img = images.createImage("digital-search-copy-stamp.jpeg", document);
+        contentStream.drawImage(
+                img,
+                STAMP_OFFSET_FROM_LEFT,
+                STAMP_OFFSET_FROM_BOTTOM,
+                img.getWidth() * STAMP_SCALING_FACTOR,
+                img.getHeight() * STAMP_SCALING_FACTOR);
+    }
+
+    private PDPage getCoverSheet(final PDDocument document) {
+        return document.getPage(COVER_SHEET_PAGE_NO);
     }
 
 }

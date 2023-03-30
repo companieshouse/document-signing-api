@@ -5,7 +5,6 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
 import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
@@ -38,16 +37,6 @@ public class CoverSheetService {
         private Link(String text, String url) {
             this.text = text;
             this.url = url;
-        }
-    }
-
-    private static class Font {
-        private final PDFont pdFont;
-        private final float size;
-
-        private Font(PDFont pdFont, float size) {
-            this.pdFont = pdFont;
-            this.size = size;
         }
     }
 
@@ -227,7 +216,7 @@ public class CoverSheetService {
                                     final float upperRightY,
                                     final Position position) throws IOException {
         contentStream.beginText();
-        contentStream.setFont(font.pdFont, font.size);
+        contentStream.setFont(font.getPdFont(), font.getSize());
         contentStream.newLineAtOffset(position.x, upperRightY - position.y);
         contentStream.showText(preLinkText);
 
@@ -265,10 +254,10 @@ public class CoverSheetService {
                                      final Font font,
                                      final float upperRightY,
                                      final Position position) throws IOException {
-        final float offset = font.pdFont.getStringWidth(preLinkText) / POSTSCRIPT_TYPE_1_FONT_UPM * font.size;
-        final float textWidth = font.pdFont.getStringWidth(linkText) / POSTSCRIPT_TYPE_1_FONT_UPM * font.size;
+        final float offset = font.getPdFont().getStringWidth(preLinkText) / POSTSCRIPT_TYPE_1_FONT_UPM * font.getSize();
+        final float textWidth = font.getPdFont().getStringWidth(linkText) / POSTSCRIPT_TYPE_1_FONT_UPM * font.getSize();
         final float textHeight =
-                font.pdFont.getFontDescriptor().getCapHeight() / POSTSCRIPT_TYPE_1_FONT_UPM * font.size;
+                font.getPdFont().getFontDescriptor().getCapHeight() / POSTSCRIPT_TYPE_1_FONT_UPM * font.getSize();
         final var rectangle = new PDRectangle();
         rectangle.setLowerLeftX(position.x + offset);
         rectangle.setLowerLeftY(upperRightY - position.y - LINE_OFFSET_BELOW_FONT);
