@@ -127,7 +127,7 @@ public class SigningService {
 
         try (final var signatureOptions = new SignatureOptions()) {
 
-            visualSignature.render(pdSignature, signatureOptions, document);
+            visualSignature.render(signatureOptions, document);
 
             // register signature dictionary, signature interface and options
             document.addSignature(pdSignature, signature, signatureOptions);

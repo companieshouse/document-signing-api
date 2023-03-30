@@ -167,11 +167,6 @@ public class CoverSheetService {
         contentStream.drawImage(printerImage, DEFAULT_MARGIN, 325, INFORMATION_SECTION_IMAGE_WIDTH, INFORMATION_SECTION_IMAGE_HEIGHT);
         textWrapper(contentStream, PRINTER_HELPTEXT, 14, OFFSET_TO_RIGHT_OF_IMAGES, 340);
 
-//        renderVisualSignaturePageSpacers(contentStream);
-//
-//        final PDImageXObject img = images.createImage("digital-search-copy-stamp.jpeg", pdfDocument);
-//        contentStream.drawImage(img, /*1150*/350, /*50*/150, /*25*/img.getWidth() * 0.25f, /*25*/img.getHeight() * 0.25f);
-
         visualSignature.renderPanel(contentStream, pdfDocument, coverSheet, signingDate);
 
         contentStream.close();
@@ -292,11 +287,6 @@ public class CoverSheetService {
         final var action = new PDActionURI();
         action.setURI(linkUrl);
         link.setAction(action);
-    }
-
-    private void renderVisualSignaturePageSpacers(final PDPageContentStream contentStream) throws IOException {
-        renderer.renderPageSpacer(contentStream, 280);
-        renderer.renderPageSpacer(contentStream, 100);
     }
 
     protected PDRectangle getMediaBox(final PDPage page) {

@@ -13,15 +13,11 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceDictionary;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceStream;
-import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureOptions;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
-import org.apache.pdfbox.util.Matrix;
 import org.springframework.stereotype.Component;
-import uk.gov.companieshouse.documentsigningapi.exception.ImageUnavailableException;
-import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
@@ -41,18 +37,14 @@ public class VisualSignature {
     private static final String SIGNING_AUTHORITY_NAME = "Registrar of Companies";
 
     private static final String LINK_TEXT = "Check signature validation status";
-
-    private final LoggingUtils logger;
     private final ImagesBean images;
     private final OrdinalDateTimeFormatter formatter;
     private final Renderer renderer;
 
 
-    public VisualSignature(LoggingUtils logger,
-                           ImagesBean images,
+    public VisualSignature(ImagesBean images,
                            OrdinalDateTimeFormatter formatter,
                            Renderer renderer) {
-        this.logger = logger;
         this.images = images;
         this.formatter = formatter;
         this.renderer = renderer;
@@ -65,12 +57,11 @@ public class VisualSignature {
         renderVisualSignaturePageSpacers(contentStream);
 
         final PDImageXObject img = images.createImage("digital-search-copy-stamp.jpeg", document);
-        contentStream.drawImage(img, /*1150*/350, /*50*/150, /*25*/img.getWidth() * 0.25f, /*25*/img.getHeight() * 0.25f);
-        renderText(contentStream, /*pdSignature,*/ /*height ?*/ coverSheet.getCropBox().getHeight() - 580, signingDate);
+        contentStream.drawImage(img, 350, 150, img.getWidth() * 0.25f, img.getHeight() * 0.25f);
+        renderText(contentStream, coverSheet.getCropBox().getHeight() - 580, signingDate);
     }
 
-    public void render(final PDSignature pdSignature,
-                       final SignatureOptions signatureOptions,
+    public void render(final SignatureOptions signatureOptions,
                        final PDDocument document) throws IOException {
         final PDPage coverSheet = document.getPage(0);
         // Set the signature rectangle
@@ -82,15 +73,13 @@ public class VisualSignature {
                 new Rectangle2D.Float(
                         DEFAULT_MARGIN,
                         698,
-                        /*coverSheet.getBBox().getWidth() - 2 * DEFAULT_MARGIN*//*100*/getTextWidth(LINK_TEXT),
-                        /*150*/20);
+                        getTextWidth(LINK_TEXT),
+                        20);
         final PDRectangle signatureRectangle = createSignatureRectangle(document, humanRect);
         signatureOptions.setVisualSignature(
                 createVisualSignatureTemplate(
                         coverSheet,
-                        signatureRectangle,
-                        pdSignature,
-                        "digital-search-copy-stamp.jpeg"));
+                        signatureRectangle));
         signatureOptions.setPage(0);
     }
 
@@ -112,15 +101,12 @@ public class VisualSignature {
 
     // create a template PDF document with empty signature and return it as a stream.
     private InputStream createVisualSignatureTemplate(final PDPage coverSheet,
-                                                      final PDRectangle signatureRectangle,
-                                                      final PDSignature pdSignature,
-                                                      final String stampFilename) throws IOException
+                                                      final PDRectangle signatureRectangle) throws IOException
     {
         final PDDocument doc = createDocumentForVisualSignature(coverSheet);
         final PDAnnotationWidget widget = buildVisualSignatureWidget(doc, signatureRectangle);
         final PDFormXObject form = buildVisualSignatureForm(doc, signatureRectangle);
-        final PDAppearanceStream appearanceStream = buildAppearanceDictionary(form, widget);
-        // TODO replaced by renderPanel?  buildVisualSignatureContent(doc, appearanceStream, pdSignature, stampFilename, form.getBBox().getHeight());
+        buildAppearanceDictionary(form, widget);
         return saveToInputStream(doc);
     }
 
@@ -166,51 +152,15 @@ public class VisualSignature {
         return doc;
     }
 
-    private PDAppearanceStream buildAppearanceDictionary(final PDFormXObject form, final PDAnnotationWidget widget) {
+    private void buildAppearanceDictionary(final PDFormXObject form, final PDAnnotationWidget widget) {
         final var appearance = new PDAppearanceDictionary();
         appearance.getCOSObject().setDirect(true);
         final var appearanceStream = new PDAppearanceStream(form.getCOSObject());
         appearance.setNormalAppearance(appearanceStream);
         widget.setAppearance(appearance);
-        return appearanceStream;
-    }
-
-    private void buildVisualSignatureContent(final PDDocument doc,
-                                             final PDAppearanceStream appearanceStream,
-                                             final PDSignature pdSignature,
-                                             final String stampFilename,
-                                             final float height) throws IOException {
-        final var contentStream = new PDPageContentStream(doc, appearanceStream);
-        renderBackground(contentStream);
-        renderSigningStamp(doc, contentStream, stampFilename);
-        // TODO remove? renderText(contentStream, pdSignature, height);
-        contentStream.close();
-    }
-
-    private void renderBackground(final PDPageContentStream contentStream) throws IOException {
-        contentStream.setNonStrokingColor(Color.white);
-        contentStream.addRect(-5000, -5000, 10000, 10000);
-        contentStream.fill();
-    }
-
-    private void renderSigningStamp(final PDDocument doc,
-                                    final PDPageContentStream contentStream,
-                                    final String stampFilename) throws IOException {
-        // Save and restore graphics as the image is too large and needs to be scaled.
-        contentStream.saveGraphicsState();
-        contentStream.transform(Matrix.getScaleInstance(0.25f, 0.25f));
-        try {
-            final PDImageXObject img = images.createImage(stampFilename, doc);
-            contentStream.drawImage(img, 1150, 50);
-            contentStream.restoreGraphicsState();
-        } catch (IOException ioe) {
-            logger.getLogger().error(ioe.getMessage(), ioe);
-            throw new ImageUnavailableException("Could not load image from file " + stampFilename, ioe);
-        }
     }
 
     private void renderText(final PDPageContentStream contentStream,
-                            /* final PDSignature pdSignature,*/
                             final float height,
                             final Calendar signingDate) throws IOException {
         contentStream.beginText();
