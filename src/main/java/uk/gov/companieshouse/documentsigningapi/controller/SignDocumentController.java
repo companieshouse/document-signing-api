@@ -18,6 +18,7 @@ import uk.gov.companieshouse.documentsigningapi.signing.SigningService;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Calendar;
 import java.util.Map;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -72,8 +73,9 @@ public class SignDocumentController {
         map.put(SIGN_PDF_REQUEST, signPdfRequestDTO);
         try {
             final var unsignedDoc = s3Service.retrieveUnsignedDocument(unsignedDocumentLocation);
-            final var coveredDoc = addCoverSheetIfRequired(unsignedDoc.readAllBytes(), signPdfRequestDTO);
-            final var signedPDF = signingService.signPDF(coveredDoc);
+            final var signingDate = Calendar.getInstance();
+            final var coveredDoc = addCoverSheetIfRequired(unsignedDoc.readAllBytes(), signPdfRequestDTO, signingDate);
+            final var signedPDF = signingService.signPDF(coveredDoc, signingDate);
             final var signedDocumentLocation =
                     s3Service.storeSignedDocument(signedPDF, prefix, key);
             return buildResponse(signedDocumentLocation, signPdfRequestDTO, map);
@@ -88,10 +90,11 @@ public class SignDocumentController {
     }
 
     private byte[] addCoverSheetIfRequired(final byte[] document,
-                                           final SignPdfRequestDTO request) {
+                                           final SignPdfRequestDTO request,
+                                           final Calendar signingDate) {
         return request.getSignatureOptions() != null &&
                 request.getSignatureOptions().contains(COVER_SHEET_SIGNATURE_OPTION) ?
-                coverSheetService.addCoverSheet(document, request.getCoverSheetData()) : document;
+                coverSheetService.addCoverSheet(document, request.getCoverSheetData(), signingDate) : document;
     }
 
     private ResponseEntity<Object> buildResponse(final String signedDocumentLocation,

@@ -54,7 +54,7 @@ public class SigningService {
         this.visualSignature = visualSignature;
     }
 
-    public byte[] signPDF(byte[] pdfToSign)
+    public byte[] signPDF(byte[] pdfToSign, Calendar signingDate)
             throws DocumentSigningException, DocumentUnavailableException, VisualSignatureException {
         try {
             KeyStore keyStore = getKeyStore();
@@ -69,7 +69,7 @@ public class SigningService {
             File signedPdf = File.createTempFile("signedPdf", "");
 
             // Sign the document
-            this.signDetached(signature, pdfFile, signedPdf);
+            this.signDetached(signature, pdfFile, signedPdf, signingDate);
 
             byte[] signedPdfBytes = Files.readAllBytes(signedPdf.toPath());
 
@@ -99,25 +99,31 @@ public class SigningService {
         return keyStore;
     }
 
-    private void signDetached(SignatureInterface signature, File inputFile, File outputFile) throws IOException {
+    private void signDetached(SignatureInterface signature,
+                              File inputFile,
+                              File outputFile,
+                              Calendar signingDate) throws IOException {
         if (inputFile == null || !inputFile.exists()) {
             throw new FileNotFoundException("Document for signing does not exist");
         }
 
         try (FileOutputStream fos = new FileOutputStream(outputFile);
              PDDocument doc = PDDocument.load(inputFile)) {
-            signDetached(signature, doc, fos);
+            signDetached(signature, doc, fos, signingDate);
         }
     }
 
-    private void signDetached(SignatureInterface signature, PDDocument document, OutputStream output) throws IOException {
+    private void signDetached(SignatureInterface signature,
+                              PDDocument document,
+                              OutputStream output,
+                              Calendar signingDate) throws IOException {
         PDSignature pdSignature = new PDSignature();
         pdSignature.setName(SIGNING_AUTHORITY_NAME);
         pdSignature.setFilter(PDSignature.FILTER_ADOBE_PPKLITE);
         pdSignature.setSubFilter(PDSignature.SUBFILTER_ADBE_PKCS7_DETACHED);
 
         // the signing date, needed for valid signature
-        pdSignature.setSignDate(Calendar.getInstance());
+        pdSignature.setSignDate(signingDate);
 
         try (final var signatureOptions = new SignatureOptions()) {
 

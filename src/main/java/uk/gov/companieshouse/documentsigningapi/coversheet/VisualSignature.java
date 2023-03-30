@@ -29,6 +29,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Calendar;
 import java.util.List;
 
 import static uk.gov.companieshouse.documentsigningapi.coversheet.LayoutConstants.DEFAULT_MARGIN;
@@ -59,12 +60,13 @@ public class VisualSignature {
 
     public void renderPanel(final PDPageContentStream contentStream,
                             final PDDocument document,
-                            final PDPage coverSheet) throws IOException {
+                            final PDPage coverSheet,
+                            final Calendar signingDate) throws IOException {
         renderVisualSignaturePageSpacers(contentStream);
 
         final PDImageXObject img = images.createImage("digital-search-copy-stamp.jpeg", document);
         contentStream.drawImage(img, /*1150*/350, /*50*/150, /*25*/img.getWidth() * 0.25f, /*25*/img.getHeight() * 0.25f);
-        renderText(contentStream, /*pdSignature,*/ /*height ?*/ coverSheet.getCropBox().getHeight() - 580);
+        renderText(contentStream, /*pdSignature,*/ /*height ?*/ coverSheet.getCropBox().getHeight() - 580, signingDate);
     }
 
     public void render(final PDSignature pdSignature,
@@ -209,13 +211,13 @@ public class VisualSignature {
 
     private void renderText(final PDPageContentStream contentStream,
                             /* final PDSignature pdSignature,*/
-                            final float height) throws IOException {
+                            final float height,
+                            final Calendar signingDate) throws IOException {
         contentStream.beginText();
         setTitle(contentStream, height,"Signature");
         addLine(contentStream, "This document has been digitally signed.");
         addLine(contentStream, "By: " + SIGNING_AUTHORITY_NAME);
-        // TODO addLine(contentStream, "On: " + formatter.getDateTimeString(pdSignature.getSignDate().getTime()));
-        addLine(contentStream, "On: Date to be provided later");
+        addLine(contentStream, "On: " + formatter.getDateTimeString(signingDate.getTime()));
         addPseudoLink(LINK_TEXT, contentStream);
     }
 

@@ -22,6 +22,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
 
 import static org.apache.pdfbox.pdmodel.common.PDRectangle.A4;
 import static uk.gov.companieshouse.documentsigningapi.coversheet.LayoutConstants.DEFAULT_MARGIN;
@@ -105,10 +106,12 @@ public class CoverSheetService {
         this.visualSignature = visualSignature;
     }
 
-    public byte[] addCoverSheet(final byte[] document, final CoverSheetDataDTO coverSheetData) {
+    public byte[] addCoverSheet(final byte[] document,
+                                final CoverSheetDataDTO coverSheetData,
+                                final Calendar signingDate) {
         try {
             final var pdfDocument = PDDocument.load(document);
-            insertCoverSheet(pdfDocument, coverSheetData);
+            insertCoverSheet(pdfDocument, coverSheetData, signingDate);
             return getContents(pdfDocument);
         } catch (IOException ioe) {
             logger.getLogger().error(ioe.getMessage(), ioe);
@@ -116,16 +119,19 @@ public class CoverSheetService {
         }
     }
 
-    private void insertCoverSheet(final PDDocument pdfDocument, final CoverSheetDataDTO coverSheetData)
+    private void insertCoverSheet(final PDDocument pdfDocument,
+                                  final CoverSheetDataDTO coverSheetData,
+                                  final Calendar signingDate)
             throws IOException {
         final var coverSheet = new PDPage(A4);
-        buildCoverSheetContent(pdfDocument, coverSheet, coverSheetData);
+        buildCoverSheetContent(pdfDocument, coverSheet, coverSheetData, signingDate);
         pdfDocument.getPages().insertBefore(coverSheet, pdfDocument.getPage(0));
     }
 
     private void buildCoverSheetContent(final PDDocument pdfDocument,
                                         final PDPage coverSheet,
-                                        final CoverSheetDataDTO coverSheetData) throws IOException {
+                                        final CoverSheetDataDTO coverSheetData,
+                                        final Calendar signingDate) throws IOException {
         PDImageXObject signatureImage = images.createImage("signature.jpeg", pdfDocument);
         PDImageXObject emailImage = images.createImage("email.jpeg", pdfDocument);
         PDImageXObject printerImage = images.createImage("printer.jpeg", pdfDocument);
@@ -166,7 +172,7 @@ public class CoverSheetService {
 //        final PDImageXObject img = images.createImage("digital-search-copy-stamp.jpeg", pdfDocument);
 //        contentStream.drawImage(img, /*1150*/350, /*50*/150, /*25*/img.getWidth() * 0.25f, /*25*/img.getHeight() * 0.25f);
 
-        visualSignature.renderPanel(contentStream, pdfDocument, coverSheet);
+        visualSignature.renderPanel(contentStream, pdfDocument, coverSheet, signingDate);
 
         contentStream.close();
     }
