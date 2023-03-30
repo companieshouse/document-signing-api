@@ -96,10 +96,13 @@ public class CoverSheetService {
 
     private final Renderer renderer;
 
-    public CoverSheetService(LoggingUtils logger, ImagesBean images, Renderer renderer) {
+    private final VisualSignature visualSignature;
+
+    public CoverSheetService(LoggingUtils logger, ImagesBean images, Renderer renderer, VisualSignature visualSignature) {
         this.logger = logger;
         this.images = images;
         this.renderer = renderer;
+        this.visualSignature = visualSignature;
     }
 
     public byte[] addCoverSheet(final byte[] document, final CoverSheetDataDTO coverSheetData) {
@@ -158,7 +161,12 @@ public class CoverSheetService {
         contentStream.drawImage(printerImage, DEFAULT_MARGIN, 325, INFORMATION_SECTION_IMAGE_WIDTH, INFORMATION_SECTION_IMAGE_HEIGHT);
         textWrapper(contentStream, PRINTER_HELPTEXT, 14, OFFSET_TO_RIGHT_OF_IMAGES, 340);
 
-        renderVisualSignaturePageSpacers(contentStream);
+//        renderVisualSignaturePageSpacers(contentStream);
+//
+//        final PDImageXObject img = images.createImage("digital-search-copy-stamp.jpeg", pdfDocument);
+//        contentStream.drawImage(img, /*1150*/350, /*50*/150, /*25*/img.getWidth() * 0.25f, /*25*/img.getHeight() * 0.25f);
+
+        visualSignature.renderPanel(contentStream, pdfDocument, coverSheet);
 
         contentStream.close();
     }

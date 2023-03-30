@@ -42,19 +42,40 @@ public class VisualSignature {
     private final LoggingUtils logger;
     private final ImagesBean images;
     private final OrdinalDateTimeFormatter formatter;
+    private final Renderer renderer;
+
 
     public VisualSignature(LoggingUtils logger,
                            ImagesBean images,
-                           OrdinalDateTimeFormatter formatter) {
+                           OrdinalDateTimeFormatter formatter,
+                           Renderer renderer) {
         this.logger = logger;
         this.images = images;
         this.formatter = formatter;
+        this.renderer = renderer;
+    }
+
+    public void renderPanel(final PDPageContentStream contentStream,
+                            final PDDocument document,
+                            final PDPage coverSheet) throws IOException {
+        renderVisualSignaturePageSpacers(contentStream);
+
+        final PDImageXObject img = images.createImage("digital-search-copy-stamp.jpeg", document);
+        contentStream.drawImage(img, /*1150*/350, /*50*/150, /*25*/img.getWidth() * 0.25f, /*25*/img.getHeight() * 0.25f);
+        renderText(contentStream, /*pdSignature,*/ /*height ?*/ coverSheet.getCropBox().getHeight() - 580);
     }
 
     public void render(final PDSignature pdSignature,
                        final SignatureOptions signatureOptions,
                        final PDDocument document) throws IOException {
         final PDPage coverSheet = document.getPage(0);
+
+        // TODO Refactor to avoid duplication
+        final String linkText = "Check signature validation status";
+        final float fontSize = 14;
+        final PDFont font = PDType1Font.HELVETICA;
+        final float textWidth = font.getStringWidth(linkText) / POSTSCRIPT_TYPE_1_FONT_UPM * fontSize;
+
         // Set the signature rectangle
         // Although PDF coordinates start from the bottom, humans start from the top.
         // So a human would want to position a signature (x,y) units from the
@@ -63,9 +84,9 @@ public class VisualSignature {
         final Rectangle2D humanRect =
                 new Rectangle2D.Float(
                         DEFAULT_MARGIN,
-                        580,
-                        coverSheet.getBBox().getWidth() - 2 * DEFAULT_MARGIN,
-                        150);
+                        698,
+                        /*coverSheet.getBBox().getWidth() - 2 * DEFAULT_MARGIN*//*100*/textWidth,
+                        /*150*/20);
         final PDRectangle signatureRectangle = createSignatureRectangle(document, humanRect);
         signatureOptions.setVisualSignature(
                 createVisualSignatureTemplate(
@@ -102,7 +123,7 @@ public class VisualSignature {
         final PDAnnotationWidget widget = buildVisualSignatureWidget(doc, signatureRectangle);
         final PDFormXObject form = buildVisualSignatureForm(doc, signatureRectangle);
         final PDAppearanceStream appearanceStream = buildAppearanceDictionary(form, widget);
-        buildVisualSignatureContent(doc, appearanceStream, pdSignature, stampFilename, form.getBBox().getHeight());
+        // TODO replaced by renderPanel?  buildVisualSignatureContent(doc, appearanceStream, pdSignature, stampFilename, form.getBBox().getHeight());
         return saveToInputStream(doc);
     }
 
@@ -165,7 +186,7 @@ public class VisualSignature {
         final var contentStream = new PDPageContentStream(doc, appearanceStream);
         renderBackground(contentStream);
         renderSigningStamp(doc, contentStream, stampFilename);
-        renderText(contentStream, pdSignature, height);
+        // TODO remove? renderText(contentStream, pdSignature, height);
         contentStream.close();
     }
 
@@ -192,12 +213,14 @@ public class VisualSignature {
     }
 
     private void renderText(final PDPageContentStream contentStream,
-                            final PDSignature pdSignature,
+                            /* final PDSignature pdSignature,*/
                             final float height) throws IOException {
+        contentStream.beginText();
         setTitle(contentStream, height,"Signature");
         addLine(contentStream, "This document has been digitally signed.");
         addLine(contentStream, "By: " + SIGNING_AUTHORITY_NAME);
-        addLine(contentStream, "On: " + formatter.getDateTimeString(pdSignature.getSignDate().getTime()));
+        // TODO addLine(contentStream, "On: " + formatter.getDateTimeString(pdSignature.getSignDate().getTime()));
+        addLine(contentStream, "On: Date to be provided later");
         addPseudoLink("Check signature validation status", contentStream);
     }
 
@@ -207,10 +230,9 @@ public class VisualSignature {
             throws IOException {
         final float fontSize = 18;
         final float leading = fontSize * 1.5f;
-        cs.beginText();
         cs.setFont(PDType1Font.HELVETICA, fontSize);
         cs.setNonStrokingColor(Color.black);
-        cs.newLineAtOffset(0, boxHeight - leading);
+        cs.newLineAtOffset(DEFAULT_MARGIN, boxHeight - leading);
         cs.setLeading(leading);
         cs.showText(title);
         cs.newLine();
@@ -235,8 +257,13 @@ public class VisualSignature {
         cs.setNonStrokingColor(Color.BLUE);
         cs.showText(linkText);
         cs.endText();
-        cs.addRect(0, 17, textWidth, 1);
+        cs.addRect(DEFAULT_MARGIN, 128, textWidth, 1);
         cs.fill();
+    }
+
+    private void renderVisualSignaturePageSpacers(final PDPageContentStream contentStream) throws IOException {
+        renderer.renderPageSpacer(contentStream, 280);
+        renderer.renderPageSpacer(contentStream, 100);
     }
 
 }

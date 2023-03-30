@@ -47,8 +47,8 @@ class CoverSheetServiceTest {
 
     private static final class TestCoverSheetService extends CoverSheetService {
 
-        public TestCoverSheetService(LoggingUtils logger, ImagesBean images, Renderer renderer) {
-            super(logger, images, renderer);
+        public TestCoverSheetService(LoggingUtils logger, ImagesBean images, Renderer renderer, VisualSignature visualSignature) {
+            super(logger, images, renderer, visualSignature);
         }
 
         protected PDRectangle getMediaBox(final PDPage page) {
