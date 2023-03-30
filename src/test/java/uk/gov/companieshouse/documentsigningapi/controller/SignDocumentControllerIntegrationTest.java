@@ -38,6 +38,7 @@ import uk.gov.companieshouse.documentsigningapi.signing.SigningService;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 
 import static java.util.Arrays.stream;
@@ -160,7 +161,7 @@ class SignDocumentControllerIntegrationTest {
         final var signPdfRequestDTO = createSignPdfRequest(unsignedDocumentLocation);
 
         final var pdf = s3Service.retrieveUnsignedDocument(unsignedDocumentLocation);
-        when(signingService.signPDF(any())).thenReturn(pdf.readAllBytes());
+        when(signingService.signPDF(any(byte[].class), any(Calendar.class))).thenReturn(pdf.readAllBytes());
 
         final var resultActions = mockMvc.perform(post("/document-signing/sign-pdf")
                 .contentType(MediaType.APPLICATION_JSON)

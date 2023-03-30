@@ -26,6 +26,7 @@ import uk.gov.companieshouse.logging.Logger;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -88,6 +89,12 @@ class CoverSheetServiceTest {
     @Mock
     private CoverSheetDataDTO coverSheetData;
 
+    @Mock
+    private VisualSignature visualSignature;
+
+    @Mock
+    private Calendar signingDate;
+
     @Spy
     private Renderer renderer = new Renderer();
 
@@ -105,7 +112,7 @@ class CoverSheetServiceTest {
         executeTest((pdfBox, pageConstructor, streamConstructor, linkConstructor) -> {
 
             final byte[] docWithCoverSheet =
-                    coverSheetService.addCoverSheet(new byte[]{}, new CoverSheetDataDTO());
+                    coverSheetService.addCoverSheet(new byte[]{}, new CoverSheetDataDTO(), Calendar.getInstance());
 
             assertThat(pageConstructor.constructed().size(), is(1));
             verify(pages).insertBefore(pageConstructor.constructed().get(0), page);
@@ -122,7 +129,7 @@ class CoverSheetServiceTest {
 
             when(imagesBean.createImage(any(String.class), eq(document))).thenReturn(image);
 
-            coverSheetService.addCoverSheet(new byte[]{}, new CoverSheetDataDTO());
+            coverSheetService.addCoverSheet(new byte[]{}, new CoverSheetDataDTO(), Calendar.getInstance());
 
             verify(imagesBean, times(3)).createImage(any(String.class), eq(document));
             assertThat(streamConstructor.constructed().size(), is (1));
@@ -141,11 +148,11 @@ class CoverSheetServiceTest {
     void rendersText() throws IOException {
         executeTest((pdfBox, pageConstructor, streamConstructor, linkConstructor) -> {
 
-            coverSheetService.addCoverSheet(new byte[]{}, new CoverSheetDataDTO());
+            coverSheetService.addCoverSheet(new byte[]{}, new CoverSheetDataDTO(), Calendar.getInstance());
 
             assertThat(streamConstructor.constructed().size(), is (1));
             final var stream = streamConstructor.constructed().get(0);
-            verify(stream, times(17)).showText(any(String.class));
+            verify(stream, times(15)).showText(any(String.class));
         });
     }
 
@@ -154,7 +161,7 @@ class CoverSheetServiceTest {
     void createsLinkAndAddsItToCoverSheet() throws IOException {
         executeTest((pdfBox, pageConstructor, streamConstructor, linkConstructor) -> {
 
-            coverSheetService.addCoverSheet(new byte[]{}, new CoverSheetDataDTO());
+            coverSheetService.addCoverSheet(new byte[]{}, new CoverSheetDataDTO(), Calendar.getInstance());
 
             assertThat(pageConstructor.constructed().size(), is(1));
             final var coverSheet = pageConstructor.constructed().get(0);
@@ -170,7 +177,7 @@ class CoverSheetServiceTest {
     void rendersLinkTextInBlue() throws IOException {
         executeTest((pdfBox, pageConstructor, streamConstructor, linkConstructor) -> {
 
-            coverSheetService.addCoverSheet(new byte[]{}, new CoverSheetDataDTO());
+            coverSheetService.addCoverSheet(new byte[]{}, new CoverSheetDataDTO(), Calendar.getInstance());
 
             assertThat(streamConstructor.constructed().size(), is (1));
             final var stream = streamConstructor.constructed().get(0);
@@ -184,7 +191,7 @@ class CoverSheetServiceTest {
     void underlinesLink() throws IOException {
         executeTest((pdfBox, pageConstructor, streamConstructor, linkConstructor) -> {
 
-            coverSheetService.addCoverSheet(new byte[]{}, new CoverSheetDataDTO());
+            coverSheetService.addCoverSheet(new byte[]{}, new CoverSheetDataDTO(), Calendar.getInstance());
 
             assertThat(linkConstructor.constructed().size(), is (1));
             final var link = linkConstructor.constructed().get(0);
@@ -198,7 +205,7 @@ class CoverSheetServiceTest {
     void marksUpClickableArea() throws IOException {
         executeTest((pdfBox, pageConstructor, streamConstructor, linkConstructor) -> {
 
-            coverSheetService.addCoverSheet(new byte[]{}, new CoverSheetDataDTO());
+            coverSheetService.addCoverSheet(new byte[]{}, new CoverSheetDataDTO(), Calendar.getInstance());
 
             assertThat(linkConstructor.constructed().size(), is (1));
             final var link = linkConstructor.constructed().get(0);
@@ -212,7 +219,7 @@ class CoverSheetServiceTest {
     void setsUpLinkAction() throws IOException {
         executeTest((pdfBox, pageConstructor, streamConstructor, linkConstructor) -> {
 
-            coverSheetService.addCoverSheet(new byte[]{}, new CoverSheetDataDTO());
+            coverSheetService.addCoverSheet(new byte[]{}, new CoverSheetDataDTO(), Calendar.getInstance());
 
             assertThat(linkConstructor.constructed().size(), is (1));
             final var link = linkConstructor.constructed().get(0);
@@ -230,7 +237,8 @@ class CoverSheetServiceTest {
 
                 final CoverSheetException exception =
                         assertThrows(CoverSheetException.class,
-                                () -> coverSheetService.addCoverSheet(new byte[]{}, coverSheetData));
+                                () -> coverSheetService.addCoverSheet(
+                                        new byte[]{}, coverSheetData, signingDate));
 
                 assertThat(pageConstructor.constructed().size(), is(0));
                 verify(logger).error(PDF_BOX_ORIGINATED_EXCEPTION.getMessage(), PDF_BOX_ORIGINATED_EXCEPTION);

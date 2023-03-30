@@ -21,6 +21,7 @@ import uk.gov.companieshouse.documentsigningapi.signing.SigningService;
 import uk.gov.companieshouse.logging.Logger;
 
 import java.net.URISyntaxException;
+import java.util.Calendar;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -122,7 +123,8 @@ class SignDocumentControllerTest {
     @DisplayName("signPdf adds cover sheet if required")
     void addsCoverSheetIfRequired() throws Exception {
         when(s3Service.retrieveUnsignedDocument(anyString())).thenReturn(unsignedDocument);
-        when(coverSheetService.addCoverSheet(any(byte[].class), any(CoverSheetDataDTO.class))).thenReturn(new byte[]{});
+        when(coverSheetService.addCoverSheet(any(byte[].class), any(CoverSheetDataDTO.class), any(Calendar.class)))
+                .thenReturn(new byte[]{});
         when(unsignedDocument.readAllBytes()).thenReturn(new byte[]{});
         when(loggingUtils.getLogger()).thenReturn(logger);
 
@@ -134,7 +136,7 @@ class SignDocumentControllerTest {
 
         controller.signPdf(signPdfRequestDTO);
 
-        verify(coverSheetService).addCoverSheet(any(byte[].class), any(CoverSheetDataDTO.class));
+        verify(coverSheetService).addCoverSheet(any(byte[].class), any(CoverSheetDataDTO.class), any(Calendar.class));
 
     }
 
@@ -151,7 +153,7 @@ class SignDocumentControllerTest {
         controller.signPdf(signPdfRequestDTO);
 
         verify(coverSheetService, times(0))
-                .addCoverSheet(any(byte[].class), any(CoverSheetDataDTO.class));
+                .addCoverSheet(any(byte[].class), any(CoverSheetDataDTO.class), any(Calendar.class));
     }
 
 }

@@ -11,6 +11,8 @@ import uk.gov.companieshouse.documentsigningapi.exception.DocumentSigningExcepti
 import uk.gov.companieshouse.documentsigningapi.exception.DocumentUnavailableException;
 import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
 
+import java.util.Calendar;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -53,7 +55,7 @@ class SigningServiceTest {
     @DisplayName("Throws DocumentUnavailableException when unable to load keystore")
     void throwsDocumentUnavailableExceptionExceptionWhenUnableToLoadKeystore() {
         final DocumentUnavailableException exception = assertThrows(DocumentUnavailableException.class,
-            () -> signingService.signPDF(new byte[]{}));
+            () -> signingService.signPDF(new byte[]{}, Calendar.getInstance()));
         assertThat(exception.getMessage(),
             is("Unable to load Keystore or Certificate"));
     }
@@ -69,7 +71,7 @@ class SigningServiceTest {
                         "alias",
                         logger, visualSignature);
         final DocumentSigningException exception = assertThrows(DocumentSigningException.class,
-            () -> incorrectKeystoreTypeInitialised.signPDF(new byte[]{}));
+            () -> incorrectKeystoreTypeInitialised.signPDF(new byte[]{}, Calendar.getInstance()));
         assertThat(exception.getMessage(),
             is("Failed to obtain proper KeyStore or Certificate"));
     }
