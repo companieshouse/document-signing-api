@@ -39,6 +39,8 @@ public class VisualSignature {
 
     private static final String SIGNING_AUTHORITY_NAME = "Registrar of Companies";
 
+    private static final String LINK_TEXT = "Check signature validation status";
+
     private final LoggingUtils logger;
     private final ImagesBean images;
     private final OrdinalDateTimeFormatter formatter;
@@ -69,13 +71,6 @@ public class VisualSignature {
                        final SignatureOptions signatureOptions,
                        final PDDocument document) throws IOException {
         final PDPage coverSheet = document.getPage(0);
-
-        // TODO Refactor to avoid duplication
-        final String linkText = "Check signature validation status";
-        final float fontSize = 14;
-        final PDFont font = PDType1Font.HELVETICA;
-        final float textWidth = font.getStringWidth(linkText) / POSTSCRIPT_TYPE_1_FONT_UPM * fontSize;
-
         // Set the signature rectangle
         // Although PDF coordinates start from the bottom, humans start from the top.
         // So a human would want to position a signature (x,y) units from the
@@ -85,7 +80,7 @@ public class VisualSignature {
                 new Rectangle2D.Float(
                         DEFAULT_MARGIN,
                         698,
-                        /*coverSheet.getBBox().getWidth() - 2 * DEFAULT_MARGIN*//*100*/textWidth,
+                        /*coverSheet.getBBox().getWidth() - 2 * DEFAULT_MARGIN*//*100*/getTextWidth(LINK_TEXT),
                         /*150*/20);
         final PDRectangle signatureRectangle = createSignatureRectangle(document, humanRect);
         signatureOptions.setVisualSignature(
@@ -221,7 +216,7 @@ public class VisualSignature {
         addLine(contentStream, "By: " + SIGNING_AUTHORITY_NAME);
         // TODO addLine(contentStream, "On: " + formatter.getDateTimeString(pdSignature.getSignDate().getTime()));
         addLine(contentStream, "On: Date to be provided later");
-        addPseudoLink("Check signature validation status", contentStream);
+        addPseudoLink(LINK_TEXT, contentStream);
     }
 
     private void setTitle(final PDPageContentStream cs,
@@ -251,19 +246,22 @@ public class VisualSignature {
 
     private void addPseudoLink(final String linkText, final PDPageContentStream cs) throws IOException {
         cs.newLineAtOffset(0, -14);
-        final float fontSize = 14;
-        final PDFont font = PDType1Font.HELVETICA;
-        final float textWidth = font.getStringWidth(linkText) / POSTSCRIPT_TYPE_1_FONT_UPM * fontSize;
         cs.setNonStrokingColor(Color.BLUE);
         cs.showText(linkText);
         cs.endText();
-        cs.addRect(DEFAULT_MARGIN, 128, textWidth, 1);
+        cs.addRect(DEFAULT_MARGIN, 128, getTextWidth(linkText), 1);
         cs.fill();
     }
 
     private void renderVisualSignaturePageSpacers(final PDPageContentStream contentStream) throws IOException {
         renderer.renderPageSpacer(contentStream, 280);
         renderer.renderPageSpacer(contentStream, 100);
+    }
+
+    private float getTextWidth(final String text) throws IOException {
+        final float fontSize = 14;
+        final PDFont font = PDType1Font.HELVETICA;
+        return font.getStringWidth(text) / POSTSCRIPT_TYPE_1_FONT_UPM * fontSize;
     }
 
 }
