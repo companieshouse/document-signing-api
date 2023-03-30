@@ -11,6 +11,7 @@ import org.springframework.util.ResourceUtils;
 import uk.gov.companieshouse.documentsigningapi.coversheet.VisualSignature;
 import uk.gov.companieshouse.documentsigningapi.exception.DocumentSigningException;
 import uk.gov.companieshouse.documentsigningapi.exception.DocumentUnavailableException;
+import uk.gov.companieshouse.documentsigningapi.exception.SigningException;
 import uk.gov.companieshouse.documentsigningapi.exception.VisualSignatureException;
 import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
 
@@ -54,19 +55,20 @@ public class SigningService {
         this.visualSignature = visualSignature;
     }
 
+    @SuppressWarnings("squid:S1130") // exceptions are thrown actually
     public byte[] signPDF(byte[] pdfToSign, Calendar signingDate)
-            throws DocumentSigningException, DocumentUnavailableException, VisualSignatureException {
+            throws DocumentSigningException, DocumentUnavailableException, VisualSignatureException, SigningException {
         try {
-            KeyStore keyStore = getKeyStore();
-            Signature signature = new Signature(keyStore, this.keystorePassword.toCharArray(), certificateAlias);
+            var keyStore = getKeyStore();
+            var signature = new Signature(keyStore, this.keystorePassword.toCharArray(), certificateAlias);
 
             // Create new PDF file
-            File pdfFile = File.createTempFile("pdf", "");
+            var pdfFile = File.createTempFile("pdf", "");
             // Write the content to the new PDF
             FileUtils.writeByteArrayToFile(pdfFile, pdfToSign);
 
             // Create the file to be signed
-            File signedPdf = File.createTempFile("signedPdf", "");
+            var signedPdf = File.createTempFile("signedPdf", "");
 
             // Sign the document
             this.signDetached(signature, pdfFile, signedPdf, signingDate);
@@ -83,9 +85,9 @@ public class SigningService {
         } catch (NoSuchAlgorithmException | CertificateException | UnrecoverableKeyException | KeyStoreException e) {
             logError(e);
             throw new DocumentSigningException("Failed to obtain proper KeyStore or Certificate", e);
-        } catch (VisualSignatureException vse) {
+        } catch (VisualSignatureException | SigningException se) {
             // Already logged, caught and thrown to prevent being handled as an IOException.
-            throw vse;
+            throw se;
         } catch (IOException e) {
             logError(e);
             throw new DocumentUnavailableException("Unable to load Keystore or Certificate", e);
@@ -93,8 +95,8 @@ public class SigningService {
     }
 
     private KeyStore getKeyStore() throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
-        KeyStore keyStore = KeyStore.getInstance(keystoreType);
-        File key = ResourceUtils.getFile(keystorePath);
+        var keyStore = KeyStore.getInstance(keystoreType);
+        var key = ResourceUtils.getFile(keystorePath);
         keyStore.load(new FileInputStream(key), keystorePassword.toCharArray());
         return keyStore;
     }
@@ -107,8 +109,8 @@ public class SigningService {
             throw new FileNotFoundException("Document for signing does not exist");
         }
 
-        try (FileOutputStream fos = new FileOutputStream(outputFile);
-             PDDocument doc = PDDocument.load(inputFile)) {
+        try (var fos = new FileOutputStream(outputFile);
+             var doc = PDDocument.load(inputFile)) {
             signDetached(signature, doc, fos, signingDate);
         }
     }
@@ -117,7 +119,7 @@ public class SigningService {
                               PDDocument document,
                               OutputStream output,
                               Calendar signingDate) throws IOException {
-        PDSignature pdSignature = new PDSignature();
+        var pdSignature = new PDSignature();
         pdSignature.setName(SIGNING_AUTHORITY_NAME);
         pdSignature.setFilter(PDSignature.FILTER_ADOBE_PPKLITE);
         pdSignature.setSubFilter(PDSignature.SUBFILTER_ADBE_PKCS7_DETACHED);
@@ -135,6 +137,9 @@ public class SigningService {
             // write incremental (only for signing purpose)
             // use saveIncremental to add signature, using plain save method may break up a document
             document.saveIncremental(output);
+        } catch (SigningException se) {
+            // Already logged, caught and thrown to prevent being handled as an IOException.
+            throw se;
         } catch (IOException ioe) {
             logError(ioe);
             throw new VisualSignatureException("Failed to add visual signature to document", ioe);

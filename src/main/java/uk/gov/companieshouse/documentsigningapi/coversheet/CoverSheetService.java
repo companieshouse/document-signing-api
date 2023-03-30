@@ -125,7 +125,7 @@ public class CoverSheetService {
         PDImageXObject emailImage = images.createImage("email.jpeg", pdfDocument);
         PDImageXObject printerImage = images.createImage("printer.jpeg", pdfDocument);
 
-        PDPageContentStream contentStream = new PDPageContentStream(pdfDocument, coverSheet);
+        var contentStream = new PDPageContentStream(pdfDocument, coverSheet);
 
         renderer.insertText(contentStream, PAGE_HEADING, PDType1Font.HELVETICA_BOLD, 30, 770);
         renderer.insertText(contentStream, getTodaysDate(), PDType1Font.HELVETICA, 18, 750);
@@ -164,7 +164,7 @@ public class CoverSheetService {
     private void textWrapper(PDPageContentStream contentStream, String textToWrap, float fontSize, float xPosition, float yPosition) throws IOException {
         String[] wrappedText = WordUtils.wrap(textToWrap, 80).split("\\r?\\n");
 
-        for(int i = 0; i < wrappedText.length; i++){
+        for(var i = 0; i < wrappedText.length; i++){
             contentStream.beginText();
             contentStream.setFont(PDType1Font.HELVETICA, fontSize);
             contentStream.newLineAtOffset(xPosition,yPosition-i*15);
