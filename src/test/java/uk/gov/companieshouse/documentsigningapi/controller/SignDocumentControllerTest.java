@@ -4,10 +4,15 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
+import static uk.gov.companieshouse.documentsigningapi.util.TestConstants.ERIC_AUTHORIZED_KEY_ROLES;
+import static uk.gov.companieshouse.documentsigningapi.util.TestConstants.ERIC_AUTHORIZED_KEY_ROLES_VALUE;
+import static uk.gov.companieshouse.documentsigningapi.util.TestConstants.ERIC_IDENTITY_HEADER_NAME;
+import static uk.gov.companieshouse.documentsigningapi.util.TestConstants.ERIC_IDENTITY_HEADER_VALUE;
+import static uk.gov.companieshouse.documentsigningapi.util.TestConstants.ERIC_IDENTITY_TYPE_HEADER_NAME;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,8 +34,10 @@ import uk.gov.companieshouse.documentsigningapi.signing.SigningService;
 import uk.gov.companieshouse.documentsigningapi.validation.RequestValidator;
 import uk.gov.companieshouse.logging.Logger;
 
+import javax.servlet.http.HttpServletRequest;
 import java.net.URISyntaxException;
 import java.util.List;
+
 
 /**
  * Partially unit tests the {@link SignDocumentController} class.
@@ -61,6 +68,9 @@ class SignDocumentControllerTest {
 
     @Mock
     private SigningService signingService;
+
+    @Mock
+    private HttpServletRequest request;
 
     @Mock
     private RequestValidator requestValidator;
@@ -129,6 +139,7 @@ class SignDocumentControllerTest {
         when(coverSheetService.addCoverSheet(any(byte[].class), any(CoverSheetDataDTO.class))).thenReturn(new byte[]{});
         when(unsignedDocument.readAllBytes()).thenReturn(new byte[]{});
         when(loggingUtils.getLogger()).thenReturn(logger);
+        ericHeadersForAuthAuth();
 
         final SignPdfRequestDTO signPdfRequestDTO = new SignPdfRequestDTO();
         signPdfRequestDTO.setDocumentLocation(TOKEN_UNSIGNED_DOCUMENT_LOCATION);
@@ -147,6 +158,7 @@ class SignDocumentControllerTest {
     void doesNotAddCoverSheetIfNotRequired() throws Exception {
         when(s3Service.retrieveUnsignedDocument(anyString())).thenReturn(unsignedDocument);
         when(loggingUtils.getLogger()).thenReturn(logger);
+        ericHeadersForAuthAuth();
 
         final SignPdfRequestDTO signPdfRequestDTO = new SignPdfRequestDTO();
         signPdfRequestDTO.setDocumentLocation(TOKEN_UNSIGNED_DOCUMENT_LOCATION);
@@ -157,5 +169,12 @@ class SignDocumentControllerTest {
         verify(coverSheetService, times(0))
                 .addCoverSheet(any(byte[].class), any(CoverSheetDataDTO.class));
     }
-
+    //
+    // ERIC headers for auth-auth
+    //
+    private void ericHeadersForAuthAuth() {
+        lenient().doReturn(ERIC_IDENTITY_HEADER_VALUE).when(request).getHeader(ERIC_IDENTITY_HEADER_NAME);
+        lenient().doReturn(ERIC_IDENTITY_HEADER_VALUE).when(request).getHeader(ERIC_IDENTITY_TYPE_HEADER_NAME);
+        lenient().doReturn(ERIC_AUTHORIZED_KEY_ROLES_VALUE).when(request).getHeader(ERIC_AUTHORIZED_KEY_ROLES );
+    }
 }
