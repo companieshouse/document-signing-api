@@ -24,7 +24,7 @@
               }
             },
             "url": {
-              "raw": "{{base_url}}/document-signing-api/document-signing/sign-pdf",
+              "raw": "{{base_url}}/document-signing/sign-pdf",
               "host": [
                 "{{base_url}}"
               ],
@@ -52,7 +52,7 @@
               }
             },
             "url": {
-              "raw": "{{base_url}}/document-signing-api/document-signing/sign-pdf",
+              "raw": "{{base_url}}/document-signing/sign-pdf",
               "host": [
                 "{{base_url}}"
               ],
@@ -80,7 +80,7 @@
               }
             },
             "url": {
-              "raw": "{{base_url}}/document-signing-api/document-signing/sign-pdf",
+              "raw": "{{base_url}}/document-signing/sign-pdf",
               "host": [
                 "{{base_url}}"
               ],
@@ -108,7 +108,7 @@
               }
             },
             "url": {
-              "raw": "{{base_url}}/document-signing-api/document-signing/sign-pdf",
+              "raw": "{{base_url}}/document-signing/sign-pdf",
               "host": [
                 "{{base_url}}"
               ],
@@ -136,7 +136,7 @@
               }
             },
             "url": {
-              "raw": "{{base_url}}/document-signing-api/document-signing/sign-pdf",
+              "raw": "{{base_url}}/document-signing/sign-pdf",
               "host": [
                 "{{base_url}}"
               ],
@@ -164,7 +164,7 @@
               }
             },
             "url": {
-              "raw": "{{base_url}}/document-signing-api/document-signing/sign-pdf",
+              "raw": "{{base_url}}/document-signing/sign-pdf",
               "host": [
                 "{{base_url}}"
               ],
@@ -192,7 +192,7 @@
               }
             },
             "url": {
-              "raw": "{{base_url}}/document-signing-api/document-signing/sign-pdf",
+              "raw": "{{base_url}}/document-signing/sign-pdf",
               "host": [
                 "{{base_url}}"
               ],
@@ -220,7 +220,7 @@
               }
             },
             "url": {
-              "raw": "{{base_url}}/document-signing-api/document-signing/sign-pdf",
+              "raw": "{{base_url}}/document-signing/sign-pdf",
               "host": [
                 "{{base_url}}"
               ],
@@ -248,7 +248,7 @@
               }
             },
             "url": {
-              "raw": "{{base_url}}/document-signing-api/document-signing/sign-pdf",
+              "raw": "{{base_url}}/document-signing/sign-pdf",
               "host": [
                 "{{base_url}}"
               ],
@@ -276,7 +276,7 @@
               }
             },
             "url": {
-              "raw": "{{base_url}}/document-signing-api/document-signing/sign-pdf",
+              "raw": "{{base_url}}/document-signing/sign-pdf",
               "host": [
                 "{{base_url}}"
               ],
@@ -304,7 +304,7 @@
               }
             },
             "url": {
-              "raw": "{{base_url}}/document-signing-api/document-signing/sign-pdf",
+              "raw": "{{base_url}}/document-signing/sign-pdf",
               "host": [
                 "{{base_url}}"
               ],
@@ -332,7 +332,7 @@
               }
             },
             "url": {
-              "raw": "{{base_url}}/document-signing-api/document-signing/sign-pdf",
+              "raw": "{{base_url}}/document-signing/sign-pdf",
               "host": [
                 "{{base_url}}"
               ],
