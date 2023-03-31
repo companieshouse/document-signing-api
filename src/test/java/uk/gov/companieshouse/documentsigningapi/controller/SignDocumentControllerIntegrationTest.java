@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -28,17 +27,14 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import uk.gov.companieshouse.documentsigningapi.aws.S3Service;
 import uk.gov.companieshouse.documentsigningapi.dto.CoverSheetDataDTO;
 import uk.gov.companieshouse.documentsigningapi.dto.SignPdfRequestDTO;
 import uk.gov.companieshouse.documentsigningapi.dto.SignPdfResponseDTO;
 import uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker;
-import uk.gov.companieshouse.documentsigningapi.signing.SigningService;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.List;
 
 import static java.util.Arrays.stream;
@@ -46,12 +42,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static uk.gov.companieshouse.documentsigningapi.util.TestConstants.*;
+import static uk.gov.companieshouse.documentsigningapi.util.TestConstants.ERIC_AUTHORIZED_KEY_ROLES;
+import static uk.gov.companieshouse.documentsigningapi.util.TestConstants.ERIC_AUTHORIZED_KEY_ROLES_VALUE;
+import static uk.gov.companieshouse.documentsigningapi.util.TestConstants.ERIC_IDENTITY_HEADER_NAME;
+import static uk.gov.companieshouse.documentsigningapi.util.TestConstants.ERIC_IDENTITY_HEADER_VALUE;
+import static uk.gov.companieshouse.documentsigningapi.util.TestConstants.ERIC_IDENTITY_TYPE_HEADER_NAME;
 
 @AutoConfigureMockMvc
 @Testcontainers
@@ -94,6 +91,18 @@ class SignDocumentControllerIntegrationTest {
                 case SIGNED_DOC_BUCKET_NAME:
                     ENVIRONMENT_VARIABLES.set(variable.getName(), SIGNED_BUCKET_NAME);
                     break;
+                case KEYSTORE_TYPE:
+                    ENVIRONMENT_VARIABLES.set(variable.getName(), "jks");
+                    break;
+                case KEYSTORE_PATH:
+                    ENVIRONMENT_VARIABLES.set(variable.getName(), "src/test/resources/keystore.jks");
+                    break;
+                case KEYSTORE_PASSWORD:
+                    ENVIRONMENT_VARIABLES.set(variable.getName(), "password");
+                    break;
+                case CERTIFICATE_ALIAS:
+                    ENVIRONMENT_VARIABLES.set(variable.getName(), "dockerkeystore");
+                    break;
                 default:
                     ENVIRONMENT_VARIABLES.set(variable.getName(), TOKEN_VALUE);
                     break;
@@ -110,12 +119,6 @@ class SignDocumentControllerIntegrationTest {
 
     @Autowired
     private S3Client s3Client;
-
-    @Autowired
-    private S3Service s3Service;
-
-    @MockBean
-    private SigningService signingService;
 
     @TestConfiguration
     public static class Config {
@@ -161,9 +164,6 @@ class SignDocumentControllerIntegrationTest {
         final var unsignedDocumentLocation =
                 "s3://" + UNSIGNED_BUCKET_NAME + "/" + UNSIGNED_DOCUMENT_NAME;
         final var signPdfRequestDTO = createSignPdfRequest(unsignedDocumentLocation);
-
-        final var pdf = s3Service.retrieveUnsignedDocument(unsignedDocumentLocation);
-        when(signingService.signPDF(any(byte[].class), any(Calendar.class))).thenReturn(pdf.readAllBytes());
 
         final var resultActions = mockMvc.perform(post("/document-signing/sign-pdf")
                 .header(ERIC_IDENTITY_HEADER_NAME, ERIC_IDENTITY_HEADER_VALUE)
