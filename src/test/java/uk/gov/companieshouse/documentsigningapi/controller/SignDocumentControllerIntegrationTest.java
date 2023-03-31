@@ -2,6 +2,10 @@ package uk.gov.companieshouse.documentsigningapi.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureOptions;
 import org.junit.Rule;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.junit.jupiter.api.AfterAll;
@@ -12,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -27,14 +32,27 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import uk.gov.companieshouse.documentsigningapi.aws.S3Service;
+import uk.gov.companieshouse.documentsigningapi.coversheet.CoverSheetService;
+import uk.gov.companieshouse.documentsigningapi.coversheet.ImagesBean;
+import uk.gov.companieshouse.documentsigningapi.coversheet.OrdinalDateTimeFormatter;
+import uk.gov.companieshouse.documentsigningapi.coversheet.Renderer;
+import uk.gov.companieshouse.documentsigningapi.coversheet.VisualSignature;
 import uk.gov.companieshouse.documentsigningapi.dto.CoverSheetDataDTO;
 import uk.gov.companieshouse.documentsigningapi.dto.SignPdfRequestDTO;
 import uk.gov.companieshouse.documentsigningapi.dto.SignPdfResponseDTO;
 import uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker;
+import uk.gov.companieshouse.documentsigningapi.exception.DocumentSigningException;
+import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
+import uk.gov.companieshouse.documentsigningapi.signing.SigningService;
+import uk.gov.companieshouse.documentsigningapi.validation.RequestValidator;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 
 import static java.util.Arrays.stream;
@@ -42,6 +60,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.companieshouse.documentsigningapi.util.TestConstants.ERIC_AUTHORIZED_KEY_ROLES;
@@ -120,6 +140,33 @@ class SignDocumentControllerIntegrationTest {
     @Autowired
     private S3Client s3Client;
 
+    @Autowired
+    private LoggingUtils logger;
+
+    @Autowired
+    private ImagesBean imagesBean;
+
+    @Autowired
+    private Renderer renderer;
+
+    @Autowired
+    private OrdinalDateTimeFormatter formatter;
+
+    @SpyBean
+    private RequestValidator requestValidator;
+
+    @SpyBean
+    private S3Service s3Service;
+
+    @SpyBean
+    private VisualSignature visualSignature;
+
+    @SpyBean
+    private CoverSheetService coverSheetService;
+
+    @SpyBean
+    private SigningService signingService;
+
     @TestConfiguration
     public static class Config {
         @Bean
@@ -189,6 +236,8 @@ class SignDocumentControllerIntegrationTest {
                                                 SIGNED_DOC_STORAGE_PREFIX,
                                                 FOLDER_NAME,
                                                 SIGNED_DOCUMENT_FILENAME);
+
+        verifyExpectedDelegationsTookPlace();
     }
 
     @Test
@@ -293,6 +342,20 @@ class SignDocumentControllerIntegrationTest {
         signPdfRequestDTO.setKey(SIGNED_DOCUMENT_FILENAME);
         signPdfRequestDTO.setCoverSheetData(coverSheetData);
         return signPdfRequestDTO;
+    }
+
+    private void verifyExpectedDelegationsTookPlace() throws
+            URISyntaxException,
+            DocumentSigningException,
+            IOException {
+        verify(requestValidator).validateRequest(any(SignPdfRequestDTO.class));
+        verify(s3Service).retrieveUnsignedDocument(any(String.class));
+        verify(coverSheetService).addCoverSheet(any(byte[].class), any(CoverSheetDataDTO.class), any(Calendar.class));
+        verify(visualSignature).renderPanel(
+                any(PDPageContentStream.class), any(PDDocument.class), any(PDPage.class), any(Calendar.class));
+        verify(signingService).signPDF(any(byte[].class), any(Calendar.class));
+        verify(s3Service).storeSignedDocument(any(byte[].class), any(String.class), any(String.class));
+        verify(visualSignature).renderSignatureLink(any(SignatureOptions.class), any(PDDocument.class));
     }
 
 }
