@@ -47,9 +47,11 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static uk.gov.companieshouse.documentsigningapi.util.TestConstants.*;
 
 @AutoConfigureMockMvc
 @Testcontainers
@@ -164,6 +166,9 @@ class SignDocumentControllerIntegrationTest {
         when(signingService.signPDF(any(byte[].class), any(Calendar.class))).thenReturn(pdf.readAllBytes());
 
         final var resultActions = mockMvc.perform(post("/document-signing/sign-pdf")
+                .header(ERIC_IDENTITY_HEADER_NAME, ERIC_IDENTITY_HEADER_VALUE)
+                .header(ERIC_IDENTITY_TYPE_HEADER_NAME, ERIC_IDENTITY_HEADER_VALUE)
+                .header(ERIC_AUTHORIZED_KEY_ROLES, ERIC_AUTHORIZED_KEY_ROLES_VALUE)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(signPdfRequestDTO)))
                 .andExpect(status().isCreated());
@@ -196,8 +201,11 @@ class SignDocumentControllerIntegrationTest {
         final var signPdfRequestDTO = createSignPdfRequest(unsignedDocumentLocation);
 
         final var resultActions = mockMvc.perform(post("/document-signing/sign-pdf")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(signPdfRequestDTO)))
+                .header(ERIC_IDENTITY_HEADER_NAME, ERIC_IDENTITY_HEADER_VALUE)
+                .header(ERIC_IDENTITY_TYPE_HEADER_NAME, ERIC_IDENTITY_HEADER_VALUE)
+                .header(ERIC_AUTHORIZED_KEY_ROLES, ERIC_AUTHORIZED_KEY_ROLES_VALUE)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(signPdfRequestDTO)))
                 .andExpect(status().isBadRequest());
 
         final var body = resultActions.andReturn().getResponse().getContentAsString();
@@ -215,8 +223,11 @@ class SignDocumentControllerIntegrationTest {
         final var signPdfRequestDTO = createSignPdfRequest(unsignedDocumentLocation);
 
         final var resultActions = mockMvc.perform(post("/document-signing/sign-pdf")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(signPdfRequestDTO)))
+                .header(ERIC_IDENTITY_HEADER_NAME, ERIC_IDENTITY_HEADER_VALUE)
+                .header(ERIC_IDENTITY_TYPE_HEADER_NAME, ERIC_IDENTITY_HEADER_VALUE)
+                .header(ERIC_AUTHORIZED_KEY_ROLES, ERIC_AUTHORIZED_KEY_ROLES_VALUE)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(signPdfRequestDTO)))
                 .andExpect(status().isNotFound());
 
         final var body = resultActions.andReturn().getResponse().getContentAsString();

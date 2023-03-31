@@ -15,10 +15,12 @@ import uk.gov.companieshouse.documentsigningapi.exception.DocumentSigningExcepti
 import uk.gov.companieshouse.documentsigningapi.exception.ImageUnavailableException;
 import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
 import uk.gov.companieshouse.documentsigningapi.signing.SigningService;
+import uk.gov.companieshouse.documentsigningapi.validation.RequestValidator;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Map;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -40,17 +42,19 @@ public class SignDocumentController {
     private final LoggingUtils logger;
     private final S3Service s3Service;
     private final SigningService signingService;
-
     private final CoverSheetService coverSheetService;
+    private final RequestValidator requestValidator;
 
     public SignDocumentController(LoggingUtils logger,
                                   S3Service s3Service,
                                   SigningService signingService,
-                                  CoverSheetService coverSheetService) {
+                                  CoverSheetService coverSheetService,
+                                  RequestValidator requestValidator) {
         this.logger = logger;
         this.s3Service = s3Service;
         this.signingService = signingService;
         this.coverSheetService = coverSheetService;
+        this.requestValidator = requestValidator;
     }
 
     /**
@@ -71,6 +75,12 @@ public class SignDocumentController {
         final var key = signPdfRequestDTO.getKey();
         final var map = logger.createLogMap();
         map.put(SIGN_PDF_REQUEST, signPdfRequestDTO);
+
+        List<String> errors = requestValidator.validateRequest(signPdfRequestDTO);
+        if (!errors.isEmpty()) {
+            return buildValidationResponse(BAD_REQUEST.value(), errors, map);
+        }
+
         try {
             final var unsignedDoc = s3Service.retrieveUnsignedDocument(unsignedDocumentLocation);
             final var signingDate = Calendar.getInstance();
@@ -105,6 +115,15 @@ public class SignDocumentController {
         map.put(SIGN_PDF_RESPONSE, signPdfResponseDTO);
         logger.getLogger().info("signPdf(" + request + ") returning " + signPdfResponseDTO + ")", map);
         return ResponseEntity.status(CREATED).body(signPdfResponseDTO);
+    }
+
+    private ResponseEntity<Object> buildValidationResponse(final int statusCode,
+                                                           final List<String> errors,
+                                                           final Map<String, Object> map){
+        final ResponseEntity<Object> response = ResponseEntity.status(statusCode).body(errors);
+        map.put(SIGN_PDF_RESPONSE, response);
+        logger.getLogger().error(SIGN_PDF_ERROR_PREFIX + errors, map);
+        return response;
     }
 
     private ResponseEntity<Object> buildErrorResponse(final int statusCode,
