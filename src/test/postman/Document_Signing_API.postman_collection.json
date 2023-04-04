@@ -1,6 +1,6 @@
 {
   "info": {
-    "_postman_id": "5eb7c175-f52f-4e7a-a90f-003e9c9249da",
+    "_postman_id": "c583bcae-147f-447f-a224-5f03f3eba249",
     "name": "Document Signing API",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "7646296"
@@ -29,7 +29,6 @@
                 "{{base_url}}"
               ],
               "path": [
-                "document-signing-api",
                 "document-signing",
                 "sign-pdf"
               ]
@@ -57,7 +56,6 @@
                 "{{base_url}}"
               ],
               "path": [
-                "document-signing-api",
                 "document-signing",
                 "sign-pdf"
               ]
@@ -85,7 +83,6 @@
                 "{{base_url}}"
               ],
               "path": [
-                "document-signing-api",
                 "document-signing",
                 "sign-pdf"
               ]
@@ -113,7 +110,6 @@
                 "{{base_url}}"
               ],
               "path": [
-                "document-signing-api",
                 "document-signing",
                 "sign-pdf"
               ]
@@ -141,7 +137,6 @@
                 "{{base_url}}"
               ],
               "path": [
-                "document-signing-api",
                 "document-signing",
                 "sign-pdf"
               ]
@@ -169,7 +164,6 @@
                 "{{base_url}}"
               ],
               "path": [
-                "document-signing-api",
                 "document-signing",
                 "sign-pdf"
               ]
@@ -197,7 +191,6 @@
                 "{{base_url}}"
               ],
               "path": [
-                "document-signing-api",
                 "document-signing",
                 "sign-pdf"
               ]
@@ -225,7 +218,6 @@
                 "{{base_url}}"
               ],
               "path": [
-                "document-signing-api",
                 "document-signing",
                 "sign-pdf"
               ]
@@ -253,7 +245,6 @@
                 "{{base_url}}"
               ],
               "path": [
-                "document-signing-api",
                 "document-signing",
                 "sign-pdf"
               ]
@@ -281,7 +272,6 @@
                 "{{base_url}}"
               ],
               "path": [
-                "document-signing-api",
                 "document-signing",
                 "sign-pdf"
               ]
@@ -309,7 +299,6 @@
                 "{{base_url}}"
               ],
               "path": [
-                "document-signing-api",
                 "document-signing",
                 "sign-pdf"
               ]
@@ -337,7 +326,6 @@
                 "{{base_url}}"
               ],
               "path": [
-                "document-signing-api",
                 "document-signing",
                 "sign-pdf"
               ]
