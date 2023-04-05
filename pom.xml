@@ -233,6 +233,11 @@
                                 <from>src/test/resources</from>
                                 <into>/test-resources</into>
                             </path>
+                            <path>src/main/resources
+                                <from>src/main/resources</from>
+                                <into>/app</into>
+                                <includes>*.png</includes>
+                            </path>
                         </paths>
                     </extraDirectories>
                 </configuration>

@@ -5,7 +5,6 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
 import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
@@ -13,7 +12,6 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.pdmodel.interactive.action.PDActionURI;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationLink;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDBorderStyleDictionary;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.documentsigningapi.dto.CoverSheetDataDTO;
 import uk.gov.companieshouse.documentsigningapi.exception.CoverSheetException;
@@ -23,9 +21,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
 
-import static org.apache.commons.lang.StringUtils.isEmpty;
 import static org.apache.pdfbox.pdmodel.common.PDRectangle.A4;
+import static uk.gov.companieshouse.documentsigningapi.coversheet.LayoutConstants.DEFAULT_MARGIN;
+import static uk.gov.companieshouse.documentsigningapi.coversheet.LayoutConstants.POSTSCRIPT_TYPE_1_FONT_UPM;
 
 @Service
 public class CoverSheetService {
@@ -40,16 +40,6 @@ public class CoverSheetService {
         }
     }
 
-    private static class Font {
-        private final PDFont pdFont;
-        private final float size;
-
-        private Font(PDFont pdFont, float size) {
-            this.pdFont = pdFont;
-            this.size = size;
-        }
-    }
-
     private static class Position {
         private final float x;
         private final float y;
@@ -60,12 +50,7 @@ public class CoverSheetService {
         }
     }
 
-    private final LoggingUtils logger;
-
-    private final String imagesPath;
-
     // Coversheet measurements
-    private static final float DEFAULT_LEFT_MARGIN = 25;
     private static final float INFORMATION_SECTION_IMAGE_HEIGHT = 25;
     private static final float INFORMATION_SECTION_IMAGE_WIDTH = 25;
     private static final float OFFSET_TO_RIGHT_OF_IMAGES = 70;
@@ -75,7 +60,6 @@ public class CoverSheetService {
     private static final String DOCUMENT_SIGNED_TEXT = "This file has been electronically signed by Companies House.";
     private static final String EMAIL_HELPTEXT = "This file can be emailed. You cannot make changes to this file.";
     private static final String PAGE_HEADING = "Companies House";
-    private static final String PAGE_SPACER = "___________________________________________________";
     private static final String PRINTER_HELPTEXT = "This file is only valid in digital form as it contains a unique " +
         "electronic signature. Printed copies of this file will not be accepted.";
 
@@ -90,24 +74,33 @@ public class CoverSheetService {
 
     // Other constants
     private static final String DAY_MONTH_YEAR_FORMAT = "d MMMM uuuu";
-    private static final String DIRECTORY_SEPARATOR = "/";
 
     static final PDColor BLUE = new PDColor(new float[] { 0, 0, 1 }, PDDeviceRGB.INSTANCE);
     static final PDColor BLACK = new PDColor(new float[] { 0, 0, 0 }, PDDeviceRGB.INSTANCE);
 
-    // Probably what this value represents?
-    private static final float POSTSCRIPT_TYPE_1_FONT_UPM = 1000;
     private static final float LINE_OFFSET_BELOW_FONT = 3;
 
-    public CoverSheetService(LoggingUtils logger, @Value("${environment.coversheet.images.path}") String imagesPath) {
+    private final LoggingUtils logger;
+
+    private final ImagesBean images;
+
+    private final Renderer renderer;
+
+    private final VisualSignature visualSignature;
+
+    public CoverSheetService(LoggingUtils logger, ImagesBean images, Renderer renderer, VisualSignature visualSignature) {
         this.logger = logger;
-        this.imagesPath = imagesPath;
+        this.images = images;
+        this.renderer = renderer;
+        this.visualSignature = visualSignature;
     }
 
-    public byte[] addCoverSheet(final byte[] document, final CoverSheetDataDTO coverSheetData) {
+    public byte[] addCoverSheet(final byte[] document,
+                                final CoverSheetDataDTO coverSheetData,
+                                final Calendar signingDate) {
         try {
             final var pdfDocument = PDDocument.load(document);
-            insertCoverSheet(pdfDocument, coverSheetData);
+            insertCoverSheet(pdfDocument, coverSheetData, signingDate);
             return getContents(pdfDocument);
         } catch (IOException ioe) {
             logger.getLogger().error(ioe.getMessage(), ioe);
@@ -115,34 +108,37 @@ public class CoverSheetService {
         }
     }
 
-    private void insertCoverSheet(final PDDocument pdfDocument, final CoverSheetDataDTO coverSheetData)
+    private void insertCoverSheet(final PDDocument pdfDocument,
+                                  final CoverSheetDataDTO coverSheetData,
+                                  final Calendar signingDate)
             throws IOException {
         final var coverSheet = new PDPage(A4);
-        buildCoverSheetContent(pdfDocument, coverSheet, coverSheetData);
+        buildCoverSheetContent(pdfDocument, coverSheet, coverSheetData, signingDate);
         pdfDocument.getPages().insertBefore(coverSheet, pdfDocument.getPage(0));
     }
 
     private void buildCoverSheetContent(final PDDocument pdfDocument,
                                         final PDPage coverSheet,
-                                        final CoverSheetDataDTO coverSheetData) throws IOException {
-        PDImageXObject signatureImage = createImage("signature.jpeg", pdfDocument);
-        PDImageXObject emailImage = createImage("email.jpeg", pdfDocument);
-        PDImageXObject printerImage = createImage("printer.jpeg", pdfDocument);
+                                        final CoverSheetDataDTO coverSheetData,
+                                        final Calendar signingDate) throws IOException {
+        PDImageXObject signatureImage = images.createImage("signature.jpeg", pdfDocument);
+        PDImageXObject emailImage = images.createImage("email.jpeg", pdfDocument);
+        PDImageXObject printerImage = images.createImage("printer.jpeg", pdfDocument);
 
-        PDPageContentStream contentStream = new PDPageContentStream(pdfDocument, coverSheet);
+        var contentStream = new PDPageContentStream(pdfDocument, coverSheet);
 
-        insertText(contentStream, PAGE_HEADING, PDType1Font.HELVETICA_BOLD, 30, 770);
-        insertText(contentStream, getTodaysDate(), PDType1Font.HELVETICA, 18, 750);
-        insertText(contentStream, CERTIFIED_DOCUMENT_TYPE, PDType1Font.HELVETICA_BOLD, 24, 650);
+        renderer.insertText(contentStream, PAGE_HEADING, PDType1Font.HELVETICA_BOLD, 30, 770);
+        renderer.insertText(contentStream, getTodaysDate(), PDType1Font.HELVETICA, 18, 750);
+        renderer.insertText(contentStream, CERTIFIED_DOCUMENT_TYPE, PDType1Font.HELVETICA_BOLD, 24, 650);
 
-        textWrapper(contentStream, getCompany(coverSheetData), 18, DEFAULT_LEFT_MARGIN, 620);
-        textWrapper(contentStream, getFilingHistory(coverSheetData), 18, DEFAULT_LEFT_MARGIN, 590);
-        textWrapper(contentStream, DOCUMENT_SIGNED_TEXT, 18, DEFAULT_LEFT_MARGIN, 560);
+        textWrapper(contentStream, getCompany(coverSheetData), 18, DEFAULT_MARGIN, 620);
+        textWrapper(contentStream, getFilingHistory(coverSheetData), 18, DEFAULT_MARGIN, 590);
+        textWrapper(contentStream, DOCUMENT_SIGNED_TEXT, 18, DEFAULT_MARGIN, 560);
 
-        insertText(contentStream, PAGE_SPACER, PDType1Font.HELVETICA, 18, 530);
-        insertText(contentStream, VIEW_FILE_HEADING, PDType1Font.HELVETICA_BOLD, 18, 480);
+        renderer.renderPageSpacer(contentStream, 530);
+        renderer.insertText(contentStream, VIEW_FILE_HEADING, PDType1Font.HELVETICA_BOLD, 18, 480);
 
-        contentStream.drawImage(signatureImage, DEFAULT_LEFT_MARGIN, 420, INFORMATION_SECTION_IMAGE_WIDTH, INFORMATION_SECTION_IMAGE_HEIGHT);
+        contentStream.drawImage(signatureImage, DEFAULT_MARGIN, 420, INFORMATION_SECTION_IMAGE_WIDTH, INFORMATION_SECTION_IMAGE_HEIGHT);
         textWrapper(contentStream, SIGNATURE_HELPTEXT_LINE_1, 14, OFFSET_TO_RIGHT_OF_IMAGES, 440);
 
         renderTextWithLink(
@@ -154,28 +150,21 @@ public class CoverSheetService {
                 contentStream,
                 new Position(OFFSET_TO_RIGHT_OF_IMAGES, 420));
 
-        contentStream.drawImage(emailImage, DEFAULT_LEFT_MARGIN, 370, INFORMATION_SECTION_IMAGE_WIDTH, INFORMATION_SECTION_IMAGE_HEIGHT);
+        contentStream.drawImage(emailImage, DEFAULT_MARGIN, 370, INFORMATION_SECTION_IMAGE_WIDTH, INFORMATION_SECTION_IMAGE_HEIGHT);
         textWrapper(contentStream, EMAIL_HELPTEXT, 14, OFFSET_TO_RIGHT_OF_IMAGES, 385);
 
-        contentStream.drawImage(printerImage, DEFAULT_LEFT_MARGIN, 325, INFORMATION_SECTION_IMAGE_WIDTH, INFORMATION_SECTION_IMAGE_HEIGHT);
+        contentStream.drawImage(printerImage, DEFAULT_MARGIN, 325, INFORMATION_SECTION_IMAGE_WIDTH, INFORMATION_SECTION_IMAGE_HEIGHT);
         textWrapper(contentStream, PRINTER_HELPTEXT, 14, OFFSET_TO_RIGHT_OF_IMAGES, 340);
 
-        contentStream.close();
-    }
+        visualSignature.renderPanel(contentStream, pdfDocument, coverSheet, signingDate);
 
-    private void insertText(PDPageContentStream contentStream, String text, PDType1Font font,
-                            float fontSize, float yPosition) throws IOException {
-        contentStream.beginText();
-        contentStream.setFont(font, fontSize);
-        contentStream.newLineAtOffset(DEFAULT_LEFT_MARGIN, yPosition);
-        contentStream.showText(text);
-        contentStream.endText();
+        contentStream.close();
     }
 
     private void textWrapper(PDPageContentStream contentStream, String textToWrap, float fontSize, float xPosition, float yPosition) throws IOException {
         String[] wrappedText = WordUtils.wrap(textToWrap, 80).split("\\r?\\n");
 
-        for(int i = 0; i < wrappedText.length; i++){
+        for(var i = 0; i < wrappedText.length; i++){
             contentStream.beginText();
             contentStream.setFont(PDType1Font.HELVETICA, fontSize);
             contentStream.newLineAtOffset(xPosition,yPosition-i*15);
@@ -206,11 +195,6 @@ public class CoverSheetService {
         return data.getFilingHistoryDescription() + " (" + data.getFilingHistoryType() + ")";
     }
 
-    private PDImageXObject createImage(final String fileName, final PDDocument pdfDocument) throws IOException {
-        final String filePath = !isEmpty(imagesPath) ? imagesPath + DIRECTORY_SEPARATOR + fileName : fileName;
-        return PDImageXObject.createFromFile(filePath, pdfDocument);
-    }
-
     private void renderTextWithLink(final String preLinkText,
                                     final String postLinkText,
                                     final Link link,
@@ -232,7 +216,7 @@ public class CoverSheetService {
                                     final float upperRightY,
                                     final Position position) throws IOException {
         contentStream.beginText();
-        contentStream.setFont(font.pdFont, font.size);
+        contentStream.setFont(font.getPdFont(), font.getSize());
         contentStream.newLineAtOffset(position.x, upperRightY - position.y);
         contentStream.showText(preLinkText);
 
@@ -270,10 +254,10 @@ public class CoverSheetService {
                                      final Font font,
                                      final float upperRightY,
                                      final Position position) throws IOException {
-        final float offset = font.pdFont.getStringWidth(preLinkText) / POSTSCRIPT_TYPE_1_FONT_UPM * font.size;
-        final float textWidth = font.pdFont.getStringWidth(linkText) / POSTSCRIPT_TYPE_1_FONT_UPM * font.size;
+        final float offset = font.getPdFont().getStringWidth(preLinkText) / POSTSCRIPT_TYPE_1_FONT_UPM * font.getSize();
+        final float textWidth = font.getPdFont().getStringWidth(linkText) / POSTSCRIPT_TYPE_1_FONT_UPM * font.getSize();
         final float textHeight =
-                font.pdFont.getFontDescriptor().getCapHeight() / POSTSCRIPT_TYPE_1_FONT_UPM * font.size;
+                font.getPdFont().getFontDescriptor().getCapHeight() / POSTSCRIPT_TYPE_1_FONT_UPM * font.getSize();
         final var rectangle = new PDRectangle();
         rectangle.setLowerLeftX(position.x + offset);
         rectangle.setLowerLeftY(upperRightY - position.y - LINE_OFFSET_BELOW_FONT);

@@ -1,11 +1,5 @@
 package uk.gov.companieshouse.documentsigningapi.controller;
 
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
-import static uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils.SIGN_PDF_REQUEST;
-import static uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils.SIGN_PDF_RESPONSE;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,14 +12,22 @@ import uk.gov.companieshouse.documentsigningapi.dto.SignPdfRequestDTO;
 import uk.gov.companieshouse.documentsigningapi.dto.SignPdfResponseDTO;
 import uk.gov.companieshouse.documentsigningapi.exception.CoverSheetException;
 import uk.gov.companieshouse.documentsigningapi.exception.DocumentSigningException;
+import uk.gov.companieshouse.documentsigningapi.exception.ImageUnavailableException;
 import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
 import uk.gov.companieshouse.documentsigningapi.signing.SigningService;
 import uk.gov.companieshouse.documentsigningapi.validation.RequestValidator;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
+
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils.SIGN_PDF_REQUEST;
+import static uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils.SIGN_PDF_RESPONSE;
 
 @RestController
 public class SignDocumentController {
@@ -81,8 +83,9 @@ public class SignDocumentController {
 
         try {
             final var unsignedDoc = s3Service.retrieveUnsignedDocument(unsignedDocumentLocation);
-            final var coveredDoc = addCoverSheetIfRequired(unsignedDoc.readAllBytes(), signPdfRequestDTO);
-            final var signedPDF = signingService.signPDF(coveredDoc);
+            final var signingDate = Calendar.getInstance();
+            final var coveredDoc = addCoverSheetIfRequired(unsignedDoc.readAllBytes(), signPdfRequestDTO, signingDate);
+            final var signedPDF = signingService.signPDF(coveredDoc, signingDate);
             final var signedDocumentLocation =
                     s3Service.storeSignedDocument(signedPDF, prefix, key);
             return buildResponse(signedDocumentLocation, signPdfRequestDTO, map);
@@ -90,16 +93,18 @@ public class SignDocumentController {
             return buildErrorResponse(BAD_REQUEST.value(), use, map);
         } catch (SdkServiceException sse) {
             return buildErrorResponse(sse.statusCode(), sse, map);
-        } catch (SdkException | DocumentSigningException | IOException | CoverSheetException e) {
+        } catch (SdkException | DocumentSigningException | IOException | CoverSheetException |
+                 ImageUnavailableException e) {
             return buildErrorResponse(INTERNAL_SERVER_ERROR.value(), e, map);
         }
     }
 
     private byte[] addCoverSheetIfRequired(final byte[] document,
-                                           final SignPdfRequestDTO request) {
+                                           final SignPdfRequestDTO request,
+                                           final Calendar signingDate) {
         return request.getSignatureOptions() != null &&
                 request.getSignatureOptions().contains(COVER_SHEET_SIGNATURE_OPTION) ?
-                coverSheetService.addCoverSheet(document, request.getCoverSheetData()) : document;
+                coverSheetService.addCoverSheet(document, request.getCoverSheetData(), signingDate) : document;
     }
 
     private ResponseEntity<Object> buildResponse(final String signedDocumentLocation,

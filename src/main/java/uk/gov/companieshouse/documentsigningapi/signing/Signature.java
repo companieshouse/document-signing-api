@@ -10,6 +10,7 @@ import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
+import uk.gov.companieshouse.documentsigningapi.exception.SigningException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,7 +43,7 @@ public class Signature implements SignatureInterface {
 
         this.privateKey = (PrivateKey) keyStore.getKey(appCertificateAlias, keyStorePassword);
 
-        Certificate certificate = this.certificateChain[0];
+        var certificate = this.certificateChain[0];
 
         if (certificate instanceof X509Certificate) {
             ((X509Certificate) certificate).checkValidity();
@@ -52,19 +53,23 @@ public class Signature implements SignatureInterface {
     @Override
     public byte[] sign(InputStream inputStream) throws IOException {
         try {
-        CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
+        var gen = new CMSSignedDataGenerator();
         X509Certificate cert = (X509Certificate) this.certificateChain[0];
         ContentSigner sha1Signer = new JcaContentSignerBuilder(SIGNATURE_ALGORITHM).build(this.privateKey);
 
         gen.addSignerInfoGenerator(new JcaSignerInfoGeneratorBuilder(new JcaDigestCalculatorProviderBuilder().build()).build(sha1Signer, cert));
         gen.addCertificates(new JcaCertStore(Arrays.asList(this.certificateChain)));
 
-        CMSProcessableInputStream msg = new CMSProcessableInputStream(inputStream);
+        var msg = new CMSProcessableInputStream(inputStream);
         CMSSignedData signedData = gen.generate(msg, false);
 
         return signedData.getEncoded();
         } catch (OperatorCreationException | CertificateEncodingException | CMSException e) {
-            throw new RuntimeException(e);
+            throw new SigningException("Unable to sign certificate", e);
         }
+    }
+
+    public Certificate[] getCertificateChain() {
+        return certificateChain;
     }
 }
