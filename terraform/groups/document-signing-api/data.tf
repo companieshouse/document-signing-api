@@ -9,7 +9,8 @@ data "aws_iam_policy_document" "image_bucket" {
     ]
 
     resources = [
-      "arn:aws:s3:::${var.image_bucket_name_prefix}-*"
+      "arn:aws:s3:::${var.image_bucket_name_prefix}-*",
+      "arn:aws:s3:::ch-${var.image_bucket_name_prefix}-*"
     ]
   }
 
@@ -23,7 +24,8 @@ data "aws_iam_policy_document" "image_bucket" {
     ]
 
     resources = [
-      "arn:aws:s3:::${var.image_bucket_name_prefix}-*/*"
+      "arn:aws:s3:::${var.image_bucket_name_prefix}-*/*",
+      "arn:aws:s3:::ch-${var.image_bucket_name_prefix}-*/*"
     ]
   }
 }
