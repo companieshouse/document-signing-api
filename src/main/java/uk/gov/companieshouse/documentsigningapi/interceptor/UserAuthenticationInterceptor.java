@@ -2,6 +2,7 @@ package uk.gov.companieshouse.documentsigningapi.interceptor;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
+import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
 import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtilsConfiguration;
 import uk.gov.companieshouse.documentsigningapi.util.EricHeaderHelper;
 import uk.gov.companieshouse.logging.Logger;
@@ -17,7 +18,11 @@ import static uk.gov.companieshouse.documentsigningapi.logging.LoggingUtilsConfi
 
 @Component
 public class UserAuthenticationInterceptor implements HandlerInterceptor {
-    private static final Logger LOGGER = LoggerFactory.getLogger(LoggingUtilsConfiguration.APPLICATION_NAMESPACE);
+    private final LoggingUtils logger;
+
+    public UserAuthenticationInterceptor(LoggingUtils logger) {
+        this.logger = logger;
+    }
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
@@ -30,9 +35,9 @@ public class UserAuthenticationInterceptor implements HandlerInterceptor {
         if(identityType == null) {
             logMap.put(IDENTITY_TYPE_LOG_KEY, MISSING_REQUIRED_INFO);
             logMap.put(STATUS_LOG_KEY, UNAUTHORIZED);
-            LOGGER.infoRequest(request, "UserAuthenticationInterceptor error: no ERIC-Identity-Type", logMap);
-            response.setStatus(UNAUTHORIZED.value());
-            return(false);  // NOT Authorised.
+            logger.getLogger().error("UserAuthenticationInterceptor error: no ERIC-Identity-Type", logMap);
+            response.setStatus(UNAUTHORIZED.value());   // 401
+            return(false);  // NOT Authenticated.
         }
         //
         // Any value will do for ERIC-Identity so long as it is NOT empty.
@@ -41,11 +46,11 @@ public class UserAuthenticationInterceptor implements HandlerInterceptor {
         if(identity == null) {
             logMap.put(IDENTITY_LOG_KEY, MISSING_REQUIRED_INFO);
             logMap.put(STATUS_LOG_KEY, UNAUTHORIZED);
-            LOGGER.infoRequest(request, "UserAuthenticationInterceptor error: no ERIC-Identity", logMap);
-            response.setStatus(UNAUTHORIZED.value());
-            return(false);  // NOT Authorised.
+            logger.getLogger().error("UserAuthenticationInterceptor error: no ERIC-Identity", logMap);
+            response.setStatus(UNAUTHORIZED.value());   // 401
+            return(false);  // NOT Authenticated.
         }
 
-        return(true);   // Authorised OK...
+        return(true);   // Authenticated OK.
     }
 }

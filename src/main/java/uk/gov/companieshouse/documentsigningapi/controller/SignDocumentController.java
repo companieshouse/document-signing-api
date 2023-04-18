@@ -16,11 +16,16 @@ import uk.gov.companieshouse.documentsigningapi.exception.ImageUnavailableExcept
 import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
 import uk.gov.companieshouse.documentsigningapi.signing.SigningService;
 import uk.gov.companieshouse.documentsigningapi.validation.RequestValidator;
+import uk.gov.companieshouse.logging.util.DataMap;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -69,6 +74,7 @@ public class SignDocumentController {
      */
     @PostMapping(SIGN_PDF_URI)
     public ResponseEntity<Object> signPdf(final @RequestBody SignPdfRequestDTO signPdfRequestDTO) {
+        doDataMapTest();
 
         final var unsignedDocumentLocation = signPdfRequestDTO.getDocumentLocation();
         final var prefix = signPdfRequestDTO.getPrefix();
@@ -98,7 +104,28 @@ public class SignDocumentController {
             return buildErrorResponse(INTERNAL_SERVER_ERROR.value(), e, map);
         }
     }
+    /**
+     * DELETE this silly thing soon as the plumbing is working...
+     */
+    private Map<String, Object> doDataMapTest() {
+        final String dateValue = "1970-01-01";
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+        Date testDate = null;
+        try {
+            testDate = formatter.parse(dateValue);
+        }
+        catch (ParseException pex) {
+            logger.getLogger().error("DATE PARSE EXCEPTION for" + dateValue);
+        }
 
+        DataMap dataMap = new DataMap.Builder("ACME Inc")
+            .companyType(List.of("TYPE-1", "TYPE-2"))
+            .sicCodes(List.of("SIC-1", "SIC-2"))
+            .incorporatedFrom(testDate)
+            .build();
+
+        return(dataMap.getLogMap());
+    }
     private byte[] addCoverSheetIfRequired(final byte[] document,
                                            final SignPdfRequestDTO request,
                                            final Calendar signingDate) {
