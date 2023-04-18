@@ -1,1 +1,2 @@
 aws_account = "staging"
+image_bucket_name_prefix = "ch-document-api-images"
