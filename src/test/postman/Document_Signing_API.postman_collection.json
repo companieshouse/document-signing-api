@@ -1,6 +1,6 @@
 {
   "info": {
-    "_postman_id": "c583bcae-147f-447f-a224-5f03f3eba249",
+    "_postman_id": "e3ccb03d-cc12-4d76-b1d7-fddc2cc0bd8f",
     "name": "Document Signing API",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "7646296"
@@ -16,7 +16,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"document_location\": \"s3://document-api-images-cidev/9616659670.pdf\",\n    \"document_type\": \"certified-copy\",\n    \"signature_options\": [\n        \"cover-sheet\"\n    ],\n    \"prefix\": \"cidev/certified-copy\",\n    \"key\": \"CCD-123456-123456.pdf\",\n    \"cover_sheet_data\": {\n        \"company_name\": \"LINK EXPORTS (UK) LTD\",\n        \"company_number\": \"12953358\",\n        \"filing_history_description\": \"Change of Registered Office Address\",\n        \"filing_history_type\": \"AD01\"\n    }\n}",
+              "raw": "{\n    \"document_location\": \"s3://document-api-images-cidev/docs/--EdB7fbldt5oujK6Nz7jZ3hGj_x6vW8Q_2gQTyjWBM/application-pdf\",\n    \"document_type\": \"certified-copy\",\n    \"signature_options\": [\n        \"cover-sheet\"\n    ],\n    \"prefix\": \"cidev/certified-copy\",\n    \"key\": \"application-pdf\",\n    \"cover_sheet_data\": {\n        \"company_name\": \"LINK EXPORTS (UK) LTD\",\n        \"company_number\": \"12953358\",\n        \"filing_history_description\": \"Change of Registered Office Address\",\n        \"filing_history_type\": \"AD01\"\n    }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -43,7 +43,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"document_location\": \"https://document-api-images-cidev.s3.eu-west-2.amazonaws.com/9616659670.pdf\",\n    \"document_type\": \"certified-copy\",\n    \"signature_options\": [\n        \"cover-sheet\"\n    ],\n    \"prefix\": \"cidev/certified-copy\",\n    \"key\": \"CCD-123456-123456.pdf\",\n    \"cover_sheet_data\": {\n        \"company_name\": \"LINK EXPORTS (UK) LTD\",\n        \"company_number\": \"12953358\",\n        \"filing_history_description\": \"Change of Registered Office Address\",\n        \"filing_history_type\": \"AD01\"\n    }\n}",
+              "raw": "{\n    \"document_location\": \"https://document-api-images-cidev.s3.eu-west-2.amazonaws.com/docs/--EdB7fbldt5oujK6Nz7jZ3hGj_x6vW8Q_2gQTyjWBM/application-pdf\",\n    \"document_type\": \"certified-copy\",\n    \"signature_options\": [\n        \"cover-sheet\"\n    ],\n    \"prefix\": \"cidev/certified-copy\",\n    \"key\": \"application-pdf\",\n    \"cover_sheet_data\": {\n        \"company_name\": \"LINK EXPORTS (UK) LTD\",\n        \"company_number\": \"12953358\",\n        \"filing_history_description\": \"Change of Registered Office Address\",\n        \"filing_history_type\": \"AD01\"\n    }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -70,7 +70,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"document_location\": \"s3://document-api-images-cidev/9616659670.pdf\",\n    \"document_type\": \"certified-copy\",\n    \"prefix\": \"cidev/certified-copy\",\n    \"key\": \"CCD-123456-123456.pdf\",\n    \"cover_sheet_data\": {\n        \"company_name\": \"LINK EXPORTS (UK) LTD\",\n        \"company_number\": \"12953358\",\n        \"filing_history_description\": \"Change of Registered Office Address\",\n        \"filing_history_type\": \"AD01\"\n    }\n}",
+              "raw": "{\n    \"document_location\": \"s3://document-api-images-cidev/docs/--EdB7fbldt5oujK6Nz7jZ3hGj_x6vW8Q_2gQTyjWBM/application-pdf\",\n    \"document_type\": \"certified-copy\",\n    \"prefix\": \"cidev/certified-copy\",\n    \"key\": \"application-pdf\",\n    \"cover_sheet_data\": {\n        \"company_name\": \"LINK EXPORTS (UK) LTD\",\n        \"company_number\": \"12953358\",\n        \"filing_history_description\": \"Change of Registered Office Address\",\n        \"filing_history_type\": \"AD01\"\n    }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -97,7 +97,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"document_location\": \"s3://document-api-images-cidev/9616659670.pdf\",\n    \"document_type\": \"certified-copy\",\n    \"signature_options\": [\n        \"cover-sheet\"\n    ],\n    \"key\": \"CCD-123456-123456.pdf\",\n    \"cover_sheet_data\": {\n        \"company_name\": \"LINK EXPORTS (UK) LTD\",\n        \"company_number\": \"12953358\",\n        \"filing_history_description\": \"Change of Registered Office Address\",\n        \"filing_history_type\": \"AD01\"\n    }\n}",
+              "raw": "{\n    \"document_location\": \"s3://document-api-images-cidev/docs/--EdB7fbldt5oujK6Nz7jZ3hGj_x6vW8Q_2gQTyjWBM/application-pdf\",\n    \"document_type\": \"certified-copy\",\n    \"signature_options\": [\n        \"cover-sheet\"\n    ],\n    \"key\": \"application-pdf\",\n    \"cover_sheet_data\": {\n        \"company_name\": \"LINK EXPORTS (UK) LTD\",\n        \"company_number\": \"12953358\",\n        \"filing_history_description\": \"Change of Registered Office Address\",\n        \"filing_history_type\": \"AD01\"\n    }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -124,7 +124,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"document_location\": \"s3://document-api-images-cidev/9616659670.pdf\",\n    \"document_type\": \"certified-copy\",\n    \"signature_options\": [\n        \"cover-sheet\"\n    ],\n    \"prefix\": \"cidev/certified-copy\",\n    \"cover_sheet_data\": {\n        \"company_name\": \"LINK EXPORTS (UK) LTD\",\n        \"company_number\": \"12953358\",\n        \"filing_history_description\": \"Change of Registered Office Address\",\n        \"filing_history_type\": \"AD01\"\n    }\n}",
+              "raw": "{\n    \"document_location\": \"s3://document-api-images-cidev/docs/--EdB7fbldt5oujK6Nz7jZ3hGj_x6vW8Q_2gQTyjWBM/application-pdf\",\n    \"document_type\": \"certified-copy\",\n    \"signature_options\": [\n        \"cover-sheet\"\n    ],\n    \"prefix\": \"cidev/certified-copy\",\n    \"cover_sheet_data\": {\n        \"company_name\": \"LINK EXPORTS (UK) LTD\",\n        \"company_number\": \"12953358\",\n        \"filing_history_description\": \"Change of Registered Office Address\",\n        \"filing_history_type\": \"AD01\"\n    }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -151,7 +151,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"document_location\": \"s3://document-api-images-cidev/9616659670.pdf\",\n    \"signature_options\": [\n        \"cover-sheet\"\n    ],\n    \"folder-name\": \"cidev/certified-copy\",\n    \"key\": \"CCD-123456-123456.pdf\",\n    \"cover_sheet_data\": {\n        \"company_name\": \"LINK EXPORTS (UK) LTD\",\n        \"company_number\": \"12953358\",\n        \"filing_history_description\": \"Change of Registered Office Address\",\n        \"filing_history_type\": \"AD01\"\n    }\n}",
+              "raw": "{\n    \"document_location\": \"s3://document-api-images-cidev/docs/--EdB7fbldt5oujK6Nz7jZ3hGj_x6vW8Q_2gQTyjWBM/application-pdf\",\n    \"signature_options\": [\n        \"cover-sheet\"\n    ],\n    \"prefix\": \"cidev/certified-copy\",\n    \"key\": \"application-pdf\",\n    \"cover_sheet_data\": {\n        \"company_name\": \"LINK EXPORTS (UK) LTD\",\n        \"company_number\": \"12953358\",\n        \"filing_history_description\": \"Change of Registered Office Address\",\n        \"filing_history_type\": \"AD01\"\n    }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -178,7 +178,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"document_location\": \"s3 ://document-api-images-cidev/9616659670.pdf\",\n    \"document_type\": \"certified-copy\",\n    \"signature_options\": [\n        \"cover-sheet\"\n    ],\n    \"prefix\": \"cidev/certified-copy\",\n    \"key\": \"CCD-123456-123456.pdf\",\n    \"cover_sheet_data\": {\n        \"company_name\": \"LINK EXPORTS (UK) LTD\",\n        \"company_number\": \"12953358\",\n        \"filing_history_description\": \"Change of Registered Office Address\",\n        \"filing_history_type\": \"AD01\"\n    }\n}",
+              "raw": "{\n    \"document_location\": \"s3://document-api-images-cidev/docs/--EdB7fbldt5oujK6Nz7jZ3hGj_x6vW8Q_2gQTyjWBM/application-pdf\",\n    \"document_type\": \"certified-copy\",\n    \"signature_options\": [\n        \"cover-sheet\"\n    ],\n    \"prefix\": \"cidev/certified-copy\",\n    \"key\": \"application-pdf\",\n    \"cover_sheet_data\": {\n        \"company_name\": \"LINK EXPORTS (UK) LTD\",\n        \"company_number\": \"12953358\",\n        \"filing_history_description\": \"Change of Registered Office Address\",\n        \"filing_history_type\": \"AD01\"\n    }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -232,7 +232,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"document_location\": \"s3://document-api-images-cidev/9616659670.pdf\",\n    \"document_type\": \"unknown\",\n    \"signature_options\": [\n        \"cover-sheet\"\n    ],\n    \"prefix\": \"cidev/certified-copy\",\n    \"key\": \"CCD-123456-123456.pdf\",\n    \"cover_sheet_data\": {\n        \"company_name\": \"LINK EXPORTS (UK) LTD\",\n        \"company_number\": \"12953358\",\n        \"filing_history_description\": \"Change of Registered Office Address\",\n        \"filing_history_type\": \"AD01\"\n    }\n}",
+              "raw": "{\n    \"document_location\": \"s3://document-api-images-cidev/docs/--EdB7fbldt5oujK6Nz7jZ3hGj_x6vW8Q_2gQTyjWBM/application-pdf\",\n    \"document_type\": \"unknown\",\n    \"signature_options\": [\n        \"cover-sheet\"\n    ],\n    \"prefix\": \"cidev/certified-copy\",\n    \"key\": \"application-pdf\",\n    \"cover_sheet_data\": {\n        \"company_name\": \"LINK EXPORTS (UK) LTD\",\n        \"company_number\": \"12953358\",\n        \"filing_history_description\": \"Change of Registered Office Address\",\n        \"filing_history_type\": \"AD01\"\n    }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -259,7 +259,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"document_location\": \"s3://document-api-images-cidev/9616659670.pdf\",\n    \"document_type\": \"certificate\",\n    \"signature_options\": [\n        \"cover-sheet\"\n    ],\n    \"prefix\": \"cidev/certified-copy\",\n    \"key\": \"CCD-123456-123456.pdf\",\n    \"cover_sheet_data\": {\n        \"company_name\": \"LINK EXPORTS (UK) LTD\",\n        \"company_number\": \"12953358\",\n        \"filing_history_description\": \"Change of Registered Office Address\",\n        \"filing_history_type\": \"AD01\"\n    }\n}",
+              "raw": "{\n    \"document_location\": \"s3://document-api-images-cidev/docs/--EdB7fbldt5oujK6Nz7jZ3hGj_x6vW8Q_2gQTyjWBM/application-pdf\",\n    \"document_type\": \"certificate\",\n    \"signature_options\": [\n        \"cover-sheet\"\n    ],\n    \"prefix\": \"cidev/certified-copy\",\n    \"key\": \"application-pdf\",\n    \"cover_sheet_data\": {\n        \"company_name\": \"LINK EXPORTS (UK) LTD\",\n        \"company_number\": \"12953358\",\n        \"filing_history_description\": \"Change of Registered Office Address\",\n        \"filing_history_type\": \"AD01\"\n    }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -313,7 +313,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"document_location\": \"s3://document-api-images-cidev/9616659670.pdf\",\n    \"document_type\": \"certified-copy\",\n    \"signature_options\": [\n        \"cover-sheet\"\n    ],\n    \"prefix\": \"cidev/certified-copy\",\n    \"key\": \"CCD-123456-123456.pdf\"\n}",
+              "raw": "{\n    \"document_location\": \"s3://document-api-images-cidev/docs/--EdB7fbldt5oujK6Nz7jZ3hGj_x6vW8Q_2gQTyjWBM/application-pdf\",\n    \"document_type\": \"certified-copy\",\n    \"signature_options\": [\n        \"cover-sheet\"\n    ],\n    \"prefix\": \"cidev/certified-copy\",\n    \"key\": \"application-pdf\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
