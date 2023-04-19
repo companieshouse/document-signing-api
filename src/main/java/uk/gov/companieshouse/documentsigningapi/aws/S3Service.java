@@ -39,10 +39,10 @@ public class S3Service {
     public ResponseInputStream<GetObjectResponse> retrieveUnsignedDocument(final String documentLocation)
             throws URISyntaxException {
         final String bucketName = getBucketName(documentLocation);
-        final String fileName = getFileName(documentLocation);
+        final String key = getKey(documentLocation);
         final var getObjectRequest = GetObjectRequest.builder()
                 .bucket(bucketName)
-                .key(fileName)
+                .key(key)
                 .build();
         return s3Client.getObject(getObjectRequest);
     }
@@ -75,9 +75,9 @@ public class S3Service {
         return uri.getHost();
     }
 
-    String getFileName(final String documentLocation) throws URISyntaxException {
+    String getKey(final String documentLocation) throws URISyntaxException {
         final var uri = new URI(documentLocation);
         final String path = uri.getPath();
-        return path.substring(path.lastIndexOf('/') + 1);
+        return path.substring(1);
     }
 }

@@ -26,12 +26,32 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class S3ServiceTest {
 
-    private static final String UNSIGNED_DOCUMENT_LOCATION_S3_URI =
+    /**
+     * Unsigned documents are typically found nested in "directories" such as
+     * "docs/--5p23aItPJhX1GtWC3FPX0pnAo-AsEMejG9aNCvVRA/"
+     */
+    private static final String NESTED_UNSIGNED_DOCUMENT_LOCATION_S3_URI =
+            "s3://document-api-images-cidev/docs/--5p23aItPJhX1GtWC3FPX0pnAo-AsEMejG9aNCvVRA/application-pdf";
+
+    /**
+     * NOT a typical location for an unsigned document.
+     */
+    private static final String UNNESTED_UNSIGNED_DOCUMENT_LOCATION_S3_URI =
             "s3://document-api-images-cidev/9616659670.pdf";
     private static final String UNSIGNED_DOCUMENT_LOCATION_OBJECT_URL =
             "https://document-api-images-cidev.s3.eu-west-2.amazonaws.com/9616659670.pdf";
     private static final String INVALID_UNSIGNED_DOCUMENT_LOCATION_SYNTAX =
             "s3:// document-api-images-cidev/9616659670.pdf";
+
+    private static final GetObjectRequest EXPECTED_NESTED_DOCUMENT_GET_OBJECT_REQUEST = GetObjectRequest.builder()
+            .bucket("document-api-images-cidev")
+            .key("docs/--5p23aItPJhX1GtWC3FPX0pnAo-AsEMejG9aNCvVRA/application-pdf")
+            .build();
+
+    private static final GetObjectRequest EXPECTED_UNNESTED_DOCUMENT_GET_OBJECT_REQUEST = GetObjectRequest.builder()
+            .bucket("document-api-images-cidev")
+            .key("9616659670.pdf")
+            .build();
 
     @InjectMocks
     private S3Service s3Service;
@@ -43,14 +63,25 @@ class S3ServiceTest {
     private ResponseInputStream<GetObjectResponse> response;
 
     @Test
-    @DisplayName("retrieveUnsignedDocument delegates retrieval to GetObject")
-    void delegatesRetrievalToGetObject() throws Exception {
+    @DisplayName("retrieveUnsignedDocument delegates nested document retrieval to GetObject correctly")
+    void delegatesNestedDocumentRetrievalToGetObject() throws Exception {
         when(s3Client.getObject(any(GetObjectRequest.class))).thenReturn(response);
 
         final ResponseInputStream<GetObjectResponse> retrieved =
-                s3Service.retrieveUnsignedDocument(UNSIGNED_DOCUMENT_LOCATION_S3_URI);
+                s3Service.retrieveUnsignedDocument(NESTED_UNSIGNED_DOCUMENT_LOCATION_S3_URI);
         assertThat(retrieved, is(response));
-        verify(s3Client).getObject(any(GetObjectRequest.class));
+        verify(s3Client).getObject(EXPECTED_NESTED_DOCUMENT_GET_OBJECT_REQUEST);
+    }
+
+    @Test
+    @DisplayName("retrieveUnsignedDocument delegates un-nested document retrieval to GetObject correctly")
+    void delegatesUnnestedDocumentRetrievalToGetObject() throws Exception {
+        when(s3Client.getObject(any(GetObjectRequest.class))).thenReturn(response);
+
+        final ResponseInputStream<GetObjectResponse> retrieved =
+                s3Service.retrieveUnsignedDocument(UNNESTED_UNSIGNED_DOCUMENT_LOCATION_S3_URI);
+        assertThat(retrieved, is(response));
+        verify(s3Client).getObject(EXPECTED_UNNESTED_DOCUMENT_GET_OBJECT_REQUEST);
     }
 
     @Test
