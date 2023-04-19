@@ -78,7 +78,8 @@ class SignDocumentControllerIntegrationTest {
     private static final String LOCALSTACK_IMAGE_NAME = "localstack/localstack:1.4";
     private static final String UNSIGNED_BUCKET_NAME = "document-api-images-cidev";
     private static final String SIGNED_BUCKET_NAME = "document-signing-api";
-    private static final String UNSIGNED_DOCUMENT_NAME = "9616659670.pdf";
+    private static final String UNSIGNED_DOCUMENT_KEY =
+            "docs/--5p23aItPJhX1GtWC3FPX0pnAo-AsEMejG9aNCvVRA/application-pdf";
     private static final String UNKNOWN_UNSIGNED_DOCUMENT_NAME = "UNKNOWN.pdf";
     private static final String CERTIFIED_COPY_DOCUMENT_TYPE = "certified-copy";
     private static final List<String> SIGNATURE_OPTIONS = List.of("cover-sheet");
@@ -209,7 +210,7 @@ class SignDocumentControllerIntegrationTest {
 
         // It seems that LocalStack S3 is somewhat region-agnostic.
         final var unsignedDocumentLocation =
-                "s3://" + UNSIGNED_BUCKET_NAME + "/" + UNSIGNED_DOCUMENT_NAME;
+                "s3://" + UNSIGNED_BUCKET_NAME + "/" + UNSIGNED_DOCUMENT_KEY;
         final var signPdfRequestDTO = createSignPdfRequest(unsignedDocumentLocation);
 
         final var resultActions = mockMvc.perform(post("/document-signing/sign-pdf")
@@ -246,7 +247,7 @@ class SignDocumentControllerIntegrationTest {
 
         // It seems that LocalStack S3 is somewhat region-agnostic.
         final var unsignedDocumentLocation =
-                "s3:// " + UNSIGNED_BUCKET_NAME + "/" + UNSIGNED_DOCUMENT_NAME;
+                "s3:// " + UNSIGNED_BUCKET_NAME + "/" + UNSIGNED_DOCUMENT_KEY;
         final var signPdfRequestDTO = createSignPdfRequest(unsignedDocumentLocation);
 
         final var resultActions = mockMvc.perform(post("/document-signing/sign-pdf")
@@ -259,7 +260,7 @@ class SignDocumentControllerIntegrationTest {
 
         final var body = resultActions.andReturn().getResponse().getContentAsString();
         assertThat(body, is("Illegal character in authority at index 5: " +
-                "s3:// document-api-images-cidev/9616659670.pdf"));
+                "s3:// document-api-images-cidev/docs/--5p23aItPJhX1GtWC3FPX0pnAo-AsEMejG9aNCvVRA/application-pdf"));
     }
 
     @Test
@@ -293,10 +294,10 @@ class SignDocumentControllerIntegrationTest {
         s3Client.createBucket(request);
         final var request2 = PutObjectRequest.builder()
                 .bucket(UNSIGNED_BUCKET_NAME)
-                .key(UNSIGNED_DOCUMENT_NAME)
+                .key(UNSIGNED_DOCUMENT_KEY)
                 .contentType(MediaType.APPLICATION_PDF.toString())
                 .build();
-        s3Client.putObject(request2, Path.of("src/test/resources/" + UNSIGNED_DOCUMENT_NAME));
+        s3Client.putObject(request2, Path.of("src/test/resources/" + UNSIGNED_DOCUMENT_KEY));
     }
 
     private void setUpSignedDocumentBucket() {
