@@ -37,6 +37,60 @@
           "response": []
         },
         {
+          "name": "sign PDF missing company NAME",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"document_location\": \"s3://document-api-images-cidev/9616659670.pdf\",\n    \"document_type\": \"certified-copy\",\n    \"signature_options\": [\n        \"cover-sheet\"\n    ],\n    \"prefix\": \"cidev/certified-copy\",\n    \"key\": \"CCD-123456-123456.pdf\",\n    \"cover_sheet_data\": {\n//        \"company_name\": \"LINK EXPORTS (UK) LTD\",\n//        \"company_name\": \"\",\n        \"company_number\": \"12953358\",\n        \"filing_history_description\": \"Change of Registered Office Address\",\n        \"filing_history_type\": \"AD01\"\n    }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/document-signing/sign-pdf",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "document-signing",
+                "sign-pdf"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "sign PDF missing company NUMBER",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"document_location\": \"s3://document-api-images-cidev/9616659670.pdf\",\n    \"document_type\": \"certified-copy\",\n    \"signature_options\": [\n        \"cover-sheet\"\n    ],\n    \"prefix\": \"cidev/certified-copy\",\n    \"key\": \"CCD-123456-123456.pdf\",\n    \"cover_sheet_data\": {\n        \"company_name\": \"LINK EXPORTS (UK) LTD\",\n//        \"company_number\": \"\",\n        \"filing_history_description\": \"Change of Registered Office Address\",\n        \"filing_history_type\": \"AD01\"\n    }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/document-signing/sign-pdf",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "document-signing",
+                "sign-pdf"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
           "name": "sign PDF object URL",
           "request": {
             "method": "POST",

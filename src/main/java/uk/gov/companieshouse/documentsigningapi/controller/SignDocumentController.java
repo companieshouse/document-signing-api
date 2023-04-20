@@ -74,8 +74,6 @@ public class SignDocumentController {
      */
     @PostMapping(SIGN_PDF_URI)
     public ResponseEntity<Object> signPdf(final @RequestBody SignPdfRequestDTO signPdfRequestDTO) {
-        doDataMapTest();
-
         final var unsignedDocumentLocation = signPdfRequestDTO.getDocumentLocation();
         final var prefix = signPdfRequestDTO.getPrefix();
         final var key = signPdfRequestDTO.getKey();
@@ -83,6 +81,7 @@ public class SignDocumentController {
         map.put(SIGN_PDF_REQUEST, signPdfRequestDTO);
 
         List<String> errors = requestValidator.validateRequest(signPdfRequestDTO);
+
         if (!errors.isEmpty()) {
             return buildValidationResponse(BAD_REQUEST.value(), errors, map);
         }
@@ -104,28 +103,7 @@ public class SignDocumentController {
             return buildErrorResponse(INTERNAL_SERVER_ERROR.value(), e, map);
         }
     }
-    /**
-     * DELETE this silly thing soon as the plumbing is working...
-     */
-    private Map<String, Object> doDataMapTest() {
-        final String dateValue = "1970-01-01";
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
-        Date testDate = null;
-        try {
-            testDate = formatter.parse(dateValue);
-        }
-        catch (ParseException pex) {
-            logger.getLogger().error("DATE PARSE EXCEPTION for" + dateValue);
-        }
 
-        DataMap dataMap = new DataMap.Builder("ACME Inc")
-            .companyType(List.of("TYPE-1", "TYPE-2"))
-            .sicCodes(List.of("SIC-1", "SIC-2"))
-            .incorporatedFrom(testDate)
-            .build();
-
-        return(dataMap.getLogMap());
-    }
     private byte[] addCoverSheetIfRequired(final byte[] document,
                                            final SignPdfRequestDTO request,
                                            final Calendar signingDate) {
