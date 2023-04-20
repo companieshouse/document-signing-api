@@ -3,7 +3,6 @@ package uk.gov.companieshouse.documentsigningapi.validation;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.documentsigningapi.dto.SignPdfRequestDTO;
-import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
 import uk.gov.companieshouse.logging.util.DataMap;
 
 import java.util.ArrayList;
@@ -63,7 +62,7 @@ public class RequestValidator {
      * @param errors to append to.
      */
     private void validateCompanyName(SignPdfRequestDTO dto, List<String> errors) {
-        // Use COMPANY_NUMBER_KEY for the single KV pair we are interested in.
+        // Use COMPANY_NAME_KEY for the single KV pair we are interested in.
         if(StringUtils.isBlank(dto.getCoverSheetData().getCompanyName())) {
             DataMap dataMap = new DataMap.Builder(COMPANY_NAME_MISSING_MESSAGE)
                 .build();
@@ -73,11 +72,11 @@ public class RequestValidator {
 
     /**
      * Company NUMBER missing check.
-     * @param dto to validating.
+     * @param dto to validate.
      * @param errors to append to.
      */
     private void validateCompanyNumber(SignPdfRequestDTO dto, List<String> errors) {
-        // Company name required for builder which can be ignored, so use COMPANY_NUMBER_KEY for the single KV pair we are interested in.
+        // Company name required for builder, which can be ignored, so use COMPANY_NUMBER_KEY for the single KV pair we are interested in.
         if(StringUtils.isBlank(dto.getCoverSheetData().getCompanyNumber())) {
             DataMap dataMap = new DataMap.Builder(dto.getCoverSheetData().getCompanyNumber())
                 .companyNumber(COMPANY_NUMBER_MISSING_MESSAGE)

@@ -1,20 +1,21 @@
 package uk.gov.companieshouse.documentsigningapi.interceptor;
 
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
+import static uk.gov.companieshouse.documentsigningapi.logging.LoggingUtilsConfiguration.IDENTITY_LOG_KEY;
+import static uk.gov.companieshouse.documentsigningapi.logging.LoggingUtilsConfiguration.IDENTITY_TYPE_LOG_KEY;
+import static uk.gov.companieshouse.documentsigningapi.logging.LoggingUtilsConfiguration.MISSING_REQUIRED_INFO;
+import static uk.gov.companieshouse.documentsigningapi.logging.LoggingUtilsConfiguration.REQUEST_ID_HEADER_NAME;
+import static uk.gov.companieshouse.documentsigningapi.logging.LoggingUtilsConfiguration.REQUEST_ID_LOG_KEY;
+import static uk.gov.companieshouse.documentsigningapi.logging.LoggingUtilsConfiguration.STATUS_LOG_KEY;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
-import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtilsConfiguration;
 import uk.gov.companieshouse.documentsigningapi.util.EricHeaderHelper;
-import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.logging.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.springframework.http.HttpStatus.UNAUTHORIZED;
-import static uk.gov.companieshouse.documentsigningapi.logging.LoggingUtilsConfiguration.*;
 
 @Component
 public class UserAuthenticationInterceptor implements HandlerInterceptor {
