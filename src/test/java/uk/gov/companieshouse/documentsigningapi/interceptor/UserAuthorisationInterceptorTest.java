@@ -1,19 +1,21 @@
 package uk.gov.companieshouse.documentsigningapi.interceptor;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.when;
+import static uk.gov.companieshouse.documentsigningapi.util.TestConstants.ERIC_AUTHORIZED_KEY_ROLES;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
+import uk.gov.companieshouse.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.lenient;
-import static uk.gov.companieshouse.documentsigningapi.util.TestConstants.ERIC_AUTHORIZED_KEY_ROLES;
 
 @ExtendWith(MockitoExtension.class)
 public class UserAuthorisationInterceptorTest {
@@ -23,6 +25,10 @@ public class UserAuthorisationInterceptorTest {
     private HttpServletRequest request;
     @Mock
     private HttpServletResponse response;
+    @Mock
+    private Logger logger;
+    @Mock
+    private LoggingUtils loggingUtils;
 
     @Test
     @DisplayName("preHandle ERIC-Authorised-Key-Roles is present and CORRECT value")
@@ -37,6 +43,7 @@ public class UserAuthorisationInterceptorTest {
     @Test
     @DisplayName("preHandle ERIC-Authorised-Key-Roles is MISSING")
     void willNotAuthoriseIfEricHeadersAreMissing() throws Exception {
+        when(loggingUtils.getLogger()).thenReturn(logger);  // Required as preHandle failure triggers logging.
         lenient()
             .doReturn(null)
             .when(request)
@@ -47,6 +54,7 @@ public class UserAuthorisationInterceptorTest {
     @Test
     @DisplayName("preHandle ERIC-Authorised-Key-Roles is present and INCORRECT value")
     void willNotAuthoriseIfEricHeadersPresentAndIncorrectValue() throws Exception {
+        when(loggingUtils.getLogger()).thenReturn(logger);
         lenient()
             .doReturn("xxx")
             .when(request)
