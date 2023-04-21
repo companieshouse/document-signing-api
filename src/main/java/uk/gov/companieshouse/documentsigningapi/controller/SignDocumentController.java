@@ -1,5 +1,10 @@
 package uk.gov.companieshouse.documentsigningapi.controller;
 
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils.SIGN_PDF_REQUEST;
+import static uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils.SIGN_PDF_RESPONSE;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,12 +27,6 @@ import java.net.URISyntaxException;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
-
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
-import static uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils.SIGN_PDF_REQUEST;
-import static uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils.SIGN_PDF_RESPONSE;
 
 @RestController
 public class SignDocumentController {
@@ -69,7 +68,6 @@ public class SignDocumentController {
      */
     @PostMapping(SIGN_PDF_URI)
     public ResponseEntity<Object> signPdf(final @RequestBody SignPdfRequestDTO signPdfRequestDTO) {
-
         final var unsignedDocumentLocation = signPdfRequestDTO.getDocumentLocation();
         final var prefix = signPdfRequestDTO.getPrefix();
         final var key = signPdfRequestDTO.getKey();
@@ -77,6 +75,7 @@ public class SignDocumentController {
         map.put(SIGN_PDF_REQUEST, signPdfRequestDTO);
 
         List<String> errors = requestValidator.validateRequest(signPdfRequestDTO);
+
         if (!errors.isEmpty()) {
             return buildValidationResponse(BAD_REQUEST.value(), errors, map);
         }

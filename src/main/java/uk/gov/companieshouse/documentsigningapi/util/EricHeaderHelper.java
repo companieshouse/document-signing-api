@@ -4,8 +4,9 @@ import org.apache.commons.lang.StringUtils;
 import javax.servlet.http.HttpServletRequest;
 
 public class EricHeaderHelper {
-    public static final String ERIC_IDENTITY            = "ERIC-Identity";
-    public static final String ERIC_IDENTITY_TYPE       = "ERIC-Identity-Type";
+    public static String ERIC_IDENTITY             = "ERIC-Identity";
+    public static String ERIC_IDENTITY_TYPE        = "ERIC-Identity-Type";
+    public static String ERIC_AUTHORISED_KEY_ROLES = "ERIC-Authorised-Key-Roles";
 
     private EricHeaderHelper() { }
 

@@ -22,7 +22,11 @@ class RequestValidatorTest {
     private static final String FILING_HISTORY_DESCRIPTION = "this is an ad01 description";
     private static final CoverSheetDataDTO COVER_SHEET_DATA= new CoverSheetDataDTO(COMPANY_NAME, COMPANY_NUMBER,
         FILING_HISTORY_DESCRIPTION, FILING_HISTORY_TYPE);
-    private static final CoverSheetDataDTO COVER_SHEET_DATA_MISSING_FIELD= new CoverSheetDataDTO(COMPANY_NAME, null,
+    private static final CoverSheetDataDTO COVER_SHEET_DATA_MISSING_FIELD= new CoverSheetDataDTO(COMPANY_NAME, COMPANY_NUMBER,
+        FILING_HISTORY_DESCRIPTION, null);
+    private static final CoverSheetDataDTO COVER_SHEET_DATA_MISSING_COMPANY_NAME= new CoverSheetDataDTO(null, COMPANY_NUMBER,
+        FILING_HISTORY_DESCRIPTION, FILING_HISTORY_TYPE);
+    private static final CoverSheetDataDTO COVER_SHEET_DATA_MISSING_COMPANY_NUMBER= new CoverSheetDataDTO(COMPANY_NAME, null,
         FILING_HISTORY_DESCRIPTION, FILING_HISTORY_TYPE);
 
     private static final String PREFIX_MISSING_VALIDATION_MESSAGE = "prefix: is a mandatory field and is not present";
@@ -31,7 +35,9 @@ class RequestValidatorTest {
     private static final String DOCUMENT_LOCATION_MISSING_VALIDATION_MESSAGE = "document_location: is a mandatory field and is not present";
     private static final String COVER_SHEET_DATA_MISSING_VALIDATION_MESSAGE= "cover_sheet_data: must be present when signature_options contains 'cover-sheet' value";
     private static final String COVER_SHEET_DATA_FIELDS_MISSING_VALIDATION_MESSAGE = "cover_sheet_data: there are missing coversheet data fields, " +
-        "please check that company_name, company_number, filing_history_type and filing_history_description are present in request";
+        "please check that filing_history_type and filing_history_description are present in request";
+    private static final String COMPANY_NAME_MISSING_MESSAGE = "cover_sheet_data: missing company_name";
+    private static final String COMPANY_NUMBER_MISSING_MESSAGE = "cover_sheet_data: missing company_number";
 
     @Test
     @DisplayName("validate request returns no errors")
@@ -123,7 +129,7 @@ class RequestValidatorTest {
     }
 
     @Test
-    @DisplayName("validate request returns cover sheet data fields missing error")
+    @DisplayName("validate request returns cover sheet filing_history_type and/or filing_history_description missing error")
     void validateRequestReturnsCoverSheetDataFieldsMissingError() {
         final SignPdfRequestDTO dto = new SignPdfRequestDTO(DOCUMENT_LOCATION, DOCUMENT_TYPE,
             SIGNATURE_OPTIONS, PREFIX, KEY, COVER_SHEET_DATA_MISSING_FIELD);
@@ -133,5 +139,41 @@ class RequestValidatorTest {
 
         Assertions.assertEquals(1, errors.size());
         Assertions.assertEquals(COVER_SHEET_DATA_FIELDS_MISSING_VALIDATION_MESSAGE, errors.get(0));
+    }
+
+    @Test
+    @DisplayName("validate request returns cover sheet company NAME missing error")
+    void validateRequestReturnsCompanyNameMissingError() {
+        final SignPdfRequestDTO dto = new SignPdfRequestDTO(
+            DOCUMENT_LOCATION,
+            DOCUMENT_TYPE,
+            SIGNATURE_OPTIONS,
+            PREFIX,
+            KEY,
+            COVER_SHEET_DATA_MISSING_COMPANY_NAME);
+
+        RequestValidator requestValidator = new RequestValidator();
+        List<String> errors = requestValidator.validateRequest(dto);
+
+        Assertions.assertEquals(1, errors.size());
+        Assertions.assertEquals(COMPANY_NAME_MISSING_MESSAGE, errors.get(0));
+    }
+
+    @Test
+    @DisplayName("validate request returns cover sheet company NUMBER missing error")
+    void validateRequestReturnsCompanyNumberMissingError() {
+        final SignPdfRequestDTO dto = new SignPdfRequestDTO(
+            DOCUMENT_LOCATION,
+            DOCUMENT_TYPE,
+            SIGNATURE_OPTIONS,
+            PREFIX,
+            KEY,
+            COVER_SHEET_DATA_MISSING_COMPANY_NUMBER);
+
+        RequestValidator requestValidator = new RequestValidator();
+        List<String> errors = requestValidator.validateRequest(dto);
+
+        Assertions.assertEquals(1, errors.size());
+        Assertions.assertEquals(COMPANY_NUMBER_MISSING_MESSAGE, errors.get(0));
     }
 }
