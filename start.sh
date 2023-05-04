@@ -20,7 +20,7 @@ else
     wget -O "${APP_DIR}/private_env" "${CONFIG_URL}/${ENVIRONMENT}/private_env"
     wget -O "${APP_DIR}/global_env" "${CONFIG_URL}/${ENVIRONMENT}/global_env"
     wget -O "${APP_DIR}/app_env" "${CONFIG_URL}/${ENVIRONMENT}/${APP_NAME}/env"
-    wget -O "${APP_DIR}/keystore.jks" "${CONFIG_URL}/${ENVIRONMENT}/${APP_NAME}/keystore.jks"
+    wget -O "${APP_DIR}/keystore.p12" "${CONFIG_URL}/${ENVIRONMENT}/${APP_NAME}/keystore.p12"
     source "${APP_DIR}/private_env"
     source "${APP_DIR}/global_env"
     source "${APP_DIR}/app_env"
