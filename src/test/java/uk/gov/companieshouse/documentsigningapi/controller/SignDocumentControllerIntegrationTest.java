@@ -113,10 +113,10 @@ class SignDocumentControllerIntegrationTest {
                     ENVIRONMENT_VARIABLES.set(variable.getName(), SIGNED_BUCKET_NAME);
                     break;
                 case KEYSTORE_TYPE:
-                    ENVIRONMENT_VARIABLES.set(variable.getName(), "jks");
+                    ENVIRONMENT_VARIABLES.set(variable.getName(), "pkcs12");
                     break;
                 case KEYSTORE_PATH:
-                    ENVIRONMENT_VARIABLES.set(variable.getName(), "src/test/resources/keystore.jks");
+                    ENVIRONMENT_VARIABLES.set(variable.getName(), "src/test/resources/keystore.p12");
                     break;
                 case KEYSTORE_PASSWORD:
                     ENVIRONMENT_VARIABLES.set(variable.getName(), "password");

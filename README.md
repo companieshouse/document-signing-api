@@ -21,8 +21,8 @@ The supported environmental variables have been categorised by use case and are 
 | AWS_REGION             | AWS region                                                     | √         | N/A     | `eu-west-2`                 |
 | AWS_ACCESS_KEY_ID      | Part of AWS credentials.                                       | √         | N/A     | `ASIA...`                   |
 | AWS_SECRET_ACCESS_KEY  | Part of AWS credentials.                                       | √         | N/A     | `UgO8...`                   |
-| KEYSTORE_TYPE          | The type of keystore used to sign a document.                  | √         | N/A     | `jks`                       |
-| KEYSTORE_PATH          | The path to the keystore used to sign a document.              | √         | N/A     | `/keystore.jks`             |
+| KEYSTORE_TYPE          | The type of keystore used to sign a document.                  | √         | N/A     | `pkcs12`                    |
+| KEYSTORE_PATH          | The path to the keystore used to sign a document.              | √         | N/A     | `/keystore.p12`             |
 | KEYSTORE_PATH          | The password to the keystore used to sign a document.          | √         | N/A     | `examplepassword`           |
 | CERTIFICATE_ALIAS      | The unique string to identify the keystore.                    | √         | N/A     | `mykeystore`                |
 | SIGNED_DOC_BUCKET_NAME | The name of the S3 bucket used for storing signed documents.   | √         | N/A     | `document-signing-api`      |
