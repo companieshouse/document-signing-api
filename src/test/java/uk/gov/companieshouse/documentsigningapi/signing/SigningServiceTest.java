@@ -45,8 +45,8 @@ class SigningServiceTest {
     @InjectMocks
     private SigningService signingService =
             new TestSigningService(
-                    "jks",
-                    "src/test/resources/keystore.jks",
+                    "pkcs12",
+                    "src/test/resources/keystore.p12",
                     "testkey",
                     "alias",
                     logger, visualSignature);
@@ -66,7 +66,7 @@ class SigningServiceTest {
         SigningService incorrectKeystoreTypeInitialised =
                 new TestSigningService(
                         "unknown",
-                        "src/test/resources/keystore.jks",
+                        "src/test/resources/keystore.p12",
                         "testkey",
                         "alias",
                         logger, visualSignature);
