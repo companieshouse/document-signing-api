@@ -207,10 +207,9 @@ public class CoverSheetService {
     }
 
     private String extractFilingHistoryDescriptionHead(final CoverSheetDataDTO coverSheetDataDTO) {
-        String fullDescription = "Test";
+        String fullDescription = "";
         if (coverSheetDataDTO != null) {
             fullDescription = coverSheetDataDTO.getFilingHistoryDescription();
-
 
             if (fullDescription != null) {
 
@@ -221,7 +220,6 @@ public class CoverSheetService {
                     return matcher.group(1);
                 }
             }
-
         }
         return fullDescription;
     }
