@@ -266,45 +266,6 @@ public class CoverSheetService {
         return input;
     }
 
-//    private void renderFilingHistoryDescriptionWithBoldText(final String filingHistoryDescriptionHead,
-//                                                            final String filingHistoryDescriptionTail,
-//                                                            final Font font1,
-//                                                            final Font font2,
-//                                                            final PDPage page,
-//                                                            final PDPageContentStream contentStream,
-//                                                            final Position position)
-//            throws IOException {
-//
-//        String combinedText = filingHistoryDescriptionHead + filingHistoryDescriptionTail;
-//
-//        String[] wrappedText = WordUtils.wrap(combinedText, 60). split("\\r?\\n");
-//
-//        contentStream.beginText();
-//        contentStream.newLineAtOffset(position.x, position.y);
-//
-//        for (int i=0; i < wrappedText.length; i++) {
-//            String line = wrappedText[i];
-//
-//            int headIndex = line.indexOf(filingHistoryDescriptionHead);
-//            boolean lineContainsHead = headIndex >= 0;
-//
-//            contentStream.setFont(font2.getPdFont(), font2.getSize());
-//            contentStream.showText(lineContainsHead ? line.substring(0, headIndex) : line);
-//
-//            contentStream.setFont(font1.getPdFont(), font1.getSize());
-//            if (lineContainsHead && line.length() > headIndex) {
-//                contentStream.showText(line.substring(headIndex));
-//            }
-//
-//            if (i < wrappedText.length - 1) {
-//                contentStream.newLineAtOffset(0, -Math.max(font2.getSize(), font2.getSize()));
-//            }
-//        }
-//
-//        contentStream.endText();
-//    };
-
-
     private void renderFilingHistoryDescriptionWithBoldText(final String filingHistoryDescriptionHead,
                                                             final String filingHistoryDescriptionTail,
                                                             final Font font1,
@@ -314,10 +275,7 @@ public class CoverSheetService {
                                                             final Position position)
                                                             throws IOException {
 
-
         String combinedText = filingHistoryDescriptionHead + filingHistoryDescriptionTail;
-
-
 
         String[] wrappedText = WordUtils.wrap(combinedText, 60). split("\\r?\\n");
 
@@ -330,8 +288,6 @@ public class CoverSheetService {
             if(filingHistoryDescriptionHead != null){
 
             int headIndex = line.indexOf(filingHistoryDescriptionHead);
-
-
 
             if (headIndex >= 0) {
                 contentStream.setFont(font1.getPdFont(), font1.getSize());
@@ -349,8 +305,8 @@ public class CoverSheetService {
                     contentStream.newLineAtOffset(0, -font2.getSize());
                 }
 
+                }
             }
-        }
         }
         contentStream.endText();
     };
