@@ -206,6 +206,12 @@ public class CoverSheetService {
         return data.getCompanyName() + " (" + data.getCompanyNumber()+ ")";
     }
 
+    /**
+     * Extracts the first part of the filing history description from the CoverSheetDataDTO.
+     * Searches for text enclosed in double asterisks within the full description and returns extracted content.
+     * @param coverSheetDataDTO Coversheet Data containing filing history description
+     * @return The extracted data, or simply the full filing history description provided if it is not in the expected double asterisks format
+     */
     private String extractFilingHistoryDescriptionHead(final CoverSheetDataDTO coverSheetDataDTO) {
         String fullDescription = "";
         if (coverSheetDataDTO != null) {
@@ -224,6 +230,13 @@ public class CoverSheetService {
         return fullDescription;
     }
 
+    /**
+     * Extracts the first part of the filing history description from the CoverSheetDataDTO.
+     * Searches for text enclosed in double asterisks within the full description, identifying the head part, and returns
+     * the remaining content as the description tail.
+     * @param coverSheetDataDTO Coversheet Data containing filing history description
+     * @return The extracted data, or an empty string if there is no tail
+     */
     private String extractFilingHistoryDescriptionTail(final CoverSheetDataDTO coverSheetDataDTO) {
         if (coverSheetDataDTO != null) {
             String fullDescription = coverSheetDataDTO.getFilingHistoryDescription();
@@ -242,6 +255,13 @@ public class CoverSheetService {
         return "";
     }
 
+    /**
+     * Builds the complete filing history tail by replacing placeholder values with the correct values from the SignPdfDataDTO
+     * and appending the filing history type to the tail.
+     * @param signPdfData Contains filing history description values for placeholder spots
+     * @param coverSheetData contains additional filing history type value
+     * @return the populated tail of the filing history description
+     */
     private String buildFilingHistoryDescriptionTailWithValues(final SignPdfRequestDTO signPdfData, final  CoverSheetDataDTO coverSheetData) {
         String filingHistoryDescriptionTail = extractFilingHistoryDescriptionTail(coverSheetData);
 
@@ -255,6 +275,13 @@ public class CoverSheetService {
         return filingHistoryDescriptionTail;
     }
 
+    /**
+     * Replaces placeholders in the filing history description tail with values from the provided map.
+     * Each placeholder in the tail is identified and replaced with its corresponding value.
+     * @param input The original tail string containing placeholders to be replaced
+     * @param placeholderValues A map of placeholders and their corresponding values
+     * @return modified string with placeholder values correctly filled
+     */
     private String replaceFilingHistoryDescriptionPlaceholders(String input, Map<String, String> placeholderValues) {
         for (Map.Entry<String, String> entry : placeholderValues.entrySet()) {
             String placeholder = "{" + entry.getKey() + "}";
@@ -264,6 +291,17 @@ public class CoverSheetService {
         return input;
     }
 
+    /**
+     * Renders a full filing history description on the pDF, combining the extracted head and populated tail, wrapping the text if necessary.
+     * @param filingHistoryDescriptionHead The first part of the filing history description
+     * @param filingHistoryDescriptionTail The second part of the filing history description
+     * @param font1 font1 for rendering
+     * @param font2 font2 for rendering
+     * @param page The PDF page
+     * @param contentStream The content stream for rendering
+     * @param position The starting position on the page
+     * @throws IOException If an I/O error occurs during rendering
+     */
     private void renderFilingHistoryDescriptionWithBoldText(final String filingHistoryDescriptionHead,
                                                             final String filingHistoryDescriptionTail,
                                                             final Font font1,
@@ -273,8 +311,10 @@ public class CoverSheetService {
                                                             final Position position)
                                                             throws IOException {
 
+        // Combine head and tail into single text
         String combinedText = filingHistoryDescriptionHead + filingHistoryDescriptionTail;
 
+        // Wrap combined text
         String[] wrappedText = WordUtils.wrap(combinedText, 60). split("\\r?\\n");
 
         contentStream.beginText();
