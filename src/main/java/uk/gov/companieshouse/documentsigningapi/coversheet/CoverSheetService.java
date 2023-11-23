@@ -14,6 +14,7 @@ import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationLink;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDBorderStyleDictionary;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.documentsigningapi.dto.CoverSheetDataDTO;
+import uk.gov.companieshouse.documentsigningapi.dto.SignPdfRequestDTO;
 import uk.gov.companieshouse.documentsigningapi.exception.CoverSheetException;
 import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
 
@@ -21,7 +22,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Calendar;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.apache.pdfbox.pdmodel.common.PDRectangle.A4;
 import static uk.gov.companieshouse.documentsigningapi.coversheet.LayoutConstants.DEFAULT_MARGIN;
@@ -97,10 +100,11 @@ public class CoverSheetService {
 
     public byte[] addCoverSheet(final byte[] document,
                                 final CoverSheetDataDTO coverSheetData,
+                                final SignPdfRequestDTO signPdfData,
                                 final Calendar signingDate) {
         try {
             final var pdfDocument = PDDocument.load(document);
-            insertCoverSheet(pdfDocument, coverSheetData, signingDate);
+            insertCoverSheet(pdfDocument, coverSheetData, signPdfData, signingDate);
             return getContents(pdfDocument);
         } catch (IOException ioe) {
             logger.getLogger().error(ioe.getMessage(), ioe);
@@ -110,16 +114,18 @@ public class CoverSheetService {
 
     private void insertCoverSheet(final PDDocument pdfDocument,
                                   final CoverSheetDataDTO coverSheetData,
+                                  final SignPdfRequestDTO signPdfData,
                                   final Calendar signingDate)
             throws IOException {
         final var coverSheet = new PDPage(A4);
-        buildCoverSheetContent(pdfDocument, coverSheet, coverSheetData, signingDate);
+        buildCoverSheetContent(pdfDocument, coverSheet, coverSheetData, signPdfData, signingDate);
         pdfDocument.getPages().insertBefore(coverSheet, pdfDocument.getPage(0));
     }
 
     private void buildCoverSheetContent(final PDDocument pdfDocument,
                                         final PDPage coverSheet,
                                         final CoverSheetDataDTO coverSheetData,
+                                        final SignPdfRequestDTO signPdfData,
                                         final Calendar signingDate) throws IOException {
         PDImageXObject signatureImage = images.createImage("signature.jpeg", pdfDocument);
         PDImageXObject emailImage = images.createImage("email.jpeg", pdfDocument);
@@ -132,11 +138,20 @@ public class CoverSheetService {
         renderer.insertText(contentStream, CERTIFIED_DOCUMENT_TYPE, PDType1Font.HELVETICA_BOLD, 24, 650);
 
         textWrapper(contentStream, getCompany(coverSheetData), 18, DEFAULT_MARGIN, 620);
-        textWrapper(contentStream, getFilingHistory(coverSheetData), 18, DEFAULT_MARGIN, 590);
-        textWrapper(contentStream, DOCUMENT_SIGNED_TEXT, 18, DEFAULT_MARGIN, 560);
+
+        renderFilingHistoryDescriptionWithBoldText(
+                extractFilingHistoryDescriptionHead(coverSheetData),
+                buildFilingHistoryDescriptionTailWithValues(signPdfData, coverSheetData),
+                new Font(PDType1Font.HELVETICA_BOLD, 18),
+                new Font(PDType1Font.HELVETICA, 18),
+                coverSheet,
+                contentStream,
+                new Position(DEFAULT_MARGIN, 590)
+        );
+        textWrapper(contentStream, DOCUMENT_SIGNED_TEXT, 18, DEFAULT_MARGIN, 555);
 
         renderer.renderPageSpacer(contentStream, 530);
-        renderer.insertText(contentStream, VIEW_FILE_HEADING, PDType1Font.HELVETICA_BOLD, 18, 480);
+        renderer.insertText(contentStream, VIEW_FILE_HEADING, PDType1Font.HELVETICA_BOLD, 18, 460);
 
         contentStream.drawImage(signatureImage, DEFAULT_MARGIN, 420, INFORMATION_SECTION_IMAGE_WIDTH, INFORMATION_SECTION_IMAGE_HEIGHT);
         textWrapper(contentStream, SIGNATURE_HELPTEXT_LINE_1, 14, OFFSET_TO_RIGHT_OF_IMAGES, 440);
@@ -191,9 +206,154 @@ public class CoverSheetService {
         return data.getCompanyName() + " (" + data.getCompanyNumber()+ ")";
     }
 
-    private String getFilingHistory(final CoverSheetDataDTO data) {
-        return data.getFilingHistoryDescription() + " (" + data.getFilingHistoryType() + ")";
+    private String extractFilingHistoryDescriptionHead(final CoverSheetDataDTO coverSheetDataDTO) {
+        String fullDescription = "Test";
+        if (coverSheetDataDTO != null) {
+            fullDescription = coverSheetDataDTO.getFilingHistoryDescription();
+
+
+            if (fullDescription != null) {
+
+                Pattern pattern = Pattern.compile("\\*\\*(.*?)\\*\\*");
+                Matcher matcher = pattern.matcher(fullDescription);
+
+                if (matcher.find()) {
+                    return matcher.group(1);
+                }
+            }
+
+        }
+        return fullDescription;
     }
+
+    private String extractFilingHistoryDescriptionTail(final CoverSheetDataDTO coverSheetDataDTO) {
+        if (coverSheetDataDTO != null) {
+            String fullDescription = coverSheetDataDTO.getFilingHistoryDescription();
+
+            if (fullDescription != null) {
+
+                Pattern pattern = Pattern.compile("\\*\\*(.*?)\\*\\*");
+                Matcher matcher = pattern.matcher(fullDescription);
+
+                if (matcher.find()) {
+                    int endIndex = matcher.end();
+                    return fullDescription.substring(endIndex);
+                }
+            }
+        }
+        return "";
+    }
+
+    private String buildFilingHistoryDescriptionTailWithValues(final SignPdfRequestDTO signPdfData, final  CoverSheetDataDTO coverSheetData) {
+        String filingHistoryDescriptionTail = extractFilingHistoryDescriptionTail(coverSheetData);
+
+        if(signPdfData != null && coverSheetData != null) {
+            Map<String, String> descriptionValues = signPdfData.getFilingHistoryDescriptionValues();
+            if (descriptionValues!= null) {
+                filingHistoryDescriptionTail = replaceFilingHistoryDescriptionPlaceholders(filingHistoryDescriptionTail, descriptionValues);
+            }
+            filingHistoryDescriptionTail += " (" + coverSheetData.getFilingHistoryType() + ")";
+        }
+        return filingHistoryDescriptionTail;
+    }
+
+    private String replaceFilingHistoryDescriptionPlaceholders(String input, Map<String, String> placeholderValues) {
+        for (Map.Entry<String, String> entry : placeholderValues.entrySet()) {
+            String placeholder = "{" + entry.getKey() + "}";
+            String replacement = entry.getValue();
+            input = input.replace(placeholder, replacement);
+        }
+        return input;
+    }
+
+//    private void renderFilingHistoryDescriptionWithBoldText(final String filingHistoryDescriptionHead,
+//                                                            final String filingHistoryDescriptionTail,
+//                                                            final Font font1,
+//                                                            final Font font2,
+//                                                            final PDPage page,
+//                                                            final PDPageContentStream contentStream,
+//                                                            final Position position)
+//            throws IOException {
+//
+//        String combinedText = filingHistoryDescriptionHead + filingHistoryDescriptionTail;
+//
+//        String[] wrappedText = WordUtils.wrap(combinedText, 60). split("\\r?\\n");
+//
+//        contentStream.beginText();
+//        contentStream.newLineAtOffset(position.x, position.y);
+//
+//        for (int i=0; i < wrappedText.length; i++) {
+//            String line = wrappedText[i];
+//
+//            int headIndex = line.indexOf(filingHistoryDescriptionHead);
+//            boolean lineContainsHead = headIndex >= 0;
+//
+//            contentStream.setFont(font2.getPdFont(), font2.getSize());
+//            contentStream.showText(lineContainsHead ? line.substring(0, headIndex) : line);
+//
+//            contentStream.setFont(font1.getPdFont(), font1.getSize());
+//            if (lineContainsHead && line.length() > headIndex) {
+//                contentStream.showText(line.substring(headIndex));
+//            }
+//
+//            if (i < wrappedText.length - 1) {
+//                contentStream.newLineAtOffset(0, -Math.max(font2.getSize(), font2.getSize()));
+//            }
+//        }
+//
+//        contentStream.endText();
+//    };
+
+
+    private void renderFilingHistoryDescriptionWithBoldText(final String filingHistoryDescriptionHead,
+                                                            final String filingHistoryDescriptionTail,
+                                                            final Font font1,
+                                                            final Font font2,
+                                                            final PDPage page,
+                                                            final PDPageContentStream contentStream,
+                                                            final Position position)
+                                                            throws IOException {
+
+
+        String combinedText = filingHistoryDescriptionHead + filingHistoryDescriptionTail;
+
+
+
+        String[] wrappedText = WordUtils.wrap(combinedText, 60). split("\\r?\\n");
+
+        contentStream.beginText();
+        contentStream.newLineAtOffset(position.x, position.y);
+
+        for (int i=0; i < wrappedText.length; i++) {
+            String line = wrappedText[i];
+
+            if(filingHistoryDescriptionHead != null){
+
+            int headIndex = line.indexOf(filingHistoryDescriptionHead);
+
+
+
+            if (headIndex >= 0) {
+                contentStream.setFont(font1.getPdFont(), font1.getSize());
+                contentStream.showText(line.substring(0, headIndex));
+
+                contentStream.setFont(font2.getPdFont(), font2.getSize());
+                contentStream.showText(line.substring(headIndex));
+                if (i < wrappedText.length - 1) {
+                    contentStream.newLineAtOffset(0, -font1.getSize());
+                }
+            } else {
+                contentStream.setFont(font2.getPdFont(), font2.getSize());
+                contentStream.showText(line);
+                if (i < wrappedText.length - 1) {
+                    contentStream.newLineAtOffset(0, -font2.getSize());
+                }
+
+            }
+        }
+        }
+        contentStream.endText();
+    };
 
     private void renderTextWithLink(final String preLinkText,
                                     final String postLinkText,

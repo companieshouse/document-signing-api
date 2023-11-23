@@ -8,6 +8,7 @@ import uk.gov.companieshouse.documentsigningapi.dto.SignPdfRequestDTO;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 class RequestValidatorTest {
 
@@ -20,6 +21,10 @@ class RequestValidatorTest {
     private static final String COMPANY_NUMBER = "00000000";
     private static final String FILING_HISTORY_TYPE = "ad01";
     private static final String FILING_HISTORY_DESCRIPTION = "this is an ad01 description";
+
+    private static final Map<String, String> FILING_HISTORY_DESCRIPTION_VALUES = Map.of("date", "2023-01-01",
+            "director", "Test Director");
+
     private static final CoverSheetDataDTO COVER_SHEET_DATA= new CoverSheetDataDTO(COMPANY_NAME, COMPANY_NUMBER,
         FILING_HISTORY_DESCRIPTION, FILING_HISTORY_TYPE);
     private static final CoverSheetDataDTO COVER_SHEET_DATA_MISSING_FIELD= new CoverSheetDataDTO(COMPANY_NAME, COMPANY_NUMBER,
@@ -43,7 +48,7 @@ class RequestValidatorTest {
     @DisplayName("validate request returns no errors")
     void validateRequestReturnsNoErrors() {
         final SignPdfRequestDTO dto = new SignPdfRequestDTO(DOCUMENT_LOCATION, DOCUMENT_TYPE,
-            SIGNATURE_OPTIONS, PREFIX, KEY, COVER_SHEET_DATA);
+            SIGNATURE_OPTIONS, PREFIX, KEY, COVER_SHEET_DATA, FILING_HISTORY_DESCRIPTION_VALUES);
 
         RequestValidator requestValidator = new RequestValidator();
         List<String> errors = requestValidator.validateRequest(dto);
@@ -55,7 +60,7 @@ class RequestValidatorTest {
     @DisplayName("validate request returns no errors without optional fields")
     void validateRequestReturnsNoErrorsWithoutOptionals() {
         final SignPdfRequestDTO dto = new SignPdfRequestDTO(DOCUMENT_LOCATION, DOCUMENT_TYPE,
-            null, PREFIX, KEY, null);
+            null, PREFIX, KEY, null, FILING_HISTORY_DESCRIPTION_VALUES);
 
         RequestValidator requestValidator = new RequestValidator();
         List<String> errors = requestValidator.validateRequest(dto);
@@ -67,7 +72,7 @@ class RequestValidatorTest {
     @DisplayName("validate request returns prefix missing error")
     void validateRequestReturnsPrefixMissingError() {
         final SignPdfRequestDTO dto = new SignPdfRequestDTO(DOCUMENT_LOCATION, DOCUMENT_TYPE,
-            SIGNATURE_OPTIONS, null, KEY, COVER_SHEET_DATA);
+            SIGNATURE_OPTIONS, null, KEY, COVER_SHEET_DATA, FILING_HISTORY_DESCRIPTION_VALUES);
 
         RequestValidator requestValidator = new RequestValidator();
         List<String> errors = requestValidator.validateRequest(dto);
@@ -80,7 +85,7 @@ class RequestValidatorTest {
     @DisplayName("validate request returns key missing error")
     void validateRequestReturnsKeyMissingError() {
         final SignPdfRequestDTO dto = new SignPdfRequestDTO(DOCUMENT_LOCATION, DOCUMENT_TYPE,
-            SIGNATURE_OPTIONS, PREFIX, null, COVER_SHEET_DATA);
+            SIGNATURE_OPTIONS, PREFIX, null, COVER_SHEET_DATA, FILING_HISTORY_DESCRIPTION_VALUES);
 
         RequestValidator requestValidator = new RequestValidator();
         List<String> errors = requestValidator.validateRequest(dto);
@@ -93,7 +98,7 @@ class RequestValidatorTest {
     @DisplayName("validate request returns document type missing error")
     void validateRequestReturnsDocumentTypeMissingError() {
         final SignPdfRequestDTO dto = new SignPdfRequestDTO(DOCUMENT_LOCATION, null,
-            SIGNATURE_OPTIONS, PREFIX, KEY, COVER_SHEET_DATA);
+            SIGNATURE_OPTIONS, PREFIX, KEY, COVER_SHEET_DATA, FILING_HISTORY_DESCRIPTION_VALUES);
 
         RequestValidator requestValidator = new RequestValidator();
         List<String> errors = requestValidator.validateRequest(dto);
@@ -106,7 +111,7 @@ class RequestValidatorTest {
     @DisplayName("validate request returns document location missing error")
     void validateRequestReturnsDocumentLocationMissingError() {
         final SignPdfRequestDTO dto = new SignPdfRequestDTO(null, DOCUMENT_TYPE,
-            SIGNATURE_OPTIONS, PREFIX, KEY, COVER_SHEET_DATA);
+            SIGNATURE_OPTIONS, PREFIX, KEY, COVER_SHEET_DATA, FILING_HISTORY_DESCRIPTION_VALUES);
 
         RequestValidator requestValidator = new RequestValidator();
         List<String> errors = requestValidator.validateRequest(dto);
@@ -119,7 +124,7 @@ class RequestValidatorTest {
     @DisplayName("validate request returns cover sheet data missing error")
     void validateRequestReturnsCoverSheetDataMissingError() {
         final SignPdfRequestDTO dto = new SignPdfRequestDTO(DOCUMENT_LOCATION, DOCUMENT_TYPE,
-            SIGNATURE_OPTIONS, PREFIX, KEY, null);
+            SIGNATURE_OPTIONS, PREFIX, KEY, null, FILING_HISTORY_DESCRIPTION_VALUES);
 
         RequestValidator requestValidator = new RequestValidator();
         List<String> errors = requestValidator.validateRequest(dto);
@@ -132,7 +137,7 @@ class RequestValidatorTest {
     @DisplayName("validate request returns cover sheet filing_history_type and/or filing_history_description missing error")
     void validateRequestReturnsCoverSheetDataFieldsMissingError() {
         final SignPdfRequestDTO dto = new SignPdfRequestDTO(DOCUMENT_LOCATION, DOCUMENT_TYPE,
-            SIGNATURE_OPTIONS, PREFIX, KEY, COVER_SHEET_DATA_MISSING_FIELD);
+            SIGNATURE_OPTIONS, PREFIX, KEY, COVER_SHEET_DATA_MISSING_FIELD, FILING_HISTORY_DESCRIPTION_VALUES);
 
         RequestValidator requestValidator = new RequestValidator();
         List<String> errors = requestValidator.validateRequest(dto);
@@ -150,7 +155,8 @@ class RequestValidatorTest {
             SIGNATURE_OPTIONS,
             PREFIX,
             KEY,
-            COVER_SHEET_DATA_MISSING_COMPANY_NAME);
+            COVER_SHEET_DATA_MISSING_COMPANY_NAME,
+                FILING_HISTORY_DESCRIPTION_VALUES);
 
         RequestValidator requestValidator = new RequestValidator();
         List<String> errors = requestValidator.validateRequest(dto);
@@ -168,7 +174,8 @@ class RequestValidatorTest {
             SIGNATURE_OPTIONS,
             PREFIX,
             KEY,
-            COVER_SHEET_DATA_MISSING_COMPANY_NUMBER);
+            COVER_SHEET_DATA_MISSING_COMPANY_NUMBER,
+                FILING_HISTORY_DESCRIPTION_VALUES);
 
         RequestValidator requestValidator = new RequestValidator();
         List<String> errors = requestValidator.validateRequest(dto);
