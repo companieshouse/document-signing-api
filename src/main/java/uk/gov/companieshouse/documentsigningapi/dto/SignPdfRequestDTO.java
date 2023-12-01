@@ -3,6 +3,7 @@ package uk.gov.companieshouse.documentsigningapi.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
+import java.util.Map;
 
 public class SignPdfRequestDTO {
 
@@ -24,13 +25,17 @@ public class SignPdfRequestDTO {
     @JsonProperty("cover_sheet_data")
     private CoverSheetDataDTO coverSheetData;
 
-    public SignPdfRequestDTO(String documentLocation, String documentType, List<String> signatureOptions, String prefix, String key, CoverSheetDataDTO coverSheetData) {
+    @JsonProperty("filing_history_description_values")
+    private Map<String, String> filingHistoryDescriptionValues;
+
+    public SignPdfRequestDTO(String documentLocation, String documentType, List<String> signatureOptions, String prefix, String key, CoverSheetDataDTO coverSheetData, Map<String, String> filingHistoryDescriptionValues) {
         this.documentLocation = documentLocation;
         this.documentType = documentType;
         this.signatureOptions = signatureOptions;
         this.prefix = prefix;
         this.key = key;
         this.coverSheetData = coverSheetData;
+        this.filingHistoryDescriptionValues = filingHistoryDescriptionValues;
     }
 
     public SignPdfRequestDTO() {
@@ -84,6 +89,11 @@ public class SignPdfRequestDTO {
         this.coverSheetData = coverSheetData;
     }
 
+
+    public Map<String, String> getFilingHistoryDescriptionValues() { return filingHistoryDescriptionValues; }
+
+    public void setFilingHistoryDescriptionValues(Map<String, String> filingHistoryDescriptionValues) { this.filingHistoryDescriptionValues = filingHistoryDescriptionValues; }
+
     @Override
     public String toString() {
         return "SignPdfRequestDTO{" +
@@ -93,6 +103,7 @@ public class SignPdfRequestDTO {
                 ", prefix='" + prefix + '\'' +
                 ", key='" + key + '\'' +
                 ", coverSheetData=" + coverSheetData +
+                ", filingHistoryDescriptionValues=" + filingHistoryDescriptionValues +
                 '}';
     }
 }
