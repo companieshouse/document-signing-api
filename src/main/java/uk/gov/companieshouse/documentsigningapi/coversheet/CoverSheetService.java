@@ -150,7 +150,7 @@ public class CoverSheetService {
                 DEFAULT_MARGIN,
                 590F
         );
-        textWrapper(contentStream, DOCUMENT_SIGNED_TEXT, 18, DEFAULT_MARGIN, 560);
+        textWrapper(contentStream, DOCUMENT_SIGNED_TEXT, 18, DEFAULT_MARGIN, 550);
 
         renderer.renderPageSpacer(contentStream, 530);
         renderer.insertText(contentStream, VIEW_FILE_HEADING, PDType1Font.HELVETICA_BOLD, 18, 480);

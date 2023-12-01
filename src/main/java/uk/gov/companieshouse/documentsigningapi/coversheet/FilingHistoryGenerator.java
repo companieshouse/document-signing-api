@@ -127,19 +127,15 @@ public class FilingHistoryGenerator {
      * @throws IOException If an I/O error occurs during rendering
      */
     public void renderFilingHistoryDescriptionWithBoldText(
-            final CoverSheetDataDTO coverSheetDataDTO,
-            final SignPdfRequestDTO signPdfRequestDTO,
-
-
-                                                            final Font font1,
-                                                            final Font font2,
-                                                            final PDPage page,
-                                                            final PDPageContentStream contentStream,
-                                                            final Float positionX,
-                                                            final Float positionY
-            )
-                                                            throws IOException {
-
+                                    final CoverSheetDataDTO coverSheetDataDTO,
+                                    final SignPdfRequestDTO signPdfRequestDTO,
+                                    final Font font1,
+                                    final Font font2,
+                                    final PDPage page,
+                                    final PDPageContentStream contentStream,
+                                    final Float positionX,
+                                    final Float positionY)
+                                    throws IOException {
 
         final String filingHistoryDescriptionHead = extractFilingHistoryDescriptionHead(coverSheetDataDTO);
         final String filingHistoryDescriptionTail = buildFilingHistoryDescriptionTailWithValues(signPdfRequestDTO, coverSheetDataDTO);
@@ -165,10 +161,11 @@ public class FilingHistoryGenerator {
 
                 if (headIndex >= 0) {
                     contentStream.setFont(font1.getPdFont(), font1.getSize());
-                    contentStream.showText(line.substring(0, headIndex));
+                    contentStream.showText(line.substring(0, headIndex + filingHistoryDescriptionHead.length()));
 
                     contentStream.setFont(font2.getPdFont(), font2.getSize());
-                    contentStream.showText(line.substring(headIndex));
+                    contentStream.showText(line.substring(headIndex + filingHistoryDescriptionHead.length()));
+
                     if (i < wrappedText.length - 1) {
                         contentStream.newLineAtOffset(0, -font1.getSize());
                     }
