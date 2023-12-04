@@ -96,7 +96,7 @@ public class FilingHistoryGenerator {
 
             Map<String, String> formattedDescriptionValues = formatDateValuesInMap(descriptionValues);
             if (formattedDescriptionValues!= null) {
-                filingHistoryDescriptionTail = replaceFilingHistoryDescriptionPlaceholders(filingHistoryDescriptionTail, descriptionValues);
+                filingHistoryDescriptionTail = replaceFilingHistoryDescriptionPlaceholders(filingHistoryDescriptionTail, formattedDescriptionValues);
             }
             filingHistoryDescriptionTail += " (" + coverSheetData.getFilingHistoryType() + ")";
         }
@@ -117,7 +117,7 @@ public class FilingHistoryGenerator {
                 String replacement = entry.getValue();
                 input = input.replace(placeholder, replacement);
             }
-        }
+    }
         return input;
     }
 
