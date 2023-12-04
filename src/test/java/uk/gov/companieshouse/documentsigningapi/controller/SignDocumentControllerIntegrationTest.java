@@ -351,7 +351,7 @@ class SignDocumentControllerIntegrationTest {
             IOException {
         verify(requestValidator).validateRequest(any(SignPdfRequestDTO.class));
         verify(s3Service).retrieveUnsignedDocument(any(String.class));
-        verify(coverSheetService).addCoverSheet(any(byte[].class), any(CoverSheetDataDTO.class), any(Calendar.class));
+        verify(coverSheetService).addCoverSheet(any(byte[].class), any(CoverSheetDataDTO.class), any(SignPdfRequestDTO.class), any(Calendar.class));
         verify(visualSignature).renderPanel(
                 any(PDPageContentStream.class), any(PDDocument.class), any(PDPage.class), any(Calendar.class));
         verify(signingService).signPDF(any(byte[].class), any(Calendar.class));

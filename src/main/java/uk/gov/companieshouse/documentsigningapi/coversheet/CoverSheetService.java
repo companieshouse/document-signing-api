@@ -14,6 +14,7 @@ import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationLink;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDBorderStyleDictionary;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.documentsigningapi.dto.CoverSheetDataDTO;
+import uk.gov.companieshouse.documentsigningapi.dto.SignPdfRequestDTO;
 import uk.gov.companieshouse.documentsigningapi.exception.CoverSheetException;
 import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
 
@@ -88,19 +89,23 @@ public class CoverSheetService {
 
     private final VisualSignature visualSignature;
 
-    public CoverSheetService(LoggingUtils logger, ImagesBean images, Renderer renderer, VisualSignature visualSignature) {
+    private final FilingHistoryGenerator filingHistoryGenerator;
+
+    public CoverSheetService(LoggingUtils logger, ImagesBean images, Renderer renderer, VisualSignature visualSignature, FilingHistoryGenerator filingHistoryGenerator) {
         this.logger = logger;
         this.images = images;
         this.renderer = renderer;
         this.visualSignature = visualSignature;
+        this.filingHistoryGenerator = filingHistoryGenerator;
     }
 
     public byte[] addCoverSheet(final byte[] document,
                                 final CoverSheetDataDTO coverSheetData,
+                                final SignPdfRequestDTO signPdfData,
                                 final Calendar signingDate) {
         try {
             final var pdfDocument = PDDocument.load(document);
-            insertCoverSheet(pdfDocument, coverSheetData, signingDate);
+            insertCoverSheet(pdfDocument, coverSheetData, signPdfData, signingDate);
             return getContents(pdfDocument);
         } catch (IOException ioe) {
             logger.getLogger().error(ioe.getMessage(), ioe);
@@ -110,16 +115,18 @@ public class CoverSheetService {
 
     private void insertCoverSheet(final PDDocument pdfDocument,
                                   final CoverSheetDataDTO coverSheetData,
+                                  final SignPdfRequestDTO signPdfData,
                                   final Calendar signingDate)
             throws IOException {
         final var coverSheet = new PDPage(A4);
-        buildCoverSheetContent(pdfDocument, coverSheet, coverSheetData, signingDate);
+        buildCoverSheetContent(pdfDocument, coverSheet, coverSheetData, signPdfData, signingDate);
         pdfDocument.getPages().insertBefore(coverSheet, pdfDocument.getPage(0));
     }
 
     private void buildCoverSheetContent(final PDDocument pdfDocument,
                                         final PDPage coverSheet,
                                         final CoverSheetDataDTO coverSheetData,
+                                        final SignPdfRequestDTO signPdfData,
                                         final Calendar signingDate) throws IOException {
         PDImageXObject signatureImage = images.createImage("signature.jpeg", pdfDocument);
         PDImageXObject emailImage = images.createImage("email.jpeg", pdfDocument);
@@ -132,8 +139,18 @@ public class CoverSheetService {
         renderer.insertText(contentStream, CERTIFIED_DOCUMENT_TYPE, PDType1Font.HELVETICA_BOLD, 24, 650);
 
         textWrapper(contentStream, getCompany(coverSheetData), 18, DEFAULT_MARGIN, 620);
-        textWrapper(contentStream, getFilingHistory(coverSheetData), 18, DEFAULT_MARGIN, 590);
-        textWrapper(contentStream, DOCUMENT_SIGNED_TEXT, 18, DEFAULT_MARGIN, 560);
+
+        filingHistoryGenerator.renderFilingHistoryDescriptionWithBoldText(
+                coverSheetData,
+                signPdfData,
+                new Font(PDType1Font.HELVETICA_BOLD, 18),
+                new Font(PDType1Font.HELVETICA, 18),
+                coverSheet,
+                contentStream,
+                DEFAULT_MARGIN,
+                590F
+        );
+        textWrapper(contentStream, DOCUMENT_SIGNED_TEXT, 18, DEFAULT_MARGIN, 550);
 
         renderer.renderPageSpacer(contentStream, 530);
         renderer.insertText(contentStream, VIEW_FILE_HEADING, PDType1Font.HELVETICA_BOLD, 18, 480);

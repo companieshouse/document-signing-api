@@ -103,7 +103,7 @@ public class SignDocumentController {
                                            final Calendar signingDate) {
         return request.getSignatureOptions() != null &&
                 request.getSignatureOptions().contains(COVER_SHEET_SIGNATURE_OPTION) ?
-                coverSheetService.addCoverSheet(document, request.getCoverSheetData(), signingDate) : document;
+                coverSheetService.addCoverSheet(document, request.getCoverSheetData(), request, signingDate) : document;
     }
 
     private ResponseEntity<Object> buildResponse(final String signedDocumentLocation,
