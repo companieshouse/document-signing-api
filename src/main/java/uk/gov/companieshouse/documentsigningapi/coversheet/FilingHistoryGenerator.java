@@ -115,11 +115,11 @@ public class FilingHistoryGenerator {
     }
 
     /**
-     * Renders a full filing history description on the pDF, combining the extracted head and populated tail, wrapping the text if necessary.
+     * Renders a full filing history description on the PDF, combining the extracted head and populated tail, wrapping the text if necessary.
      * @param coverSheetDataDTO Coversheet Data
      * @param signPdfRequestDTO Signpdf Request Data
-     * @param font1 font1 for rendering
-     * @param font2 font2 for rendering
+     * @param font1 font1 for rendering HELVETICA_BOLD
+     * @param font2 font2 for rendering HELVETICA
      * @param page The PDF page
      * @param contentStream The content stream for rendering
      * @param positionX The X-axis starting position on the page
