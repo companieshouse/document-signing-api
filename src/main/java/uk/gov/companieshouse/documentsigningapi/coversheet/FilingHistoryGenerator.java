@@ -8,6 +8,9 @@ import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.documentsigningapi.dto.CoverSheetDataDTO;
 import uk.gov.companieshouse.documentsigningapi.dto.SignPdfRequestDTO;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -90,7 +93,9 @@ public class FilingHistoryGenerator {
 
         if(signPdfData != null && coverSheetData != null) {
             Map<String, String> descriptionValues = signPdfData.getFilingHistoryDescriptionValues();
-            if (descriptionValues!= null) {
+
+            Map<String, String> formattedDescriptionValues = formatDateValuesInMap(descriptionValues);
+            if (formattedDescriptionValues!= null) {
                 filingHistoryDescriptionTail = replaceFilingHistoryDescriptionPlaceholders(filingHistoryDescriptionTail, descriptionValues);
             }
             filingHistoryDescriptionTail += " (" + coverSheetData.getFilingHistoryType() + ")";
@@ -106,12 +111,45 @@ public class FilingHistoryGenerator {
      * @return modified string with placeholder values correctly filled
      */
     private String replaceFilingHistoryDescriptionPlaceholders(String input, Map<String, String> placeholderValues) {
-        for (Map.Entry<String, String> entry : placeholderValues.entrySet()) {
-            String placeholder = "{" + entry.getKey() + "}";
-            String replacement = entry.getValue();
-            input = input.replace(placeholder, replacement);
+        if (placeholderValues != null) {
+            for (Map.Entry<String, String> entry : placeholderValues.entrySet()) {
+                String placeholder = "{" + entry.getKey() + "}";
+                String replacement = entry.getValue();
+                input = input.replace(placeholder, replacement);
+            }
         }
         return input;
+    }
+
+    /**
+     * Formats any values associated with a date to the correct date format
+     * @param inputMap containing the filing history description values
+     * @return An updated map with correct format of date values
+     */
+    public static Map<String, String> formatDateValuesInMap(Map<String, String> inputMap) {
+        // Formatter for correct date output format
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy");
+
+        // Create new map to store formatted values
+        Map<String, String> formattedMap = new HashMap<>();
+
+        if (inputMap != null) {
+            // Iterate through entries in the filing history description values map
+            for (Map.Entry<String, String> entry : inputMap.entrySet()) {
+                // Check if any keys contains the word 'date'
+                if (entry.getKey().toLowerCase().contains("date")) {
+                    // Parse the date string and format it
+                    LocalDate date = LocalDate.parse(entry.getValue(), DateTimeFormatter.ISO_LOCAL_DATE);
+                    String formattedDate = date.format(dateTimeFormatter);
+                    // Update new map with formatted key
+                    formattedMap.put(entry.getKey(), formattedDate);
+                } else {
+                    // For keys that don't contain 'date', just add them to map as normal
+                    formattedMap.put(entry.getKey(), entry.getValue());
+                }
+            }
+        }
+        return formattedMap;
     }
 
     /**

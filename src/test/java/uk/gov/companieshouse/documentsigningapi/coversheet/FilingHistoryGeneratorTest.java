@@ -30,7 +30,7 @@ public class FilingHistoryGeneratorTest {
     private static final String FILING_HISTORY_DESCRIPTION = "**Registered office address changed** from {old_address} to {new_address} on {change_date}";
 
     private static final Map<String, String> FILING_HISTORY_DESCRIPTION_VALUES = Map.of("old_address", "1 Test Lane",
-            "new_address", "2 Test Lane", "change_date", "01-01-2023");
+            "new_address", "2 Test Lane", "change_date", "2023-01-01");
 
     @InjectMocks
     private FilingHistoryGenerator filingHistoryGenerator;
