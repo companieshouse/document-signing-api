@@ -148,11 +148,11 @@ public class CoverSheetService {
                 coverSheet,
                 contentStream,
                 DEFAULT_MARGIN,
-                590F
+                600F
         );
-        textWrapper(contentStream, DOCUMENT_SIGNED_TEXT, 18, DEFAULT_MARGIN, 550);
+        textWrapper(contentStream, DOCUMENT_SIGNED_TEXT, 18, DEFAULT_MARGIN, 525);
 
-        renderer.renderPageSpacer(contentStream, 530);
+        renderer.renderPageSpacer(contentStream, 515);
         renderer.insertText(contentStream, VIEW_FILE_HEADING, PDType1Font.HELVETICA_BOLD, 18, 480);
 
         contentStream.drawImage(signatureImage, DEFAULT_MARGIN, 420, INFORMATION_SECTION_IMAGE_WIDTH, INFORMATION_SECTION_IMAGE_HEIGHT);
