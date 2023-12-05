@@ -150,13 +150,13 @@ public class CoverSheetService {
                 DEFAULT_MARGIN,
                 600F
         );
-        textWrapper(contentStream, DOCUMENT_SIGNED_TEXT, 18, DEFAULT_MARGIN, 525);
+        textWrapper(contentStream, DOCUMENT_SIGNED_TEXT, 18, DEFAULT_MARGIN, 490);
 
-        renderer.renderPageSpacer(contentStream, 515);
-        renderer.insertText(contentStream, VIEW_FILE_HEADING, PDType1Font.HELVETICA_BOLD, 18, 480);
+        renderer.renderPageSpacer(contentStream, 480);
+        renderer.insertText(contentStream, VIEW_FILE_HEADING, PDType1Font.HELVETICA_BOLD, 18, 430);
 
-        contentStream.drawImage(signatureImage, DEFAULT_MARGIN, 420, INFORMATION_SECTION_IMAGE_WIDTH, INFORMATION_SECTION_IMAGE_HEIGHT);
-        textWrapper(contentStream, SIGNATURE_HELPTEXT_LINE_1, 14, OFFSET_TO_RIGHT_OF_IMAGES, 440);
+        contentStream.drawImage(signatureImage, DEFAULT_MARGIN, 390, INFORMATION_SECTION_IMAGE_WIDTH, INFORMATION_SECTION_IMAGE_HEIGHT);
+        textWrapper(contentStream, SIGNATURE_HELPTEXT_LINE_1, 14, OFFSET_TO_RIGHT_OF_IMAGES, 405);
 
         renderTextWithLink(
                 SIGNATURE_HELPTEXT_LINE_2_START,
@@ -165,13 +165,13 @@ public class CoverSheetService {
                 new Font(PDType1Font.HELVETICA, 14),
                 coverSheet,
                 contentStream,
-                new Position(OFFSET_TO_RIGHT_OF_IMAGES, 420));
+                new Position(OFFSET_TO_RIGHT_OF_IMAGES, 455));
 
-        contentStream.drawImage(emailImage, DEFAULT_MARGIN, 370, INFORMATION_SECTION_IMAGE_WIDTH, INFORMATION_SECTION_IMAGE_HEIGHT);
-        textWrapper(contentStream, EMAIL_HELPTEXT, 14, OFFSET_TO_RIGHT_OF_IMAGES, 385);
+        contentStream.drawImage(emailImage, DEFAULT_MARGIN, 345, INFORMATION_SECTION_IMAGE_WIDTH, INFORMATION_SECTION_IMAGE_HEIGHT);
+        textWrapper(contentStream, EMAIL_HELPTEXT, 14, OFFSET_TO_RIGHT_OF_IMAGES, 355);
 
-        contentStream.drawImage(printerImage, DEFAULT_MARGIN, 325, INFORMATION_SECTION_IMAGE_WIDTH, INFORMATION_SECTION_IMAGE_HEIGHT);
-        textWrapper(contentStream, PRINTER_HELPTEXT, 14, OFFSET_TO_RIGHT_OF_IMAGES, 340);
+        contentStream.drawImage(printerImage, DEFAULT_MARGIN, 305, INFORMATION_SECTION_IMAGE_WIDTH, INFORMATION_SECTION_IMAGE_HEIGHT);
+        textWrapper(contentStream, PRINTER_HELPTEXT, 14, OFFSET_TO_RIGHT_OF_IMAGES, 320);
 
         visualSignature.renderPanel(contentStream, pdfDocument, coverSheet, signingDate);
 
