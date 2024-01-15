@@ -140,16 +140,15 @@ public class CoverSheetService {
 
         textWrapper(contentStream, getCompany(coverSheetData), 18, DEFAULT_MARGIN, 620);
 
-        filingHistoryGenerator.renderFilingHistoryDescriptionWithBoldText(
-                coverSheetData,
-                signPdfData,
-                new Font(PDType1Font.HELVETICA_BOLD, 18),
-                new Font(PDType1Font.HELVETICA, 18),
-                coverSheet,
-                contentStream,
-                DEFAULT_MARGIN,
-                600F
-        );
+        filingHistoryGenerator.applyCorrectFilingHistoryDescriptionTypeFormatting(coverSheetData,
+                                                                                signPdfData,
+                                                                                new Font(PDType1Font.HELVETICA_BOLD, 18),
+                                                                                new Font(PDType1Font.HELVETICA, 18),
+                                                                                coverSheet,
+                                                                                contentStream,
+                                                                                DEFAULT_MARGIN,
+                                                                                600F);
+
         textWrapper(contentStream, DOCUMENT_SIGNED_TEXT, 18, DEFAULT_MARGIN, 490);
 
         renderer.renderPageSpacer(contentStream, 480);
