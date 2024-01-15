@@ -210,10 +210,6 @@ public class FilingHistoryGenerator {
         String filingHistoryDescription = extractFilingHistoryDescriptionHead(coverSheetDataDTO);
 
         final Position position = new Position(positionX, positionY);
-
-        if(coverSheetDataDTO.getFilingHistoryType() != null) {
-            filingHistoryDescription += " (" + coverSheetDataDTO.getFilingHistoryType() + ")";
-        }
         
         contentStream.beginText();
         contentStream.newLineAtOffset(position.x, position.y);
