@@ -152,6 +152,16 @@ public class FilingHistoryGenerator {
         return formattedMap;
     }
 
+    /**
+     * Renders a full filing history description for type 1 descriptions on the PDF.
+     * Example of type 1 format: "Notice of **Administrator's proposal**"
+     * @param coverSheetDataDTO Coversheet Data
+     * @param font font for rendering HELVETICA
+     * @param contentStream The content stream for rendering
+     * @param positionX The X-axis starting position on the page
+     * @param positionY The Y-axis starting position on the page
+     * @throws IOException If an I/O error occurs during rendering
+     */
     public void renderFilingHistoryDescriptionType1(final CoverSheetDataDTO coverSheetDataDTO,
                                                     final Font font,
                                                     final PDPageContentStream contentStream,
@@ -180,6 +190,16 @@ public class FilingHistoryGenerator {
         contentStream.endText();
     }
 
+    /**
+     * Renders a full filing history description for type 2 descriptions on the PDF.
+     * Example of type 2 format: "**Statement of Affairs**"
+     * @param coverSheetDataDTO Coversheet Data
+     * @param font font for rendering HELVETICA
+     * @param contentStream The content stream for rendering
+     * @param positionX The X-axis starting position on the page
+     * @param positionY The Y-axis starting position on the page
+     * @throws IOException If an I/O error occurs during rendering
+     */
     public void renderFilingHistoryDescriptionType2(final CoverSheetDataDTO coverSheetDataDTO,
                                                     final Font font,
                                                     final PDPageContentStream contentStream,
@@ -200,7 +220,8 @@ public class FilingHistoryGenerator {
     }
 
     /**
-     * Renders a full filing history description on the PDF, combining the extracted head and populated tail, wrapping the text if necessary.
+     * Renders a full filing history description for type 3 descriptions on the PDF, combining the extracted head and populated tail, wrapping the text if necessary.
+     * Example of type 3 format: "**Statement of Affairs** with form {form_attached}"
      * @param coverSheetDataDTO Coversheet Data
      * @param signPdfRequestDTO Signpdf Request Data
      * @param font1 font1 for rendering HELVETICA_BOLD
@@ -265,6 +286,15 @@ public class FilingHistoryGenerator {
         contentStream.endText();
     };
 
+    /**
+     * Renders a full filing history description for type 4 descriptions on the PDF.
+     * Example of type 4 format: "{original_description}"
+     * @param coverSheetDataDTO Coversheet Data
+     * @param contentStream The content stream for rendering
+     * @param positionX The X-axis starting position on the page
+     * @param positionY The Y-axis starting position on the page
+     * @throws IOException If an I/O error occurs during rendering
+     */
     public void renderFilingHistoryDescriptionType4(final SignPdfRequestDTO signPdfData,
                                                     final CoverSheetDataDTO coverSheetDataDTO,
                                                     final PDPageContentStream contentStream,
@@ -286,6 +316,18 @@ public class FilingHistoryGenerator {
         contentStream.endText();
     }
 
+    /**
+     * Takes a filing history description and identifies the type, then calling the required rendering method for it.
+     * @param coverSheetDataDTO Coversheet Data
+     * @param signPdfRequestDTO Signpdf Request Data
+     * @param font1 font1 for rendering HELVETICA_BOLD
+     * @param font2 font2 for rendering HELVETICA
+     * @param page The PDF page
+     * @param contentStream The content stream for rendering
+     * @param positionX The X-axis starting position on the page
+     * @param positionY The Y-axis starting position on the page
+     * @throws IOException If an I/O error occurs during rendering
+     */
     public void applyCorrectFilingHistoryDescriptionTypeFormatting(final CoverSheetDataDTO coverSheetDataDTO,
                                                                    final SignPdfRequestDTO signPdfRequestDTO,
                                                                    final Font font1,
