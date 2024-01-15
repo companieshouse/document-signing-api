@@ -211,8 +211,10 @@ public class FilingHistoryGenerator {
 
         final Position position = new Position(positionX, positionY);
 
-        filingHistoryDescription += " (" + coverSheetDataDTO.getFilingHistoryType() + ")";
-
+        if(coverSheetDataDTO.getFilingHistoryType() != null) {
+            filingHistoryDescription += " (" + coverSheetDataDTO.getFilingHistoryType() + ")";
+        }
+        
         contentStream.beginText();
         contentStream.newLineAtOffset(position.x, position.y);
 
