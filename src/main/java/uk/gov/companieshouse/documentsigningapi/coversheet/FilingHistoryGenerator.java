@@ -153,7 +153,76 @@ public class FilingHistoryGenerator {
     }
 
     /**
-     * Renders a full filing history description on the PDF, combining the extracted head and populated tail, wrapping the text if necessary.
+     * Renders a full filing history description for type 1 descriptions on the PDF.
+     * Example of type 1 format: "Notice of **Administrator's proposal**"
+     * @param coverSheetDataDTO Coversheet Data
+     * @param font font for rendering HELVETICA
+     * @param contentStream The content stream for rendering
+     * @param positionX The X-axis starting position on the page
+     * @param positionY The Y-axis starting position on the page
+     * @throws IOException If an I/O error occurs during rendering
+     */
+    public void renderFilingHistoryDescriptionType1(final CoverSheetDataDTO coverSheetDataDTO,
+                                                    final Font font,
+                                                    final PDPageContentStream contentStream,
+                                                    final Float positionX,
+                                                    final Float positionY)
+                                                    throws IOException {
+
+        String filingHistoryDescription = coverSheetDataDTO.getFilingHistoryDescription();
+        final Position position = new Position(positionX, positionY);
+
+        String regex = "Notice of \\*\\*(.*?)\\*\\*";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(filingHistoryDescription);
+
+        contentStream.beginText();
+        contentStream.newLineAtOffset(position.x, position.y);
+        contentStream.setFont(font.getPdFont(), font.getSize());
+
+        if(matcher.find())
+        {
+            String result = matcher.replaceAll("Notice of $1");
+            contentStream.showText(result + " (" + coverSheetDataDTO.getFilingHistoryType() + ")");
+        }   else {
+            contentStream.showText(filingHistoryDescription);
+        }
+        contentStream.endText();
+    }
+
+    /**
+     * Renders a full filing history description for type 2 descriptions on the PDF.
+     * Example of type 2 format: "**Statement of Affairs**"
+     * @param coverSheetDataDTO Coversheet Data
+     * @param font font for rendering HELVETICA
+     * @param contentStream The content stream for rendering
+     * @param positionX The X-axis starting position on the page
+     * @param positionY The Y-axis starting position on the page
+     * @throws IOException If an I/O error occurs during rendering
+     */
+    public void renderFilingHistoryDescriptionType2(final CoverSheetDataDTO coverSheetDataDTO,
+                                                    final Font font,
+                                                    final PDPageContentStream contentStream,
+                                                    final Float positionX,
+                                                    final Float positionY)
+                                                    throws IOException {
+
+        String filingHistoryDescription = extractFilingHistoryDescriptionHead(coverSheetDataDTO);
+
+        final Position position = new Position(positionX, positionY);
+        
+        contentStream.beginText();
+        contentStream.newLineAtOffset(position.x, position.y);
+
+        contentStream.setFont(font.getPdFont(), font.getSize());
+
+        contentStream.showText(filingHistoryDescription);
+        contentStream.endText();
+    }
+
+    /**
+     * Renders a full filing history description for type 3 descriptions on the PDF, combining the extracted head and populated tail, wrapping the text if necessary.
+     * Example of type 3 format: "**Statement of Affairs** with form {form_attached}"
      * @param coverSheetDataDTO Coversheet Data
      * @param signPdfRequestDTO Signpdf Request Data
      * @param font1 font1 for rendering HELVETICA_BOLD
@@ -164,22 +233,20 @@ public class FilingHistoryGenerator {
      * @param positionY The Y-axis starting position on the page
      * @throws IOException If an I/O error occurs during rendering
      */
-    public void renderFilingHistoryDescriptionWithBoldText(
-                                    final CoverSheetDataDTO coverSheetDataDTO,
-                                    final SignPdfRequestDTO signPdfRequestDTO,
-                                    final Font font1,
-                                    final Font font2,
-                                    final PDPage page,
-                                    final PDPageContentStream contentStream,
-                                    final Float positionX,
-                                    final Float positionY)
-                                    throws IOException {
+    public void renderFilingHistoryDescriptionType3(final CoverSheetDataDTO coverSheetDataDTO,
+                                                    final SignPdfRequestDTO signPdfRequestDTO,
+                                                    final Font font1,
+                                                    final Font font2,
+                                                    final PDPage page,
+                                                    final PDPageContentStream contentStream,
+                                                    final Float positionX,
+                                                    final Float positionY)
+                                                    throws IOException {
 
         final String filingHistoryDescriptionHead = extractFilingHistoryDescriptionHead(coverSheetDataDTO);
         final String filingHistoryDescriptionTail = buildFilingHistoryDescriptionTailWithValues(signPdfRequestDTO, coverSheetDataDTO);
 
         final Position position = new Position(positionX, positionY);
-
 
         // Combine head and tail into single text
         String combinedText = filingHistoryDescriptionHead + filingHistoryDescriptionTail;
@@ -220,4 +287,84 @@ public class FilingHistoryGenerator {
         contentStream.endText();
     };
 
+    /**
+     * Renders a full filing history description for type 4 descriptions on the PDF.
+     * Example of type 4 format: "{original_description}"
+     * @param coverSheetDataDTO Coversheet Data
+     * @param contentStream The content stream for rendering
+     * @param positionX The X-axis starting position on the page
+     * @param positionY The Y-axis starting position on the page
+     * @throws IOException If an I/O error occurs during rendering
+     */
+    public void renderFilingHistoryDescriptionType4(final SignPdfRequestDTO signPdfData,
+                                                    final CoverSheetDataDTO coverSheetDataDTO,
+                                                    final PDPageContentStream contentStream,
+                                                    final Float positionX,
+                                                    final Float positionY)
+                                                    throws IOException {
+
+        final Position position = new Position(positionX, positionY);
+
+        String filingHistoryDescription = coverSheetDataDTO.getFilingHistoryDescription();
+        Map<String, String> filingHistoryDescriptionValues = signPdfData.getFilingHistoryDescriptionValues();
+        filingHistoryDescription = replaceFilingHistoryDescriptionPlaceholders(filingHistoryDescription, filingHistoryDescriptionValues);
+        String originalDescription =  filingHistoryDescription + " (" + coverSheetDataDTO.getFilingHistoryType() + ")";
+
+        contentStream.beginText();
+        contentStream.newLineAtOffset(position.x, position.y);
+
+        contentStream.showText(originalDescription);
+        contentStream.endText();
+    }
+
+    /**
+     * Takes a filing history description and identifies the type, then calling the required rendering method for it.
+     * @param coverSheetDataDTO Coversheet Data
+     * @param signPdfRequestDTO Signpdf Request Data
+     * @param font1 font1 for rendering HELVETICA_BOLD
+     * @param font2 font2 for rendering HELVETICA
+     * @param page The PDF page
+     * @param contentStream The content stream for rendering
+     * @param positionX The X-axis starting position on the page
+     * @param positionY The Y-axis starting position on the page
+     * @throws IOException If an I/O error occurs during rendering
+     */
+    public void applyCorrectFilingHistoryDescriptionTypeFormatting(final CoverSheetDataDTO coverSheetDataDTO,
+                                                                   final SignPdfRequestDTO signPdfRequestDTO,
+                                                                   final Font font1,
+                                                                   final Font font2,
+                                                                   final PDPage page,
+                                                                   final PDPageContentStream contentStream,
+                                                                   final Float positionX,
+                                                                   final Float positionY)
+                                                                    throws IOException {
+
+        String filingHistoryDescription = coverSheetDataDTO.getFilingHistoryDescription();
+
+        // Filing History Description Pattern Types Examples
+        // 1. "Notice of **Administrator's proposal**"
+        // 2. "**Statement of Affairs**"
+        // 3. "**Statement of Affairs** with form {form_attached}"
+        // 4. "{original_description}"
+
+        Pattern p1 = Pattern.compile("Notice of .+");
+        Pattern p2 = Pattern.compile("\\*\\*(.*?)\\*\\*$");
+        Pattern p3 = Pattern.compile("\\*\\*(.*?)\\*\\*\\s+(.*?)$");
+        Pattern p4 = Pattern.compile("\\{([^{}]+)\\}");
+
+        Matcher m1 = p1.matcher(filingHistoryDescription);
+        Matcher m2 = p2.matcher(filingHistoryDescription);
+        Matcher m3 = p3.matcher(filingHistoryDescription);
+        Matcher m4 = p4.matcher(filingHistoryDescription);
+
+        if (m1.find()) {
+            renderFilingHistoryDescriptionType1(coverSheetDataDTO, font2,contentStream, positionX, positionY );
+        } else if (m2.find()){
+            renderFilingHistoryDescriptionType2(coverSheetDataDTO, font2, contentStream, positionX, positionY);
+        } else if (m3.find()){
+            renderFilingHistoryDescriptionType3(coverSheetDataDTO, signPdfRequestDTO, font1, font2, page, contentStream, positionX, positionY);
+        } else if (m4.find()){
+            renderFilingHistoryDescriptionType4(signPdfRequestDTO, coverSheetDataDTO, contentStream, positionX, positionY);
+        }
+    }
 }
