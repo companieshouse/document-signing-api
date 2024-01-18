@@ -35,6 +35,8 @@ public class FilingHistoryGeneratorTest {
     private static final String FILING_HISTORY_DESCRIPTION_TYPE_3 = "**Registered office address changed** from {old_address} to {new_address} on {change_date}";
 
     private static final String FILING_HISTORY_DESCRIPTION_TYPE_4 = "{original_description}";
+
+    private static final String FILING_HISTORY_DESCRIPTION_TYPE_5 = "Certificate that Creditors have been paid in full";
     private static final Map<String, String> FILING_HISTORY_DESCRIPTION_TYPE_3_VALUES = Map.of("old_address", "1 Test Lane",
             "new_address", "2 Test Lane", "change_date", "2023-01-01");
 
@@ -148,6 +150,26 @@ public class FilingHistoryGeneratorTest {
                                                         contentStream,
                                                         25F,
                                                         590F);
+
+            verify(contentStream, times(1)).showText(any(String.class));
+        });
+    }
+
+    @Test
+    @DisplayName("filing history generator renders filing history descriptions of type 5 just once")
+    void rendersFilingHistoryDescriptionType5Text() throws IOException {
+        executeTest((pdfBox, pageConstructor, streamConstructor, linkConstructor) -> {
+
+            CoverSheetDataDTO coverSheetData = new CoverSheetDataDTO();
+            coverSheetData.setFilingHistoryDescription(FILING_HISTORY_DESCRIPTION_TYPE_5);
+            SignPdfRequestDTO signPdfRequestDTO = new SignPdfRequestDTO();
+
+            filingHistoryGenerator.renderFilingHistoryDescriptionType4(
+                    signPdfRequestDTO,
+                    coverSheetData,
+                    contentStream,
+                    25F,
+                    590F);
 
             verify(contentStream, times(1)).showText(any(String.class));
         });

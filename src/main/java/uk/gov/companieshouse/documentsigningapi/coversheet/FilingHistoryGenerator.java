@@ -210,7 +210,7 @@ public class FilingHistoryGenerator {
         String filingHistoryDescription = extractFilingHistoryDescriptionHead(coverSheetDataDTO);
 
         final Position position = new Position(positionX, positionY);
-        
+
         contentStream.beginText();
         contentStream.newLineAtOffset(position.x, position.y);
 
@@ -318,6 +318,34 @@ public class FilingHistoryGenerator {
     }
 
     /**
+     * Renders a full filing history description for type 5 descriptions on the PDF.
+     * This is a catch all designed to capture any formats not yet covered, and display the text on the PDF.
+     * @param coverSheetDataDTO Coversheet Data
+     * @param contentStream The content stream for rendering
+     * @param positionX The X-axis starting position on the page
+     * @param positionY The Y-axis starting position on the page
+     * @throws IOException If an I/O error occurs during rendering
+     */
+    public void renderFilingHistoryDescriptionType5(final SignPdfRequestDTO signPdfData,
+                                                    final CoverSheetDataDTO coverSheetDataDTO,
+                                                    final PDPageContentStream contentStream,
+                                                    final Float positionX,
+                                                    final Float positionY)
+                                                    throws IOException {
+
+        final Position position = new Position(positionX, positionY);
+
+        String filingHistoryDescription = coverSheetDataDTO.getFilingHistoryDescription();
+        String filingHistoryDescriptionPlusType = filingHistoryDescription + " (" + coverSheetDataDTO.getFilingHistoryType() + ")";
+
+        contentStream.beginText();
+        contentStream.newLineAtOffset(position.x, position.y);
+
+        contentStream.showText(filingHistoryDescriptionPlusType);
+        contentStream.endText();
+    }
+
+    /**
      * Takes a filing history description and identifies the type, then calling the required rendering method for it.
      * @param coverSheetDataDTO Coversheet Data
      * @param signPdfRequestDTO Signpdf Request Data
@@ -343,9 +371,10 @@ public class FilingHistoryGenerator {
 
         // Filing History Description Pattern Types Examples
         // 1. "Notice of **Administrator's proposal**"
-        // 2. "**Statement of Affairs**"
+        // 2. "**Statement of Affairs**" or
         // 3. "**Statement of Affairs** with form {form_attached}"
         // 4. "{original_description}"
+        // 5. "Certificates that Creditors have been paid in full" or any other format
 
         Pattern p1 = Pattern.compile("Notice of .+");
         Pattern p2 = Pattern.compile("\\*\\*(.*?)\\*\\*$");
@@ -365,6 +394,8 @@ public class FilingHistoryGenerator {
             renderFilingHistoryDescriptionType3(coverSheetDataDTO, signPdfRequestDTO, font1, font2, page, contentStream, positionX, positionY);
         } else if (m4.find()){
             renderFilingHistoryDescriptionType4(signPdfRequestDTO, coverSheetDataDTO, contentStream, positionX, positionY);
+        } else {
+            renderFilingHistoryDescriptionType5(signPdfRequestDTO, coverSheetDataDTO, contentStream, positionX, positionY);
         }
     }
 }
