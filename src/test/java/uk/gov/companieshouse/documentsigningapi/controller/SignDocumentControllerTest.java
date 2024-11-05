@@ -34,7 +34,7 @@ import uk.gov.companieshouse.documentsigningapi.signing.SigningService;
 import uk.gov.companieshouse.documentsigningapi.validation.RequestValidator;
 import uk.gov.companieshouse.logging.Logger;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.net.URISyntaxException;
 import java.util.Calendar;
 import java.util.List;
