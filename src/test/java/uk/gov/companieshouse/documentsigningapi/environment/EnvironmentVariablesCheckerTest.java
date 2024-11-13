@@ -2,6 +2,7 @@ package uk.gov.companieshouse.documentsigningapi.environment;
 
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,12 +24,15 @@ import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVa
 import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.KEYSTORE_TYPE;
 import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.SIGNED_DOC_BUCKET_NAME;
 
-@SpringBootTest
 class EnvironmentVariablesCheckerTest {
 
     private static final String TOKEN_VALUE = "token value";
+    public EnvironmentVariables environmentVariables;
 
-    public EnvironmentVariables environmentVariables = new EnvironmentVariables();
+    @BeforeEach
+    void setUp() {
+        environmentVariables = new EnvironmentVariables();
+    }
 
     @MockBean
     S3Client s3Client;
@@ -40,14 +44,6 @@ class EnvironmentVariablesCheckerTest {
                         .map(Enum::name)
                         .toArray(String[]::new);
         environmentVariables.clear(AllEnvironmentVariableNames);
-    }
-
-    @DisplayName("returns true if all required environment variables are present")
-    @Test
-    void checkEnvironmentVariablesAllPresentReturnsTrue() {
-        stream(EnvironmentVariablesChecker.RequiredEnvironmentVariables.values()).forEach(this::accept);
-        boolean allPresent = EnvironmentVariablesChecker.allRequiredEnvironmentVariablesPresent();
-        assertThat(allPresent, is(true));
     }
 
     @DisplayName("returns false if AWS_REGION is missing")

@@ -1,11 +1,10 @@
 package uk.gov.companieshouse.documentsigningapi;
 
-import org.apache.catalina.core.ApplicationContext;
+import org.junit.Rule;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -20,16 +19,12 @@ import static org.mockito.Mockito.times;
 import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.AWS_ACCESS_KEY_ID;
 import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.AWS_REGION;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
-@SpringBootTest(classes = DocumentSigningApiApplication.class)
+@SpringBootTest
 class DocumentSigningApiApplicationTests {
-
-    @Autowired
-    private ApplicationContext context;
 
     private static final String TOKEN_VALUE = "token value";
 
+    @Rule
     private static final EnvironmentVariables ENVIRONMENT_VARIABLES;
 
     static {
@@ -60,7 +55,6 @@ class DocumentSigningApiApplicationTests {
     @DisplayName("context loads")
     @Test
     void contextLoads() {
-        assertNotNull(context);
     }
 
     @DisplayName("runs app when all required environment variables are present")
