@@ -6,7 +6,6 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureOptions;
-import org.junit.Rule;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -99,7 +98,6 @@ class SignDocumentControllerIntegrationTest {
 
     private static final String TOKEN_VALUE = "token value";
 
-    @Rule
     private static final EnvironmentVariables ENVIRONMENT_VARIABLES;
 
     static {

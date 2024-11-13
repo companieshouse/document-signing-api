@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.documentsigningapi.environment;
 
-import org.junit.Rule;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
@@ -29,7 +28,6 @@ class EnvironmentVariablesCheckerTest {
 
     private static final String TOKEN_VALUE = "token value";
 
-    @Rule
     public EnvironmentVariables environmentVariables = new EnvironmentVariables();
 
     @MockBean

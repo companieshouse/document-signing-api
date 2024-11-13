@@ -43,14 +43,11 @@
 
         <!--     Other Dependencies-->
         <log4j.version>2.24.1</log4j.version>
-        <pdfbox.version>2.0.24</pdfbox.version>
+        <pdfbox.version>2.0.32</pdfbox.version>
         <bouncycastle.version>1.79</bouncycastle.version>
 
         <!-- Docker -->
-        <jib-maven-plugin.version>3.3.1</jib-maven-plugin.version>
-
-        <!-- system-rules: 1.17.2 is the latest version that works with JUnit 5.
-            See https://github.com/stefanbirkner/system-rules/issues/70 -->
+        <jib-maven-plugin.version>3.4.4</jib-maven-plugin.version>
     </properties>
 
     <dependencyManagement>
@@ -211,11 +208,6 @@
             <artifactId>pdfbox</artifactId>
             <version>${pdfbox.version}</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.bouncycastle</groupId>-->
-<!--            <artifactId>bcpkix-jdk15on</artifactId>-->
-<!--            <version>${bouncycastle.version}</version>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcpkix-jdk18on</artifactId>

@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.documentsigningapi.config;
 
-import org.junit.Rule;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,7 +17,6 @@ class DocumentSigningApiConfigurationTest {
         }
     };
 
-    @Rule
     public EnvironmentVariables environmentVariables = new EnvironmentVariables();
 
     @DisplayName("is able to produce an S3Client if a region is provided")
