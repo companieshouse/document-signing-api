@@ -6,7 +6,7 @@
     <parent>
         <groupId>uk.gov.companieshouse</groupId>
         <artifactId>companies-house-parent</artifactId>
-        <version>2.1.6</version>
+        <version>2.1.9</version>
         <relativePath/>
     </parent>
 
@@ -18,34 +18,32 @@
 
 
     <properties>
-        <!--     SpringBoot/Maven Dependencies-->
+        <!-- SpringBoot/Maven Dependencies-->
         <java.version>21</java.version>
         <spring-boot-dependencies.version>3.3.5</spring-boot-dependencies.version>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
         <maven-surefire-plugin.version>3.5.2</maven-surefire-plugin.version>
         <spring-boot-maven-plugin.version>3.3.5</spring-boot-maven-plugin.version>
         <commons-io.version>2.17.0</commons-io.version>
-        <!--     CH Dependencies-->
+        <!-- CH Dependencies-->
         <start-class>uk.gov.companieshouse.documentsigningapi.DocumentSigningApiApplication</start-class>
         <api-security-java.version>2.0.8</api-security-java.version>
-        <structured-logging.version>3.0.9</structured-logging.version>
+        <structured-logging.version>3.0.20</structured-logging.version>
         <environment-reader-library.version>3.0.1</environment-reader-library.version>
-
-        <!--     Testing Dependencies-->
+        <!-- Testing Dependencies-->
         <testcontainers.version>1.20.3</testcontainers.version>
         <mockito-core.version>5.14.2</mockito-core.version>
-        <system-rules-version>1.19.0</system-rules-version>
-
-        <!--     Amazon Dependencies-->
+        <system-stubs-version>2.1.7</system-stubs-version>
+        <junit.version>4.13.2</junit.version>
+        <!-- Amazon Dependencies-->
         <amazon-s3.version>2.29.6</amazon-s3.version>
-        <software.amazon.awssdk.version>2.29.6</software.amazon.awssdk.version>
-
-        <!--     Other Dependencies-->
+        <software.amazon.awssdk.version>2.29.17</software.amazon.awssdk.version>
+        <amazon-sts.version>2.29.17</amazon-sts.version>
+        <!-- Other Dependencies-->
         <log4j.version>2.24.1</log4j.version>
         <pdfbox.version>2.0.32</pdfbox.version>
         <bouncycastle.version>1.79</bouncycastle.version>
-
         <!-- Docker -->
         <jib-maven-plugin.version>3.4.4</jib-maven-plugin.version>
     </properties>
@@ -75,11 +73,9 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
     <dependencies>
 
-<!--     SpringBoot/Maven Dependencies-->
-
+<!-- SpringBoot/Maven Dependencies-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
@@ -110,9 +106,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
-<!--        CH Dependencies-->
-
+<!-- CH Dependencies-->
         <dependency>
             <groupId>uk.gov.companieshouse</groupId>
             <artifactId>structured-logging</artifactId>
@@ -140,21 +134,24 @@
             <artifactId>api-security-java</artifactId>
             <version>${api-security-java.version}</version>
         </dependency>
-
-        <!--        Amazon Dependencies-->
-
+        <!-- Amazon Dependencies-->
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3</artifactId>
             <version>${amazon-s3.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty-common</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>sts</artifactId>
+            <version>${amazon-sts.version}</version>
         </dependency>
-
-        <!--        Testing Dependencies-->
-
+        <!-- Testing Dependencies-->
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
@@ -180,9 +177,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.github.stefanbirkner</groupId>
-            <artifactId>system-rules</artifactId>
-            <version>${system-rules-version}</version>
+            <groupId>uk.org.webcompere</groupId>
+            <artifactId>system-stubs-jupiter</artifactId>
+            <version>${system-stubs-version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -191,18 +188,13 @@
             <version>${mockito-core.version}</version>
             <scope>test</scope>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/junit/junit -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.13.2</version>
+            <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
-
-
-
         <!--        Other Dependencies-->
-
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox</artifactId>
@@ -262,6 +254,15 @@
                 <artifactId>jib-maven-plugin</artifactId>
                 <version>${jib-maven-plugin.version}</version>
                 <configuration>
+                    <container>
+                        <expandClasspathDependencies>true</expandClasspathDependencies>
+                    </container>
+                    <from>
+                        <image>416670754337.dkr.ecr.eu-west-2.amazonaws.com/ci-corretto-build-21:latest</image>
+                    </from>
+                    <to>
+                        <image>416670754337.dkr.ecr.eu-west-2.amazonaws.com/document-signing-api:latest</image>
+                    </to>
                     <extraDirectories>
                         <paths>
                             <path>
@@ -285,8 +286,8 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
             <configuration>
-              <source>21</source>
-              <target>21</target>
+              <source>${maven.compiler.source}</source>
+              <target>${maven.compiler.target}</target>
             </configuration>
           </plugin>
         </plugins>

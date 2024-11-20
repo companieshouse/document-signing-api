@@ -1,6 +1,6 @@
 package uk.gov.companieshouse.documentsigningapi.config;
 
-import org.junit.contrib.java.lang.system.EnvironmentVariables;
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
