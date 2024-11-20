@@ -1,15 +1,18 @@
 package uk.gov.companieshouse.documentsigningapi.environment;
 
-import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import software.amazon.awssdk.services.s3.S3Client;
 
 import java.util.Arrays;
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
+import uk.org.webcompere.systemstubs.jupiter.SystemStub;
+import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
 import static java.util.Arrays.stream;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -24,27 +27,21 @@ import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVa
 import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.KEYSTORE_TYPE;
 import static uk.gov.companieshouse.documentsigningapi.environment.EnvironmentVariablesChecker.RequiredEnvironmentVariables.SIGNED_DOC_BUCKET_NAME;
 
+@ExtendWith(SystemStubsExtension.class)
 class EnvironmentVariablesCheckerTest {
 
     private static final String TOKEN_VALUE = "token value";
-    public EnvironmentVariables environmentVariables;
+
+    @SystemStub
+    public EnvironmentVariables ENVIRONMENT_VARIABLES;
 
     @BeforeEach
     void setUp() {
-        environmentVariables = new EnvironmentVariables();
+        ENVIRONMENT_VARIABLES = new EnvironmentVariables();
     }
 
     @MockBean
     S3Client s3Client;
-
-    @AfterEach
-    void tearDown() {
-        final String[] AllEnvironmentVariableNames =
-                Arrays.stream(EnvironmentVariablesChecker.RequiredEnvironmentVariables.class.getEnumConstants())
-                        .map(Enum::name)
-                        .toArray(String[]::new);
-        environmentVariables.clear(AllEnvironmentVariableNames);
-    }
 
     @DisplayName("returns false if AWS_REGION is missing")
     @Test
@@ -98,7 +95,7 @@ class EnvironmentVariablesCheckerTest {
             final EnvironmentVariablesChecker.RequiredEnvironmentVariables excludedVariable) {
         stream(EnvironmentVariablesChecker.RequiredEnvironmentVariables.values()).forEach(variable -> {
             if (variable != excludedVariable) {
-                environmentVariables.set(variable.getName(), TOKEN_VALUE);
+                ENVIRONMENT_VARIABLES.set(variable.getName(), TOKEN_VALUE);
             }
         });
         boolean allPresent = EnvironmentVariablesChecker.allRequiredEnvironmentVariablesPresent();
@@ -106,6 +103,6 @@ class EnvironmentVariablesCheckerTest {
     }
 
     private void accept(EnvironmentVariablesChecker.RequiredEnvironmentVariables variable) {
-        environmentVariables.set(variable.getName(), TOKEN_VALUE);
+        ENVIRONMENT_VARIABLES.set(variable.getName(), TOKEN_VALUE);
     }
 }

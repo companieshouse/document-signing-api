@@ -7,8 +7,9 @@ API to sign documents digitally.
 
 ## Requirements
 In order to build document-generator locally you will need the following:
-- Java 11
+- Java 21
 - Maven
+- Docker
 - Git
 
 ## Environment Variables
@@ -16,17 +17,17 @@ In order to build document-generator locally you will need the following:
 The supported environmental variables have been categorised by use case and are as follows.
 
 ### Deployment Variables
-| Name                   | Description                                                    | Mandatory | Default | Example                     |
-|------------------------|----------------------------------------------------------------|-----------|---------|-----------------------------|
-| AWS_REGION             | AWS region                                                     | √         | N/A     | `eu-west-2`                 |
-| AWS_ACCESS_KEY_ID      | Part of AWS credentials.                                       | √         | N/A     | `ASIA...`                   |
-| AWS_SECRET_ACCESS_KEY  | Part of AWS credentials.                                       | √         | N/A     | `UgO8...`                   |
-| KEYSTORE_TYPE          | The type of keystore used to sign a document.                  | √         | N/A     | `pkcs12`                    |
-| KEYSTORE_PATH          | The path to the keystore used to sign a document.              | √         | N/A     | `/keystore.p12`             |
-| KEYSTORE_PATH          | The password to the keystore used to sign a document.          | √         | N/A     | `examplepassword`           |
-| CERTIFICATE_ALIAS      | The unique string to identify the keystore.                    | √         | N/A     | `mykeystore`                |
-| SIGNED_DOC_BUCKET_NAME | The name of the S3 bucket used for storing signed documents.   | √         | N/A     | `document-signing-api`      |
-| COVERSHEET_IMAGES_PATH | The path to the directory containing images for a cover sheet. | X         | ""      | `/app/resources/coversheet` |
+| Name                   | Description                                                    | Mandatory | Default | Example             |
+|------------------------|----------------------------------------------------------------|-----------|---------|---------------------|
+| AWS_REGION             | AWS region                                                     | √         | N/A     | `eu-west-2`         |
+| AWS_ACCESS_KEY_ID      | Part of AWS credentials.                                       | √         | N/A     | `ASIA...`           |
+| AWS_SECRET_ACCESS_KEY  | Part of AWS credentials.                                       | √         | N/A     | `UgO8...`           |
+| KEYSTORE_TYPE          | The type of keystore used to sign a document.                  | √         | N/A     | `pkcs12`            |
+| KEYSTORE_PATH          | The path to the keystore used to sign a document.              | √         | N/A     | `src/test/resources/keystore.p12`     |
+| KEYSTORE_PASSWORD      | The password to the keystore used to sign a document.          | √         | N/A     | `password`          |
+| CERTIFICATE_ALIAS      | The unique string to identify the keystore.                    | √         | N/A     | `dockerkeystore`        |
+| SIGNED_DOC_BUCKET_NAME | The name of the S3 bucket used for storing signed documents.   | √         | N/A     | `document-signing-api` |
+| COVERSHEET_IMAGES_PATH | The path to the directory containing images for a cover sheet. | X         | ""      | `src/main/resources/coversheet` |
 
 ## Endpoints
 | Path                           | Method | Description                                                         |
