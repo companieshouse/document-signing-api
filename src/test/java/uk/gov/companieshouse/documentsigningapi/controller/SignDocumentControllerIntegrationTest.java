@@ -78,7 +78,7 @@ import static uk.gov.companieshouse.documentsigningapi.util.TestConstants.ERIC_I
 @ExtendWith(SystemStubsExtension.class)
 class SignDocumentControllerIntegrationTest {
 
-    private static final String LOCALSTACK_IMAGE_NAME = "localstack/localstack:4.0";
+    private static final String LOCALSTACK_IMAGE_NAME = "localstack/localstack:4.0.3";
     private static final String UNSIGNED_BUCKET_NAME = "document-api-images-cidev";
     private static final String SIGNED_BUCKET_NAME = "document-signing-api";
     private static final String UNSIGNED_DOCUMENT_KEY =
@@ -99,7 +99,6 @@ class SignDocumentControllerIntegrationTest {
     private static final LocalStackContainer localStackContainer =
             new LocalStackContainer(DockerImageName.parse(LOCALSTACK_IMAGE_NAME))
                     .withServices(LocalStackContainer.Service.S3)
-                    .withEnv("LOCALSTACK_HOST", "localhost.localstack.cloud")
                     .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("LocalStackContainer")));
 
     private static final String TOKEN_VALUE = "token value";
