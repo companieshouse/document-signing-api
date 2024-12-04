@@ -10,7 +10,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -21,7 +20,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.testcontainers.containers.localstack.LocalStackContainer;
-import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
@@ -78,7 +76,7 @@ import static uk.gov.companieshouse.documentsigningapi.util.TestConstants.ERIC_I
 @ExtendWith(SystemStubsExtension.class)
 class SignDocumentControllerIntegrationTest {
 
-    private static final String LOCALSTACK_IMAGE_NAME = "localstack/localstack:4.0.3";
+    private static final String LOCALSTACK_IMAGE_NAME = "localstack/localstack:4.0";
     private static final String UNSIGNED_BUCKET_NAME = "document-api-images-cidev";
     private static final String SIGNED_BUCKET_NAME = "document-signing-api";
     private static final String UNSIGNED_DOCUMENT_KEY =
@@ -98,8 +96,7 @@ class SignDocumentControllerIntegrationTest {
     @Container
     private static final LocalStackContainer localStackContainer =
             new LocalStackContainer(DockerImageName.parse(LOCALSTACK_IMAGE_NAME))
-                    .withServices(LocalStackContainer.Service.S3)
-                    .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("LocalStackContainer")));
+                    .withServices(LocalStackContainer.Service.S3);
 
     private static final String TOKEN_VALUE = "token value";
 
