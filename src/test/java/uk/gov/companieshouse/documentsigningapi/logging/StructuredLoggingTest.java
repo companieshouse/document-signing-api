@@ -36,7 +36,8 @@ public class StructuredLoggingTest {
     @Test
     @DisplayName("Company name and location")
     void locationTest() {
-        Map<String, Object> logMap = new DataMap.Builder(COMPANY_NAME_VALUE)
+        Map<String, Object> logMap = new DataMap.Builder()
+                .companyName(COMPANY_NAME_VALUE)
             .startIndex(String.valueOf(1))
             .location(LOCATION_VALUE)
             .build()
@@ -68,7 +69,8 @@ public class StructuredLoggingTest {
         dissolvedFromDate = formatter.parse(dissolvedFrom);
         dissolvedToDate = formatter.parse(dissolvedTo);
 
-        Map<String, Object> logMap = new DataMap.Builder(COMPANY_NAME_VALUE)
+        Map<String, Object> logMap = new DataMap.Builder()
+                .companyName(COMPANY_NAME_VALUE)
             .incorporatedFrom(incorporatedFromDate)
             .incorporatedTo(incorporatedToDate)
             .dissolvedFrom(dissolvedFromDate)
@@ -95,7 +97,8 @@ public class StructuredLoggingTest {
     @Test
     @DisplayName("List<String> for companyStatus - companyType - sicCodes")
     void testStringList() {
-        Map<String, Object> logMap = new DataMap.Builder(COMPANY_NAME_VALUE)
+        Map<String, Object> logMap = new DataMap.Builder()
+                .companyName(COMPANY_NAME_VALUE)
             .companyStatus(COMPANY_STATUS_VALUE)
             .companyType(COMPANY_TYPE_VALUE)
             .sicCodes(SIC_CODES_VALUE)
@@ -118,11 +121,13 @@ public class StructuredLoggingTest {
     @Test
     @DisplayName("Merge 2 log maps with Map.putAll()")
     void testMergeLogMaps_PutAll() {
-        DataMap mainDataMap = new DataMap.Builder(COMPANY_NAME_VALUE)
+        DataMap mainDataMap = new DataMap.Builder()
+                .companyName(COMPANY_NAME_VALUE)
             .companyType(COMPANY_TYPE_VALUE)
             .build();
 
-        DataMap subDataMap = new DataMap.Builder(COMPANY_NAME_VALUE)
+        DataMap subDataMap = new DataMap.Builder()
+                .companyName(COMPANY_NAME_VALUE)
             .companyStatus(COMPANY_STATUS_VALUE)
             .build();
         //
@@ -147,13 +152,15 @@ public class StructuredLoggingTest {
         //
         // companyType only.
         //
-        DataMap mainDataMap = new DataMap.Builder(COMPANY_NAME_VALUE)
+        DataMap mainDataMap = new DataMap.Builder()
+                .companyName(COMPANY_NAME_VALUE)
             .companyType(COMPANY_TYPE_VALUE)
             .build();
         //
         // companyType AND companyStatus
         //
-        DataMap subDataMap = new DataMap.Builder(COMPANY_NAME_VALUE)
+        DataMap subDataMap = new DataMap.Builder()
+                .companyName(COMPANY_NAME_VALUE)
             .companyStatus(COMPANY_STATUS_VALUE)
             .companyType(COMPANY_TYPE_VALUE)
             .build();
@@ -176,7 +183,8 @@ public class StructuredLoggingTest {
     @Test
     @DisplayName("Company NAME, company NUMBER and UPSERT company number")
     void testCompanyNumber_UpsertCompanyNumber() {
-        DataMap dataMap = new DataMap.Builder(COMPANY_NAME_VALUE)
+        DataMap dataMap = new DataMap.Builder()
+                .companyName(COMPANY_NAME_VALUE)
             .companyNumber(COMPANY_NUMBER_VALUE)
             .upsertCompanyNumber(UPSERT_COMPANY_NUMBER_VALUE)
             .build();

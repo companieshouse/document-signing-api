@@ -64,7 +64,8 @@ public class RequestValidator {
     private void validateCompanyName(SignPdfRequestDTO dto, List<String> errors) {
         // Use COMPANY_NAME_KEY for the single KV pair we are interested in.
         if(StringUtils.isBlank(dto.getCoverSheetData().getCompanyName())) {
-            DataMap dataMap = new DataMap.Builder(COMPANY_NAME_MISSING_MESSAGE)
+            DataMap dataMap = new DataMap.Builder()
+                    .companyName(COMPANY_NAME_MISSING_MESSAGE)
                 .build();
             errors.add((String) dataMap.getLogMap().get(COMPANY_NAME_KEY));
         }
@@ -78,7 +79,8 @@ public class RequestValidator {
     private void validateCompanyNumber(SignPdfRequestDTO dto, List<String> errors) {
         // Company name required for builder, which can be ignored, so use COMPANY_NUMBER_KEY for the single KV pair we are interested in.
         if(StringUtils.isBlank(dto.getCoverSheetData().getCompanyNumber())) {
-            DataMap dataMap = new DataMap.Builder(dto.getCoverSheetData().getCompanyNumber())
+            DataMap dataMap = new DataMap.Builder()
+                    .companyName(dto.getCoverSheetData().getCompanyNumber())
                 .companyNumber(COMPANY_NUMBER_MISSING_MESSAGE)
                 .build();
             errors.add((String) dataMap.getLogMap().get(COMPANY_NUMBER_KEY));

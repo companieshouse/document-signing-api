@@ -1,7 +1,7 @@
 package uk.gov.companieshouse.documentsigningapi.util;
 
 import org.apache.commons.lang.StringUtils;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 public class EricHeaderHelper {
     public static String ERIC_IDENTITY             = "ERIC-Identity";

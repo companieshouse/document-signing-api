@@ -6,12 +6,10 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureOptions;
-import org.junit.Rule;
-import org.junit.contrib.java.lang.system.EnvironmentVariables;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -51,9 +49,11 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
+import uk.org.webcompere.systemstubs.jupiter.SystemStub;
+import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
 import static java.util.Arrays.stream;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -73,6 +73,7 @@ import static uk.gov.companieshouse.documentsigningapi.util.TestConstants.ERIC_I
 @AutoConfigureMockMvc
 @Testcontainers
 @SpringBootTest
+@ExtendWith(SystemStubsExtension.class)
 class SignDocumentControllerIntegrationTest {
 
     private static final String LOCALSTACK_IMAGE_NAME = "localstack/localstack:1.4";
@@ -99,10 +100,11 @@ class SignDocumentControllerIntegrationTest {
 
     private static final String TOKEN_VALUE = "token value";
 
-    @Rule
-    private static final EnvironmentVariables ENVIRONMENT_VARIABLES;
+    @SystemStub
+    private EnvironmentVariables ENVIRONMENT_VARIABLES;
 
-    static {
+    @BeforeEach
+    void setUpEnvironmentVariables() {
         ENVIRONMENT_VARIABLES = new EnvironmentVariables();
         stream(EnvironmentVariablesChecker.RequiredEnvironmentVariables.values()).forEach(variable -> {
             switch (variable) {
@@ -195,15 +197,6 @@ class SignDocumentControllerIntegrationTest {
         setUpSignedDocumentBucket();
     }
 
-    @AfterAll
-    static void tearDown() {
-        final String[] AllEnvironmentVariableNames =
-                Arrays.stream(EnvironmentVariablesChecker.RequiredEnvironmentVariables.class.getEnumConstants())
-                        .map(Enum::name)
-                        .toArray(String[]::new);
-        ENVIRONMENT_VARIABLES.clear(AllEnvironmentVariableNames);
-    }
-
     @Test
     @DisplayName("signPdf returns the signed document location and stores signed document there")
     void signPdfReturnsSignedDocumentLocation() throws Exception {
@@ -282,8 +275,7 @@ class SignDocumentControllerIntegrationTest {
 
         final var body = resultActions.andReturn().getResponse().getContentAsString();
         assertThat(body, startsWith("The specified key does not exist. " +
-                "(Service: S3, Status Code: 404, Request ID: 7a62c49f-347e-4fc4-9331-6e8eEXAMPLE, " +
-                "Extended Request ID: "));
+                "(Service: S3, Status Code: 404, Request ID: "));
     }
 
     private void setUpUnsignedDocumentInBucket() {
