@@ -76,7 +76,7 @@ import static uk.gov.companieshouse.documentsigningapi.util.TestConstants.ERIC_I
 @ExtendWith(SystemStubsExtension.class)
 class SignDocumentControllerIntegrationTest {
 
-    private static final String LOCALSTACK_IMAGE_NAME = "localstack/localstack:4.0";
+    private static final String LOCALSTACK_IMAGE_NAME = "localstack/localstack:1.4";
     private static final String UNSIGNED_BUCKET_NAME = "document-api-images-cidev";
     private static final String SIGNED_BUCKET_NAME = "document-signing-api";
     private static final String UNSIGNED_DOCUMENT_KEY =
