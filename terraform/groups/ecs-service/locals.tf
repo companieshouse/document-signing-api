@@ -9,7 +9,7 @@ locals {
   docker_repo                = "document-signing-api"
   kms_alias                  = "alias/${var.aws_profile}/environment-services-kms"
   lb_listener_rule_priority  = 181
-  lb_listener_paths          = ["/document-signing-api/*", "/document-signing/*"]
+  lb_listener_paths          = ["/document-signing/sign-pdf"]
   healthcheck_path           = "/document-signing-api/healthcheck" # healthcheck path for document-signing-api
   healthcheck_matcher        = "200"
   vpc_name                   = local.stack_secrets["vpc_name"]
