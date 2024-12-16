@@ -17,6 +17,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.testcontainers.containers.localstack.LocalStackContainer;
@@ -74,6 +75,7 @@ import static uk.gov.companieshouse.documentsigningapi.util.TestConstants.ERIC_I
 @Testcontainers
 @SpringBootTest
 @ExtendWith(SystemStubsExtension.class)
+@TestPropertySource("classpath:application-test.properties")
 class SignDocumentControllerIntegrationTest {
 
     private static final String LOCALSTACK_IMAGE_NAME = "localstack/localstack:1.4";
