@@ -16,6 +16,7 @@ import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureOptions;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.awt.*;
@@ -55,6 +56,7 @@ public class VisualSignature {
     private static final Font TITLE_FONT = new Font(PDType1Font.HELVETICA, 18);
     private static final Font TEXT_FONT = new Font(PDType1Font.HELVETICA, 14);
 
+    @Autowired
     private final ImagesBean images;
     private final OrdinalDateTimeFormatter formatter;
     private final Renderer renderer;
