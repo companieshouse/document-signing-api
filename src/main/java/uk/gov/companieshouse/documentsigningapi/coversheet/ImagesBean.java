@@ -4,7 +4,6 @@ import java.io.File;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -12,7 +11,6 @@ import java.io.IOException;
 import static org.apache.commons.lang.StringUtils.isEmpty;
 
 @Component
-@PropertySource("classpath:application.properties")
 public class ImagesBean {
     private final String imagesPath;
 
