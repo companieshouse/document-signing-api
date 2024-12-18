@@ -10,11 +10,9 @@ import uk.gov.companieshouse.environment.impl.EnvironmentReaderImpl;
 @Configuration
 public class DocumentSigningApiConfiguration {
 
-    @Value("${environment.coversheet.images.path}")
-    private String imagesPath;
-
     @Bean
-    public ImagesBean imagesBean() {
+    public ImagesBean imagesBean(
+            @Value("${environment.coversheet.images.path:/opt}") String imagesPath) {
         return new ImagesBean(imagesPath);
     }
 
