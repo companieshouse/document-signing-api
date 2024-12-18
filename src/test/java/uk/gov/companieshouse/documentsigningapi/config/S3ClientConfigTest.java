@@ -1,5 +1,7 @@
 package uk.gov.companieshouse.documentsigningapi.config;
 
+import org.mockito.Mock;
+import uk.gov.companieshouse.environment.EnvironmentReader;
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -8,9 +10,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
-class DocumentSigningApiConfigurationTest {
+class S3ClientConfigTest {
 
-    private static final DocumentSigningApiConfiguration CONFIG = new DocumentSigningApiConfiguration() {
+    @Mock
+    static EnvironmentReader environmentReader;
+
+    private static final S3ClientConfig CONFIG = new S3ClientConfig(environmentReader) {
         @Override
         protected String getRegion() {
             return "eu-west-2";
