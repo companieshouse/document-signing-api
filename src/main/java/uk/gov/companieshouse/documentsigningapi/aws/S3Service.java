@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.documentsigningapi.aws;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.core.ResponseInputStream;
@@ -21,7 +22,7 @@ public class S3Service {
 
     private final String signedDocBucketName;
 
-
+    @Autowired
     public S3Service(S3Client s3Client,
                      @Value("${environment.signed.doc.bucket.name}") String signedDocBucketName) {
         this.s3Client = s3Client;
