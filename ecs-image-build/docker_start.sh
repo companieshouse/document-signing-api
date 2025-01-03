@@ -21,7 +21,7 @@ if [ -z "$KEYSTORE.P12.B64" ]; then
 fi
 
 # Decode the keystore from the environment variable and save it to the path defined by KEYSTORE_PATH
-echo "$EYSTORE.P12.B64" | base64 -d > "$KEYSTORE_PATH"
+echo "$KEYSTORE.P12.B64" | base64 -d > "$KEYSTORE_PATH"
 
 if [ $? -ne 0 ]; then
   echo "Failed to decode the keystore"
