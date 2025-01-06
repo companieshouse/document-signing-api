@@ -8,11 +8,17 @@ import uk.gov.companieshouse.documentsigningapi.interceptor.UserAuthenticationIn
 import uk.gov.companieshouse.documentsigningapi.interceptor.UserAuthorisationInterceptor;
 
 @Configuration
-public class InterceptorConfiguration  implements WebMvcConfigurer {
+public class InterceptorConfiguration implements WebMvcConfigurer {
+
+    private final UserAuthorisationInterceptor userAuthenticationInterceptor;
+    private final UserAuthenticationInterceptor userAuthorisationInterceptor;
+
     @Autowired
-    UserAuthorisationInterceptor userAuthenticationInterceptor;
-    @Autowired
-    UserAuthenticationInterceptor userAuthorisationInterceptor;
+    public InterceptorConfiguration(UserAuthorisationInterceptor userAuthenticationInterceptor,
+            UserAuthenticationInterceptor userAuthorisationInterceptor) {
+        this.userAuthenticationInterceptor = userAuthenticationInterceptor;
+        this.userAuthorisationInterceptor = userAuthorisationInterceptor;
+    }
 
     @Override
     public void addInterceptors(final InterceptorRegistry registry) {

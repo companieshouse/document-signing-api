@@ -8,7 +8,7 @@ import static uk.gov.companieshouse.documentsigningapi.logging.LoggingUtilsConfi
 import static uk.gov.companieshouse.documentsigningapi.logging.LoggingUtilsConfiguration.REQUEST_ID_LOG_KEY;
 import static uk.gov.companieshouse.documentsigningapi.logging.LoggingUtilsConfiguration.STATUS_LOG_KEY;
 import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.AsyncHandlerInterceptor;
 import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
 import uk.gov.companieshouse.documentsigningapi.util.EricHeaderHelper;
 
@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
-public class UserAuthenticationInterceptor implements HandlerInterceptor {
+public class UserAuthenticationInterceptor implements AsyncHandlerInterceptor {
     private final LoggingUtils logger;
 
     public UserAuthenticationInterceptor(LoggingUtils logger) {
