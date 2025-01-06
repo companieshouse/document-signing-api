@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.documentsigningapi.interceptor;
 
 import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.AsyncHandlerInterceptor;
 import org.springframework.web.servlet.HandlerInterceptor;
 import uk.gov.companieshouse.api.util.security.AuthorisationUtil;
 import uk.gov.companieshouse.documentsigningapi.logging.LoggingUtils;
@@ -15,7 +16,7 @@ import static uk.gov.companieshouse.documentsigningapi.logging.LoggingUtilsConfi
 import static uk.gov.companieshouse.documentsigningapi.util.EricHeaderHelper.ERIC_AUTHORISED_KEY_ROLES;
 
 @Component
-public class UserAuthorisationInterceptor implements HandlerInterceptor {
+public class UserAuthorisationInterceptor implements AsyncHandlerInterceptor {
     private final LoggingUtils logger;
 
     public UserAuthorisationInterceptor(LoggingUtils logger) {
