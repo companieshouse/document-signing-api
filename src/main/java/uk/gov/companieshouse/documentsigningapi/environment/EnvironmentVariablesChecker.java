@@ -6,11 +6,11 @@ import uk.gov.companieshouse.environment.impl.EnvironmentReaderImpl;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 
-import static uk.gov.companieshouse.documentsigningapi.logging.LoggingUtilsConfiguration.APPLICATION_NAMESPACE;
+import static uk.gov.companieshouse.documentsigningapi.logging.LoggingUtilsConfiguration.APPLICATION_NAME_SPACE;
 
 public class EnvironmentVariablesChecker {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAMESPACE);
+    private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAME_SPACE);
 
     public enum RequiredEnvironmentVariables {
         AWS_REGION("AWS_REGION"),
