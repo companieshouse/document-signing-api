@@ -8,7 +8,7 @@ import uk.gov.companieshouse.logging.LoggerFactory;
 @Configuration
 public class LoggingUtilsConfiguration {
 
-    public static final String APPLICATION_NAMESPACE = "document-signing-api";
+    public static final String APPLICATION_NAME_SPACE = "document-signing-api";
     public static final String REQUEST_ID_LOG_KEY = "request_id";
     public static final String REQUEST_ID_HEADER_NAME = "Document-Signing-API";
     public static final String STATUS_LOG_KEY = "status";
@@ -18,7 +18,7 @@ public class LoggingUtilsConfiguration {
 
     @Bean
     Logger getLogger(){
-        return LoggerFactory.getLogger(APPLICATION_NAMESPACE);
+        return LoggerFactory.getLogger(APPLICATION_NAME_SPACE);
     }
 
     @Bean
