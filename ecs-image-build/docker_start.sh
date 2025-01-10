@@ -15,13 +15,13 @@ if [ -z "$KEYSTORE_PASSWORD" ]; then
   exit 1
 fi
 
-if [ -z "$KEYSTORE_P12_B64" ]; then
-  echo "KEYSTORE_B64 is not set in the environment"
+if [ ! -f "$KEYSTORE_PATH" ] && [ -z "$KEYSTORE_P12_B64" ]; then
+  echo "KEYSTORE not available and KEYSTORE_B64 is not set in the environment"
   exit 1
+elif [ ! -f "$KEYSTORE_PATH" ] && [ -n "$KEYSTORE_P12_B64" ]; then
+    # Decode the keystore from the environment variable and save it to the path defined by KEYSTORE_PATH
+    echo "$KEYSTORE_P12_B64" | base64 -d > "$KEYSTORE_PATH"
 fi
-
-# Decode the keystore from the environment variable and save it to the path defined by KEYSTORE_PATH
-echo "$KEYSTORE_P12_B64" | base64 -d > "$KEYSTORE_PATH"
 
 if [ $? -ne 0 ]; then
   echo "Failed to decode the keystore"

@@ -50,8 +50,6 @@ endif
 	cp ./start.sh $(tmpdir)
 	cp ./routes.yaml $(tmpdir)
 	cp ./src/main/resources/coversheet/*.jpeg $(tmpdir)
-	# stupid workaround to allow running service when building via dockerfile locally..
-	# cp ./src/test/resources/keystore.p12 $(tmpdir)
 	cp ./target/$(artifact_name)-$(version).jar $(tmpdir)/$(artifact_name).jar
 	cd $(tmpdir); zip -r ../$(artifact_name)-$(version).zip *
 	rm -rf $(tmpdir)
