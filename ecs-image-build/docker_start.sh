@@ -36,4 +36,4 @@ fi
 echo "Keystore fetched and saved to ${KEYSTORE_PATH}"
 
 # Start the Java application
-exec java -jar -Dserver.port="${PORT}" -Djavax.net.ssl.keyStore="${KEYSTORE_PATH}" -Djavax.net.ssl.keyStorePassword="$KEYSTORE_PASSWORD" "document-signing-api.jar"
+exec java -jar -Dserver.port="${PORT}" -Djavax.net.ssl.keyStore="${KEYSTORE_PATH}" -Djavax.net.ssl.keyStorePassword="$KEYSTORE_PASSWORD" -XX:MaxRAMPercentage=80 "document-signing-api.jar"
