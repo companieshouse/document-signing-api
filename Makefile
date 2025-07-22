@@ -34,7 +34,6 @@ endif
 	mvn versions:set -DnewVersion=$(version) -DgenerateBackupPoms=false
 	mvn package -DskipTests=true
 	$(eval tmpdir:=$(shell mktemp -d build-XXXXXXXXXX))
-	cp ./routes.yaml $(tmpdir)
 	cp ./src/main/resources/coversheet/*.jpeg $(tmpdir)
 	cp ./target/$(artifact_name)-$(version).jar $(tmpdir)/$(artifact_name).jar
 	cd $(tmpdir); zip -r ../$(artifact_name)-$(version).zip *
