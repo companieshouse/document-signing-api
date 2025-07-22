@@ -21,24 +21,26 @@
   <properties>
     <!-- SpringBoot/Maven Dependencies-->
     <java.version>21</java.version>
-    <spring-boot-dependencies.version>3.3.5</spring-boot-dependencies.version>
+    <spring-boot-dependencies.version>3.5.3</spring-boot-dependencies.version>
     <maven.compiler.source>21</maven.compiler.source>
     <maven.compiler.target>21</maven.compiler.target>
     <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
-    <maven-surefire-plugin.version>3.5.2</maven-surefire-plugin.version>
-    <spring-boot-maven-plugin.version>3.3.5</spring-boot-maven-plugin.version>
+    <maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
+    <spring-boot-maven-plugin.version>3.5.3</spring-boot-maven-plugin.version>
     <commons-io.version>2.17.0</commons-io.version>
+    <commons-lang3.version>3.18.0</commons-lang3.version>
+    <commons-text.version>1.13.1</commons-text.version>
     <!-- CH Dependencies-->
     <start-class>uk.gov.companieshouse.documentsigningapi.DocumentSigningApiApplication
     </start-class>
     <api-security-java.version>2.0.8</api-security-java.version>
-    <structured-logging.version>3.0.20</structured-logging.version>
-    <environment-reader-library.version>3.0.1</environment-reader-library.version>
+    <structured-logging.version>3.0.36</structured-logging.version>
+    <environment-reader-library.version>3.0.2</environment-reader-library.version>
     <!-- Testing Dependencies-->
-    <testcontainers.version>1.20.3</testcontainers.version>
+    <testcontainers.version>1.21.2</testcontainers.version>
     <mockito-core.version>5.14.2</mockito-core.version>
     <system-stubs-version>2.1.7</system-stubs-version>
-    <junit.version>5.11.3</junit.version>
+    <junit.version>5.13.1</junit.version>
     <!-- Amazon Dependencies-->
     <amazon-s3.version>2.29.6</amazon-s3.version>
     <software.amazon.awssdk.version>2.29.17</software.amazon.awssdk.version>
@@ -48,11 +50,21 @@
     <pdfbox.version>2.0.32</pdfbox.version>
     <bouncycastle.version>1.79</bouncycastle.version>
     <!-- Docker -->
-    <jib-maven-plugin.version>3.4.4</jib-maven-plugin.version>
+    <jib-maven-plugin.version>3.4.6</jib-maven-plugin.version>
+    <commons-beanutils.version>1.11.0</commons-beanutils.version>
+    <opentelemetry-instrumentation.version>2.14.0</opentelemetry-instrumentation.version>
+    <sonar-maven-plugin.version>5.1.0.4751</sonar-maven-plugin.version>
   </properties>
 
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>io.opentelemetry.instrumentation</groupId>
+        <artifactId>opentelemetry-instrumentation-bom</artifactId>
+        <version>${opentelemetry-instrumentation.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-dependencies</artifactId>
@@ -78,6 +90,20 @@
   </dependencyManagement>
   <dependencies>
 
+    <dependency>
+      <groupId>io.opentelemetry.instrumentation</groupId>
+      <artifactId>opentelemetry-spring-boot-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>${commons-lang3.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-text</artifactId>
+      <version>${commons-text.version}</version>
+    </dependency>
     <!-- SpringBoot/Maven Dependencies-->
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -188,6 +214,11 @@
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
       <version>${commons-io.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-beanutils</groupId>
+      <artifactId>commons-beanutils</artifactId>
+      <version>${commons-beanutils.version}</version>
     </dependency>
   </dependencies>
 

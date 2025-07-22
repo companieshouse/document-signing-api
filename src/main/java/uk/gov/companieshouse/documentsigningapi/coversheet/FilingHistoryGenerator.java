@@ -1,6 +1,6 @@
 package uk.gov.companieshouse.documentsigningapi.coversheet;
 
-import org.apache.commons.lang.WordUtils;
+import org.apache.commons.text.WordUtils;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 
