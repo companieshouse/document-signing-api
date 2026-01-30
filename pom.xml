@@ -21,7 +21,7 @@
   <properties>
     <!-- SpringBoot/Maven Dependencies-->
     <java.version>21</java.version>
-    <spring-boot-dependencies.version>3.5.3</spring-boot-dependencies.version>
+    <spring-boot-dependencies.version>3.5.7</spring-boot-dependencies.version>
     <maven.compiler.source>21</maven.compiler.source>
     <maven.compiler.target>21</maven.compiler.target>
     <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
@@ -42,9 +42,9 @@
     <system-stubs-version>2.1.7</system-stubs-version>
     <junit.version>5.13.1</junit.version>
     <!-- Amazon Dependencies-->
-    <amazon-s3.version>2.29.6</amazon-s3.version>
-    <software.amazon.awssdk.version>2.29.17</software.amazon.awssdk.version>
-    <amazon-sts.version>2.29.17</amazon-sts.version>
+    <amazon-s3.version>2.41.14</amazon-s3.version>
+    <software.amazon.awssdk.version>2.41.14</software.amazon.awssdk.version>
+    <amazon-sts.version>2.41.14</amazon-sts.version>
     <!-- Other Dependencies-->
     <log4j.version>2.24.1</log4j.version>
     <pdfbox.version>2.0.32</pdfbox.version>
@@ -54,6 +54,13 @@
     <commons-beanutils.version>1.11.0</commons-beanutils.version>
     <opentelemetry-instrumentation.version>2.14.0</opentelemetry-instrumentation.version>
     <sonar-maven-plugin.version>5.1.0.4751</sonar-maven-plugin.version>
+
+    <!--  Sonar -->
+    <sonar.projectName>document-signing-api</sonar.projectName>
+    <sonar.projectKey>uk.gov.companieshouse:document-signing-api</sonar.projectKey>
+    <sonar.token>${CODE_ANALYSIS_TOKEN}</sonar.token>
+    <sonar.login></sonar.login>
+    <sonar.password></sonar.password>
   </properties>
 
   <dependencyManagement>
@@ -219,6 +226,12 @@
       <groupId>commons-beanutils</groupId>
       <artifactId>commons-beanutils</artifactId>
       <version>${commons-beanutils.version}</version>
+    </dependency>
+    <!--  manual override of version from spring-boot-starter-logging (CVE-2025-68161) -->
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+      <version>2.25.3</version>
     </dependency>
   </dependencies>
 
